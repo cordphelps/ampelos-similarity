@@ -215,17 +215,36 @@ def df_to_corpus_text(df_list):
     
 def row_text_to_three_words(text):
 
-    # create 3 words for return as a text separated by space
+    ###############################################################################
+    # create 4 encoded words for return as a text separated by space
     # (earlier analysis with kmeans() suggests that there are 3
     #  similar domains per vineyard row. these are:
     # positions 0, 1, 2  (first_count_position_list)
     # positions 3, 4, 5
-    # positions 6, 7, 8, 9
+    # positions 6, 7, 8, 
+    # positioin 9
+    #
+    # returning the context string and a 'sentence' formed by 4 encoded words
+    #
+    # note: similarity comparison with ngram=2 suggests that the first 3 'words'
+    # should be equal in length to do a more robust pair-by-pair analysis
+    #----------------------------------------------------------------------------
 
-    # input:  '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0'
-    # output: TRUETRUETRUE FALSETRUEFALSE TRUETRUEFALSEFALSE
+    # input:  162 am 24 control : 1 0 1 1 1 0 0 1 1 0
+    #         (part2_no_spaces  1011100110)
+    # output: 162 am 24 control  ,  TRUEfalseTRUE TRUETRUEfalse falseTRUETRUE false
+    # 
+    # input:  163 am 24 control : 0 2 2 2 1 0 1 0 3 4
+    #         (part2_no_spaces  0222101034)
+    # output: 163 am 24 control  ,  falseTRUETRUE TRUETRUEfalse TRUEfalseTRUE TRUE
+    #
+    # input:  164 am 24 control : 2 0 1 2 1 2 0 2 5 2
+    #         (part2_no_spaces  2012120252)
+    # output: 164 am 24 control  ,  TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE
 
-    # returning the context string and the 3 encoded words in a sentence
+    ###############################################################################
+
+
 
     # isolate the 10 integers
     part1, separator, part2 = text.partition(":")  
@@ -235,6 +254,7 @@ def row_text_to_three_words(text):
 
     # remove the whitespace from the section of 10 "integers" 
     part2_no_spaces = part2.replace(" ", "")
+    # print("part2_no_spaces " , part2_no_spaces)
 
     # there should be only 10 characters
     if len(part2_no_spaces) != 10:
@@ -289,21 +309,22 @@ def row_text_to_three_words(text):
     else:
         word_three = word_three + "TRUE"
 
+
     if part2_no_spaces[9] == "0":
-        word_three = word_three + "false"
+        word_four = "false"
     else:
-        word_three = word_three + "TRUE"
+        word_four = "TRUE"
 
 
 
-    result = word_one + " " + word_two + " " + word_three
+    result = word_one + " " + word_two + " " + word_three + " " + word_four
 
     # print(part1, ", ", result)
 
-    # (showing 3 different results for clarification)
-    # 162 am 24 oakMargin  ,  TRUETRUETRUE falseTRUEfalse TRUETRUEfalsefalse
-    # 163 am 24 oakMargin  ,  TRUETRUEfalse TRUETRUETRUE TRUETRUETRUETRUE
-    # 164 am 24 oakMargin  ,  TRUETRUETRUE TRUETRUETRUE TRUETRUEfalseTRUE
+    # (showing 3 different results for clarification, only 1 returned per)
+    # 162 am 24 oakMargin  ,  TRUETRUETRUE falseTRUEfalse TRUETRUEfalse false
+    # 163 am 24 oakMargin  ,  TRUETRUEfalse TRUETRUETRUE TRUETRUETRUE TRUE
+    # 164 am 24 oakMargin  ,  TRUETRUETRUE TRUETRUETRUE TRUETRUEfalse TRUE
 
     # returning the context string and the 3 encoded words in a string (= 'sentence')
 
@@ -313,7 +334,7 @@ def row_text_to_three_words(text):
 
 
 
-def row_similarity(records_list, transect, week, time):
+def TWT_row_similarity(records_list, transect, week, time):
 
     ####################################################################################################
     # for each sampling day in a specific week
@@ -332,27 +353,63 @@ def row_similarity(records_list, transect, week, time):
     week_records_df = rough_dataset_clean(records_list, transect, week, time)
     # get the daily counts by combining counts for the vineyard rows that were sampled
     df = daily_spider_count(df=week_records_df)
-    # output: text columns, delimeter column, coult columns
 
-    # create a list of text strings (source IDs and counts by position) from the available dataframe records
+    # print(df)
+    # //////////////////////////////////////////////////////////////////////////////
+    #   julian time week transect delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0    164   am   24  control         :  2  0  1  2  1  2  0  2  5  2
+    # 1    163   am   24  control         :  0  2  2  2  1  0  1  0  3  4
+    # 2    162   am   24  control         :  1  0  1  1  1  0  0  1  1  0
+    # //////////////////////////////////////////////////////////////////////////////
+
+    # create a list of text strings for each week representing the 
+
+
     corpus_text_list = df_to_corpus_text(df_list=[df])
+
+    # print(corpus_text_list)
+    # ['162 am 24 control : 1 0 1 1 1 0 0 1 1 0', 
+    #  '163 am 24 control : 0 2 2 2 1 0 1 0 3 4', 
+    #  '164 am 24 control : 2 0 1 2 1 2 0 2 5 2']
+
+
     for k in range(len(corpus_text_list)):
         # sending k sentences : '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0' 
-        corpus_text_list[k] = row_text_to_three_words(corpus_text_list[k])
-        # output: 
+        corpus_text_list[k] = row_text_to_three_words(corpus_text_list[k]) 
 
-    # get s1/s2 string array, s1/s2 similarity, s1/s2 distance array
-    metrics_array = thad_o_mizer.make_similarity_arrays(corpus=corpus_text_list, raw=True)
-
-    # [[[0.9999999 0 1.0 0.9999999 0 1.0 '162 am 24 control '
-    # '162 am 24 control ']
-    # [0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
-    # '162 am 24 control ' '163 am 24 control ']
-    # [0.96084946 2 0.6140350877192983 0.96084946 2 0.6140350877192983
-    # '162 am 24 control ' '164 am 24 control ']]
+    #print(corpus_text_list)
+    # //////////////////////////////////////////////////////////////////////////////
+    # [['162 am 24 control ', 'TRUEfalseTRUE TRUETRUEfalse falseTRUETRUE false'], 
+    #  ['163 am 24 control ', 'falseTRUETRUE TRUETRUEfalse TRUEfalseTRUE TRUE'], 
+    #  ['164 am 24 control ', 'TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE']]
+    # //////////////////////////////////////////////////////////////////////////////
 
 
-    return(metrics_array)
+    # for a specific transect/time/day, compare each day's totalized spider counts to 
+    # the other days in the same week
+    #
+    metrics_array = thad_o_mizer.stacked_similarity(corpus=corpus_text_list, raw=True)
+
+    # [[0.9999999  0 1.0                0.9999999  0 1.0                '162 am 24 control ' '162 am 24 control ']
+    #  [0.97768813 3 0.7272727272727273 0.97768813 3 0.7272727272727273 '162 am 24 control ' '163 am 24 control ']
+    #  [0.95014405 2 0.6206896551724138 0.95014405 2 0.6206896551724138 '162 am 24 control ' '164 am 24 control ']
+    #  [0.97768813 3 0.7272727272727273 0.97768813 3 0.7272727272727273 '163 am 24 control ' '162 am 24 control ']
+    #  [1.0        0 1.0                1.0        0 1.0                '163 am 24 control ' '163 am 24 control ']
+    #  [0.9795705  3 0.7222222222222222 0.9795705  3 0.7222222222222222 '163 am 24 control ' '164 am 24 control ']
+    #  [0.95014405 2 0.6206896551724138 0.95014405 2 0.6206896551724138 '164 am 24 control ' '162 am 24 control ']
+    #  [0.9795705  3 0.7222222222222222 0.9795705  3 0.7222222222222222 '164 am 24 control ' '163 am 24 control ']
+    #  [1.0000001  0 1.0                1.0000001  0 1.0                '164 am 24 control ' '164 am 24 control ']]
+
+
+    import pandas as pd
+
+    # Convert to a DataFrame
+    df = pd.DataFrame(metrics_array)
+
+    df.columns = ['BOW cosine similarity', 'levenshtein distance', 
+    'NGRAM cosine similarity', 'BPW flip', 'LD flip', 'NGRAM flip', 'data ID 1', 'data ID 2']
+
+    return(df)
 
 
 

@@ -51,9 +51,6 @@ week_records_df = spider_lib.rough_dataset_clean(records_list=bugs_list, transec
 # 
 # [90 rows x 7 columns]
 
-# trim dataframe by julian day
-#df = week_records_df.query(" julian == '162' ")
-#print(df)
 
 # compress the daily counts by row into daily total counts (add counts by position)
 df = spider_lib.daily_spider_count(df=week_records_df)
@@ -89,36 +86,39 @@ corpus_text_list = spider_lib.df_to_corpus_text(df_list=bug_count_df_list)
 # '163 am 24 control : 0 2 2 2 1 0 1 0 3 4', 
 # '164 am 24 control : 2 0 1 2 1 2 0 2 5 2']
 
-#single_sentence_text_list = spider_lib.text_to_words('162 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0')
-#print(single_sentence_text_list)
-
-#result = spider_lib.create_embedding_model(corpus=corpus_list)
-#print(result)
-# -------------- prior to using torch --------------
-
-# workbench to play with s1 and s2
-# result = test_sentences.s1_s2()
-# s1 = result[0]
-# s2 = result[1]
-# print(s1, s2)
-
 
 for k in range(len(corpus_text_list)):
     #print("sending k=", k)
     #print(corpus_text_list[k])
 
-    # convert the corpus into a context string and a sentence composed of 3 encoded words
+    # convert the corpus into a context string and a sentence composed of 4 encoded words
     # representing TRUE/FALSE spider counts in each of the 3 kmeans() position groups
     # sending k sentences : '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0' 
     corpus_text_list[k] = spider_lib.row_text_to_three_words(corpus_text_list[k])
-    # receiving : # k list elements, the context string and a sentance containing the 3 encoded words 
+    # receiving : # k list elements, the context string and a sentance containing the 4 encoded words 
 
 
-# get s1/s2 string array, s1/s2 similarity, s1/s2 distance array
+# trigger the compare "oakMargin to control" logic (raw == FALSE)
+# stacked_similarity() is designed to compare oakMargin records to matching control transect
+# records based on an assumption of how the corpus is assembled
 # 
-metrics_array = thad_o_mizer.make_similarity_arrays(corpus=corpus_text_list, raw=False)
+df = thad_o_mizer.stacked_similarity(corpus=corpus_text_list, raw=False)
 
-print(metrics_array)
+# print(df)
+
+#    BOW cosine similarity  levenshtein distance  ...            sentence1           sentence2
+# 0               0.970918                     3  ...  162 am 24 oakMargin   162 am 24 control 
+# 1               0.944152                     3  ...  163 am 24 oakMargin   163 am 24 control 
+# 2               0.946856                     2  ...  164 am 24 oakMargin   164 am 24 control 
+
+# [3 rows x 8 columns]
+
+
+filename = './metrics/transect-compare-' + 'week-24-' + 'am.csv'
+
+# mode='w' indicates 'overwrite'
+df.to_csv(filename, header=True, index=True, mode='w')
+
 
 
 
@@ -128,69 +128,14 @@ print(metrics_array)
 
 ######################################################################################################
 
-metrics_array = spider_lib.row_similarity(records_list=bugs_list, transect='control', week='24', time='am')
 
-# print("################ metrics_array from main ################")
-# print(metrics_array)
+df = spider_lib.TWT_row_similarity(records_list=bugs_list, transect='control', week='24', time='am')
 
-# [[[0.9999999 0 1.0 0.9999999 0 1.0 '162 am 24 control '
-#    '162 am 24 control ']
-#   [0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
-#    '162 am 24 control ' '163 am 24 control ']
-#   [0.96084946 2 0.6140350877192983 0.96084946 2 0.6140350877192983
-#    '162 am 24 control ' '164 am 24 control ']]
-# 
-#  [[0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
-#    '163 am 24 control ' '162 am 24 control ']
-#   [1.0 0 1.0 1.0 0 1.0 '163 am 24 control ' '163 am 24 control ']
-#   [0.9757236 3 0.7169811320754716 0.9757236 3 0.7169811320754716
-#    '163 am 24 control ' '164 am 24 control ']]
+filename = './metrics/control-' + 'week-24-' + 'am.csv'
 
+# mode='w' indicates 'overwrite'
+df.to_csv(filename, header=True, index=True, mode='w')
 
-print("################ metrics_array from main ################")
-######################################################################################################
-
-# collect and store similarity metrics from individual weeks
-# the intention is to assess the distribution of specific metrics to undersstand the 
-# tolerances around "similarity""
-
-######################################################################################################
-
-
-# get similarity data across rows and kmeans() segments for one transect, one week, one time. 
-# update datastore
-
-# Flatten the first two dimensions into one
-metrics2d_array = metrics_array.reshape(-1, metrics_array.shape[-1])
-print(metrics2d_array)
-
-filename = "metrics.csv"
-
-
-
-import numpy as np
-
-# Write the array to a CSV file
-np.savetxt(filename, metrics2d_array, delimiter=",", fmt="%s", 
-    header="cosine similarity (BOW),levenshtein distance,cosine similarity (NGRAM),BOW flip,LD flip,NGRAM flip,sentence 1,sentence 2")
-
-
-# Read a CSV file into a NumPy array
-array = np.genfromtxt(filename, delimiter=',', dtype=object)
-# By default, `np.genfromtxt()` returns byte strings (`b'string'`). decode them using:
-decoded_data = np.array([[cell.decode("utf-8") if isinstance(cell, bytes) else cell for cell in row] for row in array])
-print("decoded_data type: ", type(decoded_data))
-#print(local_disk_array)
-
-# get some more metrics
-metrics_array = spider_lib.row_similarity(records_list=bugs_list, transect='oakMargin', week='34', time='pm')
-# Flatten the first two dimensions into one
-metrics2d_array = metrics_array.reshape(-1, metrics_array.shape[-1])
-
-# jam them together
-metrics2d_array = np.concatenate((array, metrics2d_array), axis=0)
-np.savetxt(filename, metrics2d_array, delimiter=",", fmt="%s", 
-    header="cosine similarity (BOW),levenshtein distance,cosine similarity (NGRAM),BOW flip,LD flip,NGRAM flip,sentence 1,sentence 2")
 
 
 

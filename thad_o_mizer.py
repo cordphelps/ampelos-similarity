@@ -133,34 +133,40 @@ def levenshtein_distance(sentence1, sentence2):
     return dp[n][m]
 
 
-def make_similarity_arrays(corpus, raw):
+def stacked_similarity(corpus, raw):
 
-	# input: # [
-	# ['162 am 24 oakMargin ', 'TRUETRUETRUE FALSETRUEFALSE TRUETRUEFALSEFALSE'], 
-	# ['163 am 24 oakMargin ', 'TRUETRUEFALSE TRUETRUETRUE TRUETRUETRUETRUE'], 
-	# ['164 am 24 oakMargin ', 'TRUETRUETRUE TRUETRUETRUE TRUETRUEFALSETRUE'], 
-	# ['162 am 24 control ', 'TRUEFALSETRUE TRUETRUEFALSE FALSETRUETRUEFALSE'], 
-	# ['163 am 24 control ', 'FALSETRUETRUE TRUETRUEFALSE TRUEFALSETRUETRUE'], 
-	# ['164 am 24 control ', 'TRUEFALSETRUE TRUETRUETRUE FALSETRUETRUETRUE']
-	# ]
+
 
 	###########################################################################
-	# CAUTION
+	# 
+	# with raw == TRUE, 
+	# each row ('sentence') is compared to itself and every other row
+	#
+	# input: # [
+	#  ['162 am 24 control ', 'TRUEfalseTRUE TRUETRUEfalse falseTRUETRUE false'],
+	#  ['163 am 24 control ', 'falseTRUETRUE TRUETRUEfalse TRUEfalseTRUE TRUE'],
+	#  ['164 am 24 control ', 'TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE']
+	# ]
+	#
+	# CAUTION: with raw == FALSE,
 	# this function is designed to compare oakMargin records to matching control 
 	# records based on an assumption of how the corpus is assembled
+	#
+	# input: # [
+	#  ['162 am 24 oakMargin ', 'TRUETRUETRUE falseTRUEfalse TRUETRUEfalse false'],
+	#  ['163 am 24 oakMargin ', 'TRUETRUEfalse TRUETRUETRUE TRUETRUETRUE TRUE'],
+	#  ['164 am 24 oakMargin ', 'TRUETRUETRUE TRUETRUETRUE TRUETRUEfalse TRUE'],
+	#  ['162 am 24 control '  , 'TRUEfalseTRUE TRUETRUEfalse falseTRUETRUE false'],
+	#  ['163 am 24 control '  , 'falseTRUETRUE TRUETRUEfalse TRUEfalseTRUE TRUE'],
+	#  ['164 am 24 control '  , 'TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE']
+	# ]
 	#
 	###########################################################################
 
 	import numpy as np
-
-	if not raw:
-		# (this is the "oakMargin to control" model)
-		# check if input records are an even number
-		# (the numpy array is expected to be 'square') 
-		if len(corpus) % 2 != 0:
-			print("The length is not an even integer.")
-			return(np.zeros((1, 1), dtype=int))
+	import pandas as pd
 	
+
 	number_of_sentences = len(corpus)
 
 	prefix_text1 = []
@@ -169,12 +175,11 @@ def make_similarity_arrays(corpus, raw):
 
 	if raw:
 
+		# this is the "compare every record to every oher record" logic (raw == TRUE)
+
 		# the corpus should only respresent data from one transect
 		# compare each sentance to the others
 		# a week of data represents 3 vineyard rows in one transect. 
-
-		print("raw")
-		print(corpus)
 
 		# numpy array set to 0s
 		# first column is the cosine similarity of 2 sentences
@@ -204,14 +209,55 @@ def make_similarity_arrays(corpus, raw):
 				np_array[k, j, 6] = corpus[k][0]
 				np_array[k, j, 7] = corpus[j][0]
 
+		# Flatten the first two dimensions into one
+		np_array = np_array.reshape(-1, np_array.shape[-1])
+
+		df = pd.DataFrame(np_array)
+
+		# print(np_array)
+
+		# [[0.9999999  0 1.0                0.9999999  0 1.0                '162 am 24 control ' '162 am 24 control ']
+		#  [0.97768813 3 0.7272727272727273 0.97768813 3 0.7272727272727273 '162 am 24 control ' '163 am 24 control ']
+  		#  [0.95014405 2 0.6206896551724138 0.95014405 2 0.6206896551724138 '162 am 24 control ' '164 am 24 control ']
+		#  [0.97768813 3 0.7272727272727273 0.97768813 3 0.7272727272727273 '163 am 24 control ' '162 am 24 control ']
+
+		#  [1.0        0 1.0                1.0        0 1.0                '163 am 24 control ' '163 am 24 control ']
+		#  [0.9795705  3 0.7222222222222222 0.9795705  3 0.7222222222222222 '163 am 24 control ' '164 am 24 control ']
+		#  [0.95014405 2 0.6206896551724138 0.95014405 2 0.6206896551724138 '164 am 24 control ' '162 am 24 control ']
+  		#  [0.9795705  3 0.7222222222222222 0.9795705  3 0.7222222222222222 '164 am 24 control ' '163 am 24 control ']
+		#  [1.0000001  0 1.0                1.0000001  0 1.0                '164 am 24 control ' '164 am 24 control ']]
+
+		# print(df)
+
+		#           0  1         2         3  4         5                  6                   7
+		# 0       1.0  0       1.0       1.0  0       1.0  162 am 24 control   162 am 24 control 
+		# 1  0.977688  3  0.727273  0.977688  3  0.727273  162 am 24 control   163 am 24 control 
+		# 2  0.950144  2   0.62069  0.950144  2   0.62069  162 am 24 control   164 am 24 control 
+		# 3  0.977688  3  0.727273  0.977688  3  0.727273  163 am 24 control   162 am 24 control 
+		# 4       1.0  0       1.0       1.0  0       1.0  163 am 24 control   163 am 24 control 
+		# 5  0.979571  3  0.722222  0.979571  3  0.722222  163 am 24 control   164 am 24 control 
+		# 6  0.950144  2   0.62069  0.950144  2   0.62069  164 am 24 control   162 am 24 control 
+		# 7  0.979571  3  0.722222  0.979571  3  0.722222  164 am 24 control   163 am 24 control 
+		# 8       1.0  0       1.0       1.0  0       1.0  164 am 24 control   164 am 24 control
+
 
 	else:
 
+		# this is the compare "oakMargin to control" logic (raw == FALSE)
+		# this function is designed to compare oakMargin records to matching control 
+		# records based on an assumption of how the corpus is assembled
 
-		# this should respresent data pairs from the oakMargin and control transect
-		# from the same time period.
-		# compare each sentance to its pair
-
+		# compare each sentance to its pair usually originalint from the oakMargin and control 
+		# transects from the same time period.
+		
+		#
+		# check if input records are an even number
+		# (the numpy array is expected to be 'square') 
+		#
+		if len(corpus) % 2 != 0:
+			print("The length is not an even integer.")
+			return(np.zeros((1, 1), dtype=int))
+		#
 
 		# get the length of the large array (6)
 		array_dimension = int(number_of_sentences/2)
@@ -241,11 +287,29 @@ def make_similarity_arrays(corpus, raw):
 			np_array[k, 6] = corpus[k][0]
 			np_array[k, 7] = corpus[k + array_dimension][0]
 
+		# Flatten the first two dimensions into one
+		np_array = np_array.reshape(-1, np_array.shape[-1])
+
+		df = pd.DataFrame(np_array)
+
+		# print(np_array)
+
+		# [[0.9709183  3 0.92               0.9709183  3 0.92               '162 am 24 oakMargin ' '162 am 24 control ']
+		#  [0.94415224 3 0.6140350877192983 0.94415224 3 0.6140350877192983 '163 am 24 oakMargin ' '163 am 24 control ']
+		#   0.94685566 2 0.7169811320754716 0.9468557 2  0.7169811320754716 '164 am 24 oakMargin ' '164 am 24 control ']]
+
+		# print(df)
+
+		# 0  1         2            ...         5                    6                   7
+		# 0  0.970918  3      0.92  ...      0.92  162 am 24 oakMargin   162 am 24 control 
+		# 1  0.944152  3  0.614035  ...  0.614035  163 am 24 oakMargin   163 am 24 control 
+		# 2  0.946856  2  0.716981  ...  0.716981  164 am 24 oakMargin   164 am 24 control 
+
+		#[3 rows x 8 columns]
 
 
-	#print("################ thad-o-mizer ################") 
-	#print(np_array)
+	df.columns = ['BOW cosine similarity', 'levenshtein distance', 
+	'NGRAM cosine similarity', 'BPW flip', 'LD flip', 'NGRAM flip', 'data ID 1', 'data ID 2']
 
-
-	return( np_array )
+	return( df )
 
