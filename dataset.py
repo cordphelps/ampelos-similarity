@@ -124,17 +124,30 @@ print(metrics_array)
 
 ######################################################################################################
 
-# now compare the row similarity in a specific transect for a specific week
+# now compare the row similarity in a specific transect for a specific week and time
 
 ######################################################################################################
 
 metrics_array = spider_lib.row_similarity(records_list=bugs_list, transect='control', week='24', time='am')
 
+# print("################ metrics_array from main ################")
+# print(metrics_array)
+
+# [[[0.9999999 0 1.0 0.9999999 0 1.0 '162 am 24 control '
+#    '162 am 24 control ']
+#   [0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
+#    '162 am 24 control ' '163 am 24 control ']
+#   [0.96084946 2 0.6140350877192983 0.96084946 2 0.6140350877192983
+#    '162 am 24 control ' '164 am 24 control ']]
+# 
+#  [[0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
+#    '163 am 24 control ' '162 am 24 control ']
+#   [1.0 0 1.0 1.0 0 1.0 '163 am 24 control ' '163 am 24 control ']
+#   [0.9757236 3 0.7169811320754716 0.9757236 3 0.7169811320754716
+#    '163 am 24 control ' '164 am 24 control ']]
+
+
 print("################ metrics_array from main ################")
-print(metrics_array)
-
-
-
 ######################################################################################################
 
 # collect and store similarity metrics from individual weeks

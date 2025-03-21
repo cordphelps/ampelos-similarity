@@ -68,6 +68,14 @@ def rough_dataset_clean(records_list, transect, week, time):
 
 def daily_spider_count(df):
 
+    ########################################################################
+    #
+    # sum spider counts by julian day
+    # input can mix records for 'transect', 'week', and 'time'. 
+    # 
+    # return a dataframe with text identifiers, a delimeter, and the totalized count by position
+    ########################################################################
+
     # sanity check on the data
     
     unique_weeks = df['week'].unique()
@@ -102,7 +110,7 @@ def daily_spider_count(df):
     
         unique_rows_list = temp_julian_df['row'].unique().tolist()
 
-        # build a sentance in the language of spider counts that will ultimatedly be
+        # build a sentence in the language of spider counts that will ultimatedly be
         # used to compare to other sentances
         daily_spider_total_int = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
@@ -217,6 +225,8 @@ def row_text_to_three_words(text):
     # input:  '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0'
     # output: TRUETRUETRUE FALSETRUEFALSE TRUETRUEFALSEFALSE
 
+    # returning the context string and the 3 encoded words in a sentence
+
     # isolate the 10 integers
     part1, separator, part2 = text.partition(":")  
     # print("text :", text, "  part1: ", part1, "    part2: ", part2)
@@ -288,7 +298,16 @@ def row_text_to_three_words(text):
 
     result = word_one + " " + word_two + " " + word_three
 
-    # returning the context string and the 3 encoded words in a sentence
+    # print(part1, ", ", result)
+
+    # (showing 3 different results for clarification)
+    # 162 am 24 oakMargin  ,  TRUETRUETRUE falseTRUEfalse TRUETRUEfalsefalse
+    # 163 am 24 oakMargin  ,  TRUETRUEfalse TRUETRUETRUE TRUETRUETRUETRUE
+    # 164 am 24 oakMargin  ,  TRUETRUETRUE TRUETRUETRUE TRUETRUEfalseTRUE
+
+    # returning the context string and the 3 encoded words in a string (= 'sentence')
+
+
     return([part1, result])
 
 
@@ -296,19 +315,42 @@ def row_text_to_three_words(text):
 
 def row_similarity(records_list, transect, week, time):
 
+    ####################################################################################################
+    # for each sampling day in a specific week
+    # make count totals for each vineyard sampling position by adding counts for each vinyard row sampled
+    # these count totals are converted to 3 word senences that are compared for similarity
+    #   (in the output below, 
+    #    '162' is a julian day, 'am' is the time, '24' is the week, 'control' is the transect).
+    #    there are two other sampling days in that week ('163' and '164'). Each data-sentence
+    #    is compared to itself and to the others, similarity metrics are stacked in the array
+    #    along with the strings representing the data-pairs evaluated against each other)
+    ####################################################################################################
+
     import thad_o_mizer
 
     # ------------------------------------------------------------------------------
     week_records_df = rough_dataset_clean(records_list, transect, week, time)
-    # compress the daily counts by row into daily total counts (add counts by position)
+    # get the daily counts by combining counts for the vineyard rows that were sampled
     df = daily_spider_count(df=week_records_df)
-    # create a list of text strings from the available dataframe records
+    # output: text columns, delimeter column, coult columns
+
+    # create a list of text strings (source IDs and counts by position) from the available dataframe records
     corpus_text_list = df_to_corpus_text(df_list=[df])
     for k in range(len(corpus_text_list)):
         # sending k sentences : '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0' 
         corpus_text_list[k] = row_text_to_three_words(corpus_text_list[k])
+        # output: 
+
     # get s1/s2 string array, s1/s2 similarity, s1/s2 distance array
     metrics_array = thad_o_mizer.make_similarity_arrays(corpus=corpus_text_list, raw=True)
+
+    # [[[0.9999999 0 1.0 0.9999999 0 1.0 '162 am 24 control '
+    # '162 am 24 control ']
+    # [0.98172927 2 0.7222222222222222 0.98172927 2 0.7222222222222222
+    # '162 am 24 control ' '163 am 24 control ']
+    # [0.96084946 2 0.6140350877192983 0.96084946 2 0.6140350877192983
+    # '162 am 24 control ' '164 am 24 control ']]
+
 
     return(metrics_array)
 
