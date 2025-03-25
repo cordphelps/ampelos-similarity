@@ -1,72 +1,18 @@
-The **Levenshtein distance** can be a useful tool for comparing sentences, but its suitability depends on the specific task and requirements. Here's an analysis based on its strengths and limitations:
 
----
+KL DIvergence
+https://youtu.be/q0AkK8aYbLY?si=HZlW_rrXQc3xv16k
+this can be used to compare observed distribution to different theoretical distributions
+https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence
 
-### **Strengths of Levenshtein Distance for Sentence Comparison**
-1. **Sensitivity to Word Order**:
-   - Levenshtein distance captures structural differences between sentences by considering the sequence of characters or words. This makes it sensitive to word order, which is important for tasks where positional relationships matter.
+in python how can an observed distribution be compared to various thooretical distributions using tthe KL Divergence metric
+4.	Interpret Results:
+	•	A smaller KL divergence value indicates that the observed distribution is closer to the corresponding theoretical distribution.
 
-2. **Handling Variations**:
-   - It is effective for detecting small variations in text, such as typos or minor edits, making it useful for applications like spell-checking or fuzzy matching.
 
-3. **Flexibility with Length**:
-   - It can compare strings of different lengths without requiring preprocessing to equalize them, making it robust for sentences with varying word counts.
+Embeddings 
+https://youtu.be/ulD7IsecPbU?si=8VFhNdHk1OswsoJJ
 
----
 
-### **Limitations of Levenshtein Distance for Sentence Comparison**
-1. **Lack of Semantic Understanding**:
-   - Levenshtein distance does not account for the **meaning** of words. For example, "I love programming" and "I enjoy coding" would have a high distance despite being semantically similar.
-
-2. **Character-Level Operations**:
-   - By default, Levenshtein operates at the character level, which may not be ideal for comparing sentences. Word-level implementations can mitigate this but still lack semantic depth.
-
-3. **Computational Complexity**:
-   - The algorithm has a time complexity of $$O(m \times n)$$, where $$m$$ and $$n$$ are the lengths of the strings. While efficient for short strings, it can become computationally expensive for longer sentences or large datasets.
-
-4. **Insensitive to Adjacent Relationships**:
-   - It does not explicitly reward adjacent word relationships or penalize swapped positions unless implemented at the word level.
-
----
-
-### **When to Use Levenshtein Distance**
-Levenshtein distance is appropriate when:
-- You need to measure **exact structural differences** between sentences.
-- The focus is on detecting typos, small edits, or near-duplicate text.
-- Semantic meaning is not critical (e.g., comparing form fields like names or addresses).
-
----
-
-### **Alternatives to Levenshtein Distance**
-For tasks where semantic meaning and word relationships are important, consider these alternatives:
-
-1. **Cosine Similarity with TF-IDF or Embeddings**:
-   - Measures semantic similarity by comparing vectorized representations of sentences.
-   - Ignores word order but captures meaning effectively.
-
-2. **N-Gram-Based Approaches**:
-   - Capture adjacent relationships by considering sequences of words (e.g., bigrams or trigrams).
-   - Combine this with cosine similarity or Jaccard similarity for better results.
-
-3. **Pre-trained Models (e.g., BERT)**:
-   - Generate embeddings that encode both semantic meaning and contextual relationships.
-   - Compare sentences using cosine similarity on these embeddings.
-
-4. **Sequence Alignment Algorithms (e.g., Dynamic Time Warping)**:
-   - Handle adjacent relationships explicitly and are more flexible than Levenshtein distance in capturing positional mismatches.
-
----
-
-### Conclusion
-Levenshtein distance is a good choice for tasks requiring structural comparison but falls short in capturing semantic meaning and adjacent relationships in complex sentences. For sentence comparison tasks emphasizing meaning and context, alternatives like cosine similarity with embeddings or n-gram-based methods are often more suitable.
-
-Sources
-[1] What is the Levenshtein Distance? - Datablist https://www.datablist.com/learn/data-cleaning/fuzzy-matching-levenshtein-distance
-[2] What is the Levenshtein distance? - Klu.ai https://klu.ai/glossary/levenshtein-distance
-[3] Levenshtein distance - Wikipedia https://en.wikipedia.org/wiki/Levenshtein_distance
-[4] Drawbacks of Levenshtein Distance Algorithms - Babel Street https://www.babelstreet.com/blog/drawbacks-of-levenshtein-distance-algorithms-for-name-matching
-[5] Typo no more. An in-depth guide to the Levenshtein edit distance https://orama.com/blog/typo-no-more-an-in-depths-guide-to-the-levenshtein-edit-distance
-[6] Comparison of the Text Distance Metrics | ActiveWizards https://activewizards.com/blog/comparison-of-the-text-distance-metrics/
-[7] Levenshtein distance vs simple for loop https://datascience.stackexchange.com/questions/108321/levenshtein-distance-vs-simple-for-loop
-[8] Edit Distance vs Cosine Similarity for Text Matching - LinkedIn https://www.linkedin.com/advice/0/what-advantages-disadvantages-using-edit-distance
-
+Bayes frrom ritvikmath 
+The Unreasonable Effectiveness of Bayesian Prediction
+https://youtu.be/OttShGPRwDI?si=pLbwgPZuhzTcMSoR

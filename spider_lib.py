@@ -47,23 +47,31 @@ def read_raw_bugs_data(url):
     return(result_list)
 
 
-def rough_dataset_clean(records_list, transect, week, time):
+def rough_dataset_clean(df):
+
+    ##########################################################################################
+    # return a df of spider counts for all positions and all rows of a specific transect, week and time
+    #
+    # 
+    ##########################################################################################
+
 
     import pandas as pd
-    df = pd.DataFrame(records_list)
+
+    # convert the list to dataframe
+    #df = pd.DataFrame(records_list)
 
     # Set the first row as column headers
     df.columns = df.iloc[0]  # Assign first row to columns
     df = df.rename(columns=df.iloc[0]).iloc[1:]  # Remove the first row
 
-    # Filter rows using query()
-    df_high_fee = df.query("transect == @transect and time == @time and week == @week ")
-
     #The `.loc[]` method allows you to select rows and columns by labels. 
     #To select specific columns, use `:` for all rows and specify the column names.
-    selected_columns = df_high_fee.loc[:, ['transect', 'row', 'time', 'week', 'julian', 'Thomisidae (crab spider)', 'position']]
+    selected_columns_df = df.loc[:, ['transect', 'row', 'time', 'week', 'julian', 'Thomisidae (crab spider)', 'position']]
 
-    return(selected_columns)
+    return(selected_columns_df)
+
+
 
 
 def daily_spider_count(df):
@@ -76,19 +84,19 @@ def daily_spider_count(df):
     # return a dataframe with text identifiers, a delimeter, and the totalized count by position
     ########################################################################
 
-    # sanity check on the data
+    import pandas as pd
     
     unique_weeks = df['week'].unique()
     unique_time = df['time'].unique()
 
-    if len(unique_weeks) != 1:
+    #if len(unique_weeks) != 1:
         # choke
-        print("daily_spider_count(): the input dataframe must contain data from only 1 week")
-        sys.exit(1)  # graceful exit on error condition with cleanup
-    if len(unique_time) != 1:
+        #print("daily_spider_count(): the input dataframe must contain data from only 1 week")
+        #sys.exit(1)  # graceful exit on error condition with cleanup
+    #if len(unique_time) != 1:
         # choke
-        print("daily_spider_count(): the input dataframe must contain data from only 1 time")
-        sys.exit(1)  # graceful exit on error condition with cleanup
+        #print("daily_spider_count(): the input dataframe must contain data from only 1 time")
+        #sys.exit(1)  # graceful exit on error condition with cleanup
 
     # prep a list of lists to load a dataframe for return
     list_holding_tank = []
@@ -102,71 +110,141 @@ def daily_spider_count(df):
 
     # for each julian day, there are 3 rows that were sampled
     
-    unique_julian_list = df['julian'].unique().tolist()
+    #unique_julian_list = df['julian'].unique().tolist()
+    #unique_time_list = df['time'].unique().tolist()
+    #unique_transect_list = df['transect'].unique().tolist()
+    #unique_week_list = df['week'].unique().tolist()
 
-    for k in range(len(unique_julian_list)):
-        # use .loc to filter based on julian ID
-        temp_julian_df = df.loc[df['julian'] == unique_julian_list[k]]
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+    #print(unique_time)
+    #print(unique_transect)
+    #print(unique_week)
+
+    #['156', '157', '158', '162', '163', '164', '170', '171', '172', '177', '178', 
+    # '179', '183', '184', '191', '192', '193', '201', '202', '203', '204', '205', 
+    # '206', '212', '213', '214', '218', '219', '220', '234', '235', '236']
+    #['pm', 'am']
+    #['oakMargin', 'control']
+    #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
+
+    incoming_df = df
+
     
-        unique_rows_list = temp_julian_df['row'].unique().tolist()
+    for julian in unique_julian:
 
-        # build a sentence in the language of spider counts that will ultimatedly be
-        # used to compare to other sentances
-        daily_spider_total_int = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        for transect in unique_transect:
 
-        for j in range(len(unique_rows_list)):
-            # use .loc to filter based on row ID
-            temp_row_df = temp_julian_df.loc[temp_julian_df['row'] == unique_rows_list[j]]
+            for time in unique_time:
 
-            for i in range(len(temp_row_df)):
 
-                # write the counts for each position
-                # (access a single dataframe value using iloc)
-                value = temp_row_df.iloc[i, 5]  #  
+                filtered_df = pd.DataFrame()
 
-                #### useful for debug ####
-                # print("julian ", unique_julian_list[k], " row= ", unique_rows_list[j], " value= ", value)
-                ####                  ####
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+
+                unique_rows = filtered_df['row'].unique()
+
+                #print("type= ", type(unique_rows)) 
+                # type=  <class 'numpy.ndarray'>
+
+                if  unique_rows.size == 0:
+                    break
+
+                #print("transect ", transect, " time ", time, " rows :", unique_rows)
+
+                # build a sentence in the language of spider counts that will ultimatedly be
+                # used to compare to other sentances
+                daily_spider_total_int = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+                for j in range(len(unique_rows)):
+
+                    # use .loc to filter based on row ID
+                    temp_row_df = filtered_df.loc[filtered_df['row'] == unique_rows[j]]
+
+                    #print(":::::::::::::::::::::temp_row_df:::::::::::::::::::::::::::")
+                    #print(temp_row_df)
+                    #print("::::::::::::::::::::::end temp_row_df ::::::::::::::::::::::::::")
+
+                    #:::::::::::::::::::::temp_row_df:::::::::::::::::::::::::::
+                    #0      transect row time week julian Thomisidae (crab spider) position
+                    #1491  oakMargin  83   pm   27    183                        0        1
+                    #1492  oakMargin  83   pm   27    183                        0        2
+                    #1493  oakMargin  83   pm   27    183                        1        3
+                    #1494  oakMargin  83   pm   27    183                        0        4
+                    #1495  oakMargin  83   pm   27    183                        0        5
+                    #1496  oakMargin  83   pm   27    183                        0        6
+                    #1497  oakMargin  83   pm   27    183                        0        7
+                    #1498  oakMargin  83   pm   27    183                        0        8
+                    #1499  oakMargin  83   pm   27    183                        1        9
+                    #1500  oakMargin  83   pm   27    183                        0       10
+                    #::::::::::::::::::::::end temp_row_df ::::::::::::::::::::::::::
+
+                    ### i_int = len(temp_row_df) / len(unique_rows)
+
+                    for i in range(10):
+
+                        #### useful for debug ####
+                        #print("len(temp_row_df) ", len(temp_row_df))
+                        ####                  ####
+
+                        # write the counts for each position
+                        # (access a single dataframe value using iloc)
+
+                        #### useful for debug ####
+                        #value = temp_row_df.iloc[i, 5]  #  
+                        #print("julian ", unique_julian_list[k], " row= ", unique_rows_list[j], " value= ", value)
+                        ####                  ####
+                            
+                        # construct a list of counts for 10 positions
+                        # the counts need to be 'text'
+                        # the counts are accumulated across the selected rows for each position
+
+                        #### useful for debug ####
+                        #print("i ", i, " int(temp_row_df.iloc[i, 5]) ", int(temp_row_df.iloc[i, 5]))
+                        ####                  ####
+                            
+                        daily_spider_total_int[i] = int(temp_row_df.iloc[i, 5]) + daily_spider_total_int[i]
+              
                 
-                # construct a list of counts for 10 positions
-                # the counts need to be 'text'
-                # the counts are accumulated across the selected rows for each position
-                
-                daily_spider_total_int[i] = int(temp_row_df.iloc[i, 5]) + daily_spider_total_int[i]
-  
-    
-        # print(daily_spider_total_int)
-        # Convert each integer to a string using list comprehension
-        # (this s a concise and Pythonic way to convert each integer in the list to a string)
-        daily_spider_total_txt = [str(x) for x in daily_spider_total_int]
-        #
-        # insert context (what julian, time, week, and transect is that daya from)
-        # (when you insert an element, all existing elements after the specified index are shifted 
-        #  one position to the right)
-        daily_spider_total_txt.insert(0, df.iloc[0,0])
-        daily_spider_total_txt.insert(0, df.iloc[0,3])
-        daily_spider_total_txt.insert(0, df.iloc[0,2])
-        daily_spider_total_txt.insert(0, unique_julian_list[k])
+                # print(daily_spider_total_int)
+                # Convert each integer to a string using list comprehension
+                # (this s a concise and Pythonic way to convert each integer in the list to a string)
+                daily_spider_total_txt = [str(x) for x in daily_spider_total_int]
+                #
+                # insert context (what julian, time, week, and transect is that daya from)
+                # (when you insert an element, all existing elements after the specified index are shifted 
+                #  one position to the right)
 
-        # these are the daily totals, by position, across 3 vineyard rows, for a specific week
-        # time and transect
-        # print(daily_spider_total_txt)
-        #['162', 'am', '24', 'oakMargin', '2', '1', '1', '0', '1', '0', '2', '1', '0', '0']
-        #['163', 'am', '24', 'oakMargin', '1', '1', '0', '1', '2', '3', '6', '1', '1', '2']
-        #['164', 'am', '24', 'oakMargin', '2', '2', '2', '3', '1', '1', '4', '4', '0', '2']
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,4])
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,3])
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,2])
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,1])
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,0])
 
-        
-        list_holding_tank.insert(0, daily_spider_total_txt)
 
-    # that's a list of lists
-    # print(list_holding_tank)
-    # [['164', 'am', '24', 'oakMargin', '2', '2', '2', '3', '1', '1', '4', '4', '0', '2'], 
-    #  ['163', 'am', '24', 'oakMargin', '1', '1', '0', '1', '2', '3', '6', '1', '1', '2'], 
-    #  ['162', 'am', '24', 'oakMargin', '2', '1', '1', '0', '1', '0', '2', '1', '0', '0']]
+                # these are the daily totals, by position, across 3 vineyard rows, for a specific week
+                # time and transect
+                #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                #print(daily_spider_total_txt)
+                #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> end daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                #['control', '46', 'am', '32', '218', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0']
+
+                    
+                list_holding_tank.insert(0, daily_spider_total_txt)
+
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(list_holding_tank)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    # ['oakMargin', '80', 'pm', '24', '162', '1', '1', '0', '1', '5', '1', '2', '3', '3', '2'],
 
     # build a dataframe
     import pandas as pd
-    df = pd.DataFrame(list_holding_tank, columns=['julian', 'time', 'week', 'transect', 
+    df = pd.DataFrame(list_holding_tank, columns=['transect', 'row', 'time', 'week', 'julian',  
                                                  'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'])
 
     # print(df)
@@ -176,39 +254,63 @@ def daily_spider_count(df):
     # 2    162   am   24  oakMargin  2  1  1  0  1  0  2  1  0  0
 
     # # Insert a delimeter (index 4) to support string truncation 
-    df.insert(4, 'delimeter', ':')
+    df.insert(5, 'delimeter', ':')
 
-    #     julian time week   transect delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-    # 0     164   am   24  oakMargin         :  2  2  2  3  1  1  4  4  0  2
-    # 1     163   am   24  oakMargin         :  1  1  0  1  2  3  6  1  1  2
-    # 2     162   am   24  oakMargin         :  2  1  1  0  1  0  2  1  0  0
-    #    julian time week transect delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-    # 0     164   am   24  control         :  2  0  1  2  1  2  0  2  5  2
-    # 1     163   am   24  control         :  0  2  2  2  1  0  1  0  3  4
-    # 2     162   am   24  control         :  1  0  1  1  1  0  0  1  1  0
+
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print(df)
+    print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+    #      transect row time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    #0     control  49   am   34    234         :  0  0  0  0  0  0  0  0  1  0
+    #1     control  46   am   32    218         :  1  0  0  0  0  0  0  0  0  0
+    #2     control  47   am   31    212         :  0  0  0  0  0  0  0  1  0  1
+    #3     control  48   am   30    204         :  1  0  1  0  1  0  0  1  0  1
+    #4     control  48   am   29    201         :  0  1  0  1  1  0  0  1  0  0
+    #5     control  46   am   28    191         :  0  0  0  1  1  0  1  0  0  0
+    #6     control  47   am   27    183         :  0  0  0  0  0  0  2  1  1  0
+    #7     control  46   am   26    177         :  0  0  0  0  0  1  0  0  1  0
+    #8     control  45   am   25    170         :  0  0  0  0  0  0  0  2  0  1
+    #9     control  47   am   24    162         :  1  0  1  1  1  0  0  1  1  0
+    #10    control  48   am   23    157         :  0  0  1  0  0  0  0  2  0  0
+    #11  oakMargin  81   am   34    234         :  0  0  0  0  0  0  0  0  0  0
+    #12  oakMargin  80   am   32    218         :  0  0  0  0  0  0  0  0  1  0
+    #13  oakMargin  79   am   31    212         :  0  1  0  0  0  0  1  0  0  0
+    #14  oakMargin  82   am   30    204         :  2  0  0  0  0  1  1  0  1  0
+    #15  oakMargin  82   am   29    201         :  0  0  0  0  0  0  0  1  0  1
+    #16  oakMargin  80   am   28    191         :  1  0  0  0  0  0  0  0  1  0
+    #17  oakMargin  79   am   27    183         :  0  1  0  0  0  1  0  0  0  1
+    #18  oakMargin  83   am   26    177         :  0  0  0  0  0  0  1  1  0  0
+    #19  oakMargin  81   am   25    170         :  0  1  0  0  1  0  2  1  0  0
+    #20  oakMargin  80   am   24    162         :  2  1  1  0  1  0  2  1  0  0
+    #21  oakMargin  79   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+    # (more)
 
     return(df)
 
 
 
-def df_to_corpus_text(df_list):
+def df_to_corpus_text(df_compressed):
 
     #selected_columns = df.loc[:, ['transect', 'row', 'time', 'week', 'julian', 'Thomisidae (crab spider)', 'position']]
     #df = df.loc[:, ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']]
 
     corpus = []
 
-    for k in range(len(df_list)):
+    df = df_compressed
         
-        df = df_list[k]
-        
-        for i in range(len(df)): 
-            # Read the first row and concatenate values into a single line
-            row = df.iloc[i]
-            row_string = ' '.join(row.astype(str))
-            #print(row_string) 
+    for i in range(len(df_compressed)): 
+        # Read the first row and concatenate values into a single line
+        row = df.iloc[i]
+        row_string = ' '.join(row.astype(str))
+        #print(row_string) 
             
-            corpus.insert(0, row_string)
+        corpus.insert(0, row_string)
+
+    print(">>>>>>>>>>>>> row string >>>>>>>>>>>>")
+    print(row_string)
+    print(">>>>>>>>>>>>> row string end >>>>>>>>>>>>")
+
 
     return(corpus)
 
@@ -350,10 +452,11 @@ def TWT_row_similarity(records_list, transect, week, time):
     import thad_o_mizer
 
     # ------------------------------------------------------------------------------
-    week_records_df = rough_dataset_clean(records_list, transect, week, time)
     # get the daily counts by combining counts for the vineyard rows that were sampled
+    # compress the daily counts by row into daily total counts (add counts by position)
     df = daily_spider_count(df=week_records_df)
 
+    # //////////////////////////////TWT_row_similarity////////////////////////////////////////////////
     # print(df)
     # //////////////////////////////////////////////////////////////////////////////
     #   julian time week transect delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
