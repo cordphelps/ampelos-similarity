@@ -48,9 +48,9 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
-print(">>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.")
-print(week_records_df)
-print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")
+#print(">>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.")
+#print(week_records_df)
+#print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")
 
 #>>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.
 #0      transect row time week julian Thomisidae (crab spider) position
@@ -73,25 +73,25 @@ print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")
 # compress the daily counts by row into daily total counts (add counts by position)
 df = spider_lib.daily_spider_count(df=week_records_df)
 
-print(">>>>>>>>>>>>>>>> daily_spider_count df >>>>>>>>>>>>>>>>>>>>>>>>>>>.")
-print(">>>>>>>>>>>>>>>> 32 days, 2 times, 2 transects = 128 >>>>>>>>>>>>>.")
-print(df)
-print(">>>>>>>>>>>>>>>> end daily_spider_count df >>>>>>>>>>>>>.")
+# print(">>>>>>>>>>>>>>>> daily_spider_count df >>>>>>>>>>>>>>>>>>>>>>>>>>>.")
+# print(">>>>>>>>>>>>>>>> 32 days, 2 times, 2 transects = 128 >>>>>>>>>>>>>.")
+# print(df)
+# print(">>>>>>>>>>>>>>>> end daily_spider_count df >>>>>>>>>>>>>.")
 
-#    julian time week   transect delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-#0      236   pm   23  oakMargin         :  0  0  0  0  0  0  0  0  0  0
-#1      235   pm   23  oakMargin         :  0  0  0  0  0  0  0  0  0  0
-#2      234   pm   23  oakMargin         :  0  0  0  0  0  0  0  0  1  0
-#3      220   pm   23  oakMargin         :  0  1  0  0  0  0  0  0  0  0
-#4      219   pm   23  oakMargin         :  0  0  0  0  0  0  1  1  0  0
-#..     ...  ...  ...        ...       ... .. .. .. .. .. .. .. .. .. ..
-#123    163   pm   23  oakMargin         :  6  5  3  1  0  1  2  4  5  3
-#124    162   pm   23  oakMargin         :  1  1  0  1  5  1  2  3  3  2
-#125    158   pm   23  oakMargin         :  1  3  1  2  0  0  1  2  2  3
-#126    157   pm   23  oakMargin         :  0  0  1  1  3  0  1  0  1  0
-#127    156   pm   23  oakMargin         :  0  0  0  0  2  0  1  1  1  0
-#
-#[128 rows x 15 columns]
+#       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+# 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+# 1      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
+# 2    oakMargin   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+# 3    oakMargin   pm   34    236         :  0  0  0  0  0  0  0  0  0  0
+# 4      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
+# ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+# 117    control   pm   23    157         :  0  0  1  4  0  2  2  1  0  1
+# 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+# 119  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
+# 120    control   pm   23    156         :  0  0  1  0  1  0  1  1  0  2
+# 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+# 
+# [122 rows x 15 columns]
 
 
 
@@ -115,24 +115,31 @@ for transect in unique_transects:
             #  !!!!!!!  'f' is curly brace support !!!!!!!
             filtered_df = df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
 
-print(">>>>>>>>>>>>>>>> filtered df >>>>>>>>>>>>>.")
-print("transect, week, time", transect, " ", week, " ",time)
-print(filtered_df)
-print(">>>>>>>>>>>>>>>> end filtered df >>>>>>>>>>>>>.")
+#print(">>>>>>>>>>>>>>>> filtered df >>>>>>>>>>>>>.")
+#print(filtered_df)
+#print(">>>>>>>>>>>>>>>> end filtered df >>>>>>>>>>>>>.")
+
+#      transect    time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+# 115  oakMargin   pm   23    158           :  1  3  1  2  0  0  1  2  2  3
+# 119  oakMargin   pm   23    157           :  0  0  1  1  3  0  1  0  1  0
+# 121  oakMargin   pm   23    156           :  0  0  0  0  2  0  1  1  1  0
 
 # create a list of text strings from the available dataframe records
-corpus_text_list = spider_lib.df_to_corpus_text(df_compressed=df)
+corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df)
+
+
+
 
 #print("::::::::::::::::::::::corpus_list::::::::::::::::::::::::::")
 #print(corpus_text_list)
 #print("::::::::::::::::::::::corpus_list::::::::::::::::::::::::::")
 
-# ['162 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0', 
-# '163 am 24 oakMargin : 1 1 0 1 2 3 6 1 1 2', 
-# '164 am 24 oakMargin : 2 2 2 3 1 1 4 4 0 2', 
-# '162 am 24 control : 1 0 1 1 1 0 0 1 1 0', 
-# '163 am 24 control : 0 2 2 2 1 0 1 0 3 4', 
-# '164 am 24 control : 2 0 1 2 1 2 0 2 5 2']
+# ['oakMargin pm 23 156 : 0 0 0 0 2 0 1 1 1 0', 
+#  'control pm 23 156 : 0 0 1 0 1 0 1 1 0 2', 
+#  'oakMargin pm 23 157 : 0 0 1 1 3 0 1 0 1 0', 
+#  'oakMargin am 23 157 : 0 1 0 0 0 0 2 0 0 0', 
+#  'control pm 23 157 : 0 0 1 4 0 2 2 1 0 1', 
+#  'control am 23 157 : 0 0 1 0 0 0 0 2 0 0', 
 
 
 for k in range(len(corpus_text_list)):
@@ -146,11 +153,25 @@ for k in range(len(corpus_text_list)):
     # receiving : # k list elements, the context string and a sentance containing the 4 encoded words 
 
 
-print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
-print(corpus_text_list[k])
-print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
+#print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
+#print(corpus_text_list[k])
+#print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
 
-# ['236 pm 23 oakMargin ', 'falsefalsefalse falsefalsefalse falsefalsefalse false']
+# ['control am 34 236 ', 'falsefalsefalse falsefalsefalse falsefalsefalse false']
+
+####################################################
+# compare oakMargin to control for each day and time
+####################################################
+
+# convert the text into a dataFrame
+from io import StringIO  # allows treating text as a file-like object
+df = pd.read_csv(StringIO(data), sep='\s+', header=None)
+# Assign column names (optional)
+df.columns = ['Name', 'Profession', 'Salary']
+
+
+
+
 
 
 # trigger the compare "oakMargin to control" logic (raw == FALSE)

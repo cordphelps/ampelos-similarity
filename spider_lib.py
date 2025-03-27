@@ -146,6 +146,7 @@ def daily_spider_count(df):
 
                 #  !!!!!!!  'f' is curly brace support !!!!!!!
                 filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
 
                 unique_rows = filtered_df['row'].unique()
 
@@ -161,55 +162,22 @@ def daily_spider_count(df):
                 # used to compare to other sentances
                 daily_spider_total_int = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-                for j in range(len(unique_rows)):
 
-                    # use .loc to filter based on row ID
-                    temp_row_df = filtered_df.loc[filtered_df['row'] == unique_rows[j]]
+                # the df represents the counts for transect day and time 
+                # for each position across each sampled vineyard row
+                # now sum all the counts by position
 
-                    #print(":::::::::::::::::::::temp_row_df:::::::::::::::::::::::::::")
-                    #print(temp_row_df)
-                    #print("::::::::::::::::::::::end temp_row_df ::::::::::::::::::::::::::")
+                # filter on 'position'; (so now the df contains positional spiders by row)
+                for i in range(10):
 
-                    #:::::::::::::::::::::temp_row_df:::::::::::::::::::::::::::
-                    #0      transect row time week julian Thomisidae (crab spider) position
-                    #1491  oakMargin  83   pm   27    183                        0        1
-                    #1492  oakMargin  83   pm   27    183                        0        2
-                    #1493  oakMargin  83   pm   27    183                        1        3
-                    #1494  oakMargin  83   pm   27    183                        0        4
-                    #1495  oakMargin  83   pm   27    183                        0        5
-                    #1496  oakMargin  83   pm   27    183                        0        6
-                    #1497  oakMargin  83   pm   27    183                        0        7
-                    #1498  oakMargin  83   pm   27    183                        0        8
-                    #1499  oakMargin  83   pm   27    183                        1        9
-                    #1500  oakMargin  83   pm   27    183                        0       10
-                    #::::::::::::::::::::::end temp_row_df ::::::::::::::::::::::::::
+                    temp_df = filtered_df
+                    temp_df = temp_df.query( f" position == '{i+1}' ")
+                    daily_spider_total_int[i] = temp_df['Thomisidae (crab spider)'].astype(int).sum()
 
-                    ### i_int = len(temp_row_df) / len(unique_rows)
-
-                    for i in range(10):
-
-                        #### useful for debug ####
-                        #print("len(temp_row_df) ", len(temp_row_df))
-                        ####                  ####
-
-                        # write the counts for each position
-                        # (access a single dataframe value using iloc)
-
-                        #### useful for debug ####
-                        #value = temp_row_df.iloc[i, 5]  #  
-                        #print("julian ", unique_julian_list[k], " row= ", unique_rows_list[j], " value= ", value)
-                        ####                  ####
-                            
-                        # construct a list of counts for 10 positions
-                        # the counts need to be 'text'
-                        # the counts are accumulated across the selected rows for each position
-
-                        #### useful for debug ####
-                        #print("i ", i, " int(temp_row_df.iloc[i, 5]) ", int(temp_row_df.iloc[i, 5]))
-                        ####                  ####
-                            
-                        daily_spider_total_int[i] = int(temp_row_df.iloc[i, 5]) + daily_spider_total_int[i]
-              
+                #print(":::::::::::::::::::::count total for filtered_df :::::::::::::::::::::::::::")
+                #print(filtered_df)
+                #print(daily_spider_total_int)
+                #print(":::::::::::::::::::::: end count total ::::::::::::::::::::::::::")
                 
                 # print(daily_spider_total_int)
                 # Convert each integer to a string using list comprehension
@@ -220,19 +188,23 @@ def daily_spider_count(df):
                 # (when you insert an element, all existing elements after the specified index are shifted 
                 #  one position to the right)
 
-                daily_spider_total_txt.insert(0, filtered_df.iloc[0,4])
-                daily_spider_total_txt.insert(0, filtered_df.iloc[0,3])
-                daily_spider_total_txt.insert(0, filtered_df.iloc[0,2])
-                daily_spider_total_txt.insert(0, filtered_df.iloc[0,1])
-                daily_spider_total_txt.insert(0, filtered_df.iloc[0,0])
+                # insert context (what julian, time, week, and transect is that day from)
+                # (when you insert an element, all existing elements after the specified index are shifted 
+                #  one position to the right)
+
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,4]) # julian
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,3]) # week
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,2]) # time
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,0]) # transect
 
 
-                # these are the daily totals, by position, across 3 vineyard rows, for a specific week
-                # time and transect
+                # these are the daily totals, by position, summed across 3 vineyard rows, for a specific 
+                # week, time, and transect
                 #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                 #print(daily_spider_total_txt)
                 #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> end daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                #['control', '46', 'am', '32', '218', '1', '0', '0', '0', '0', '0', '0', '0', '0', '0']
+                # ['oakMargin', 'pm', '23', '156', '0', '0', '0', '0', '2', '0', '1', '1', '1', '0']
+                # ['control', 'pm', '23', '156', '0', '0', '1', '0', '1', '0', '1', '1', '0', '2']
 
                     
                 list_holding_tank.insert(0, daily_spider_total_txt)
@@ -240,11 +212,14 @@ def daily_spider_count(df):
     #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     #print(list_holding_tank)
     #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    # ['oakMargin', '80', 'pm', '24', '162', '1', '1', '0', '1', '5', '1', '2', '3', '3', '2'],
+    # [[['control', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 
+    #   ['control', 'pm', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1'], 
+    #   ['oakMargin', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+    #
 
     # build a dataframe
     import pandas as pd
-    df = pd.DataFrame(list_holding_tank, columns=['transect', 'row', 'time', 'week', 'julian',  
+    df = pd.DataFrame(list_holding_tank, columns=['transect', 'time', 'week', 'julian',  
                                                  'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'])
 
     # print(df)
@@ -254,37 +229,27 @@ def daily_spider_count(df):
     # 2    162   am   24  oakMargin  2  1  1  0  1  0  2  1  0  0
 
     # # Insert a delimeter (index 4) to support string truncation 
-    df.insert(5, 'delimeter', ':')
+    df.insert(4, 'delimeter', ':')
 
 
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    print(df)
-    print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(df)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
-    #      transect row time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-    #0     control  49   am   34    234         :  0  0  0  0  0  0  0  0  1  0
-    #1     control  46   am   32    218         :  1  0  0  0  0  0  0  0  0  0
-    #2     control  47   am   31    212         :  0  0  0  0  0  0  0  1  0  1
-    #3     control  48   am   30    204         :  1  0  1  0  1  0  0  1  0  1
-    #4     control  48   am   29    201         :  0  1  0  1  1  0  0  1  0  0
-    #5     control  46   am   28    191         :  0  0  0  1  1  0  1  0  0  0
-    #6     control  47   am   27    183         :  0  0  0  0  0  0  2  1  1  0
-    #7     control  46   am   26    177         :  0  0  0  0  0  1  0  0  1  0
-    #8     control  45   am   25    170         :  0  0  0  0  0  0  0  2  0  1
-    #9     control  47   am   24    162         :  1  0  1  1  1  0  0  1  1  0
-    #10    control  48   am   23    157         :  0  0  1  0  0  0  0  2  0  0
-    #11  oakMargin  81   am   34    234         :  0  0  0  0  0  0  0  0  0  0
-    #12  oakMargin  80   am   32    218         :  0  0  0  0  0  0  0  0  1  0
-    #13  oakMargin  79   am   31    212         :  0  1  0  0  0  0  1  0  0  0
-    #14  oakMargin  82   am   30    204         :  2  0  0  0  0  1  1  0  1  0
-    #15  oakMargin  82   am   29    201         :  0  0  0  0  0  0  0  1  0  1
-    #16  oakMargin  80   am   28    191         :  1  0  0  0  0  0  0  0  1  0
-    #17  oakMargin  79   am   27    183         :  0  1  0  0  0  1  0  0  0  1
-    #18  oakMargin  83   am   26    177         :  0  0  0  0  0  0  1  1  0  0
-    #19  oakMargin  81   am   25    170         :  0  1  0  0  1  0  2  1  0  0
-    #20  oakMargin  80   am   24    162         :  2  1  1  0  1  0  2  1  0  0
-    #21  oakMargin  79   am   23    157         :  0  1  0  0  0  0  2  0  0  0
-    # (more)
+    #       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 1      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
+    # 2    oakMargin   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 3    oakMargin   pm   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 4      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
+    # ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+    # 117    control   pm   23    157         :  0  0  1  4  0  2  2  1  0  1
+    # 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+    # 119  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
+    # 120    control   pm   23    156         :  0  0  1  0  1  0  1  1  0  2
+    # 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+    # 
+    # [122 rows x 15 columns]
 
     return(df)
 
@@ -307,17 +272,20 @@ def df_to_corpus_text(df_compressed):
             
         corpus.insert(0, row_string)
 
-    print(">>>>>>>>>>>>> row string >>>>>>>>>>>>")
-    print(row_string)
-    print(">>>>>>>>>>>>> row string end >>>>>>>>>>>>")
-
+    #print(">>>>>>>>>>>>> row string >>>>>>>>>>>>")
+    #print(row_string)
+    #print(">>>>>>>>>>>>> row string end >>>>>>>>>>>>")
+    # oakMargin pm 23 156 : 0 0 0 0 2 0 1 1 1 0
 
     return(corpus)
 
     
-def row_text_to_three_words(text):
+def corpus_text_df(compressed_df):
+
+
 
     ###############################################################################
+    
     # create 4 encoded words for return as a text separated by space
     # (earlier analysis with kmeans() suggests that there are 3
     #  similar domains per vineyard row. these are:
@@ -332,22 +300,46 @@ def row_text_to_three_words(text):
     # should be equal in length to do a more robust pair-by-pair analysis
     #----------------------------------------------------------------------------
 
-    # input:  162 am 24 control : 1 0 1 1 1 0 0 1 1 0
-    #         (part2_no_spaces  1011100110)
-    # output: 162 am 24 control  ,  TRUEfalseTRUE TRUETRUEfalse falseTRUETRUE false
+    # input df
+    #      transect    time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 115  oakMargin   pm   23    158           :  1  3  1  2  0  0  1  2  2  3
+    # 119  oakMargin   pm   23    157           :  0  0  1  1  3  0  1  0  1  0
+    # 121  oakMargin   pm   23    156           :  0  0  0  0  2  0  1  1  1  0
+
+    # output df
+    #       transect time  ...    squashed                                        transformed
+    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
     # 
-    # input:  163 am 24 control : 0 2 2 2 1 0 1 0 3 4
-    #         (part2_no_spaces  0222101034)
-    # output: 163 am 24 control  ,  falseTRUETRUE TRUETRUEfalse TRUEfalseTRUE TRUE
-    #
-    # input:  164 am 24 control : 2 0 1 2 1 2 0 2 5 2
-    #         (part2_no_spaces  2012120252)
-    # output: 164 am 24 control  ,  TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE
+    # [3 rows x 17 columns]
 
     ###############################################################################
 
+    import pandas as pd 
 
+    part1_df = compressed_df.iloc[:, :5]
+    #print(part1_df)
+    #       transect time week julian delimeter
+    # 115  oakMargin   pm   23    158         :
+    # 119  oakMargin   pm   23    157         :
+    # 121  oakMargin   pm   23    156         :
 
+    part2_df = compressed_df.iloc[:, 5:]
+    #print(part2_df)
+    #     p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 115  1  3  1  2  0  0  1  2  2  3
+    # 119  0  0  1  1  3  0  1  0  1  0
+    # 121  0  0  0  0  2  0  1  1  1  0
+
+    part2_df['squashed'] = part2_df['p0'] + part2_df['p1'] + part2_df['p2'] + part2_df['p3'] + part2_df['p4'] + part2_df['p5'] + part2_df['p6'] + part2_df['p7'] + part2_df['p8'] + part2_df['p9'] 
+    #print(part2_df)
+    #     p0 p1 p2 p3 p4 p5 p6 p7 p8 p9    squashed
+    # 115  1  3  1  2  0  0  1  2  2  3  1312001223
+    # 119  0  0  1  1  3  0  1  0  1  0  0011301010
+    # 121  0  0  0  0  2  0  1  1  1  0  0000201110  
+    
+    '''
     # isolate the 10 integers
     part1, separator, part2 = text.partition(":")  
     # print("text :", text, "  part1: ", part1, "    part2: ", part2)
@@ -363,75 +355,107 @@ def row_text_to_three_words(text):
         return(["choked ", "no_space_counts != 10  ", part2_no_spaces])
 
     # make some bogus words for use in sentence comparison
+    '''
+    
+    sentence_list = []
 
-    if part2_no_spaces[0] == "0":
-        word_one = "false"
-    else:
-        word_one = "TRUE"
+    for contents in part2_df['squashed']:
 
-    if part2_no_spaces[1] == "0":
-        word_one = word_one + "false"
-    else:
-        word_one = word_one + "TRUE"
+        print("len= ", len(contents), " contents[0] :", contents[0], "  contents[9] :", contents[9])
+        word_one = ""
+        word_two = ""
+        word_three = ""
+        word_four = ""
+        #sentence_list = []
 
-    if part2_no_spaces[2] == "0":
-        word_one = word_one + "false"
-    else:
-        word_one = word_one + "TRUE"
+        if contents[0] == "0":
+            word_one = "false"
+        else:
+            word_one = "TRUE"
+        print("contents0: ", contents, " word_one: .", word_one, ".")
 
+        if contents[1] == "0":
+            word_one = word_one + "false"
+        else:
+            word_one = word_one + "TRUE"
+        print("contents1: ", contents, " word_one: .", word_one, ".")
 
-    if part2_no_spaces[3] == "0":
-        word_two = "false"
-    else:
-        word_two = "TRUE"
-
-    if part2_no_spaces[4] == "0":
-        word_two = word_two + "false"
-    else:
-        word_two = word_two + "TRUE"
-
-    if part2_no_spaces[5] == "0":
-        word_two = word_two + "false"
-    else:
-        word_two = word_two + "TRUE"
-
-
-    if part2_no_spaces[6] == "0":
-        word_three = "false"
-    else:
-        word_three = "TRUE"
-
-    if part2_no_spaces[7] == "0":
-        word_three = word_three + "false"
-    else:
-        word_three = word_three + "TRUE"
-
-    if part2_no_spaces[8] == "0":
-        word_three = word_three + "false"
-    else:
-        word_three = word_three + "TRUE"
+        if contents[2] == "0":
+            word_one = word_one + "false"
+        else:
+            word_one = word_one + "TRUE"
+        print("contents2: ", contents, " word_one: .", word_one, ".")
 
 
-    if part2_no_spaces[9] == "0":
-        word_four = "false"
-    else:
-        word_four = "TRUE"
+        if contents[3] == "0":
+            word_two = "false"
+        else:
+            word_two = "TRUE"
+
+        if contents[4] == "0":
+            word_two = word_two + "false"
+        else:
+            word_two = word_two + "TRUE"
+
+        if contents[5] == "0":
+            word_two = word_two + "false"
+        else:
+            word_two = word_two + "TRUE"
 
 
+        if contents[6] == "0":
+            word_three = "false"
+        else:
+            word_three = "TRUE"
 
-    result = word_one + " " + word_two + " " + word_three + " " + word_four
+        if contents[7] == "0":
+            word_three = word_three + "false"
+        else:
+            word_three = word_three + "TRUE"
 
-    # print(part1, ", ", result)
-
-    # (showing 3 different results for clarification, only 1 returned per)
-    # 162 am 24 oakMargin  ,  TRUETRUETRUE falseTRUEfalse TRUETRUEfalse false
-    # 163 am 24 oakMargin  ,  TRUETRUEfalse TRUETRUETRUE TRUETRUETRUE TRUE
-    # 164 am 24 oakMargin  ,  TRUETRUETRUE TRUETRUETRUE TRUETRUEfalse TRUE
-
-    # returning the context string and the 3 encoded words in a string (= 'sentence')
+        if contents[8] == "0":
+            word_three = word_three + "false"
+        else:
+            word_three = word_three + "TRUE"
 
 
-    return([part1, result])
+        if contents[9] == "0":
+            word_four = "false"
+        else:
+            word_four = "TRUE"
+
+
+        new_sentence = word_one + " " + word_two + " " + word_three + " " + word_four
+
+        sentence_list.append(new_sentence)
+        #print("sentence_list: ", sentence_list)
+        
+    #print("adding new column: ", sentence_list)
+    part2_df['transformed'] = sentence_list
+
+    #print(">>>>>>>>>>>>> transformed>>>>>>>>>>>>>>")
+    #print(part2_df)
+    #print(">>>>>>>>>>>>> end transformed>>>>>>>>>>>>>>") 
+
+    #     p0 p1 p2 p3  ... p8 p9    squashed                                        transformed
+    # 115  1  3  1  2  ...  2  3  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  0  0  1  1  ...  1  0  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  0  0  0  0  ...  1  0  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+    # 
+    # [3 rows x 12 columns]
+
+    # join the dataframes side-by-side
+    result = pd.concat([part1_df, part2_df], axis=1)
+
+    #print(result)
+    #       transect time  ...    squashed                                        transformed
+    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+    # 
+    # [3 rows x 17 columns]
+
+    return(result)
 
 
 
