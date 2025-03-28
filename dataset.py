@@ -177,18 +177,28 @@ corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df)
 # records 
 # 
 
-print("************* len(df): ", len(corpus_df), " *************************")
 df = thad_o_mizer.stacked_df_similarity(df=corpus_df, raw=False)
-print("************* len(df): ", len(corpus_df), " *****on the return********************")
 
-# print(df)
+#print(df)
 
-#    BOW cosine similarity  levenshtein distance  ...            sentence1           sentence2
-# 0               0.970918                     3  ...  162 am 24 oakMargin   162 am 24 control 
-# 1               0.944152                     3  ...  163 am 24 oakMargin   163 am 24 control 
-# 2               0.946856                     2  ...  164 am 24 oakMargin   164 am 24 control 
+#    julian time  NGRAM cosine similarity  flip NGRAM CS levenshtein_distance LD flip
+# 0     236   am                 1.000000       1.000000                    0       0
+# 1     236   pm                 0.656250       0.656250                    2       2
+# 2     235   am                 1.000000       1.000000                    0       0
+# 3     235   pm                 0.813559       0.813559                    1       1
+# 4     234   am                 0.813559       0.813559                    1       1
+# 5     234   pm                 0.813559       0.813559                    1       1
+# 6     220   am                 0.813559       0.813559                    1       1
+# ...
+# 52    163   am                 0.614035       0.614035                    3       3
+# 53    163   pm                 0.780000       0.780000                    1       1
+# 54    162   am                 0.920000       0.920000                    3       3
+# 55    162   pm                 0.716981       0.716981                    2       2
+# 56    158   am                 0.580645       0.580645                    3       3
+# 57    158   pm                 0.784314       0.784314                    1       1
+# 58    157   am                 0.890909       0.890909                    2       2
+# 59    157   pm                 0.796296       0.796296                    3       3
 
-# [3 rows x 8 columns]
 
 
 filename = './metrics/transect-compare-.csv'

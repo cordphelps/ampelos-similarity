@@ -1,0 +1,124 @@
+---
+title: "ngram
+---
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results='hide')
+
+# https://yihui.org/knitr/options/
+
+# echo: (TRUE; logical or numeric) Whether to display the source code
+# results: ('markup'; character) Controls how to display the text results.
+# warning: (TRUE; logical) Whether to preserve warnings
+# error: (TRUE; logical) Whether to preserve errors
+# include: (TRUE; logical) Whether to include the chunk output in the output document.
+# 
+```
+
+```{r localCode, echo=FALSE, include=FALSE}
+
+  output.path <- "/Users/rcphelps/code/groq/output"
+  setwd("/Users/rcphelps/code/groq")
+    
+# install.packages("tinytex")
+library(tinytex)
+library(tidyverse)
+library(dplyr)
+
+
+
+```
+
+
+
+```{r makeTibbles, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+
+source.url <- c("./metrics/transect-compare-.csv")
+
+# get a lot of insect observations
+ngram.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+# thrips
+pm.tibl <- ngram.tibl %>% 
+  dplyr::filter(time == 'pm') %>%
+  dplyr::select(julian, time, NGRAM.cosine.similarity) 
+
+am.tibl <- ngram.tibl %>% 
+  dplyr::filter(time == 'am') %>%
+  dplyr::select(julian, time, NGRAM.cosine.similarity) 
+
+```
+
+
+
+
+```{r graphics.1, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('33%', '33%', '33%'), fig.show='hold'}
+
+
+gg <- ggplot() +
+  
+    geom_jitter(data=pm.tibl, 
+                aes(x = as.character(julian), 
+                    y = NGRAM.cosine.similarity),
+                    color = "black", fill = "red", 
+                    shape = 25, size = 3, 
+                    position = position_nudge(x = -0.1) ) +
+  
+    geom_jitter(data=am.tibl, 
+                aes(x = as.character(julian), 
+                    y = NGRAM.cosine.similarity),
+                    color = "black", fill = "green", 
+                    shape = 21, size = 3, 
+                    position = position_nudge(x = -0.1) ) + 
+
+    scale_y_continuous(limits=c(0, 1.1),
+                       breaks = seq(min(0), max(1.1), by = .2) ) +
+
+  	labs(x = "julian", y ="NGRAM.cosine.similarity", 
+ 				  title = paste("NGRAM.cosine.similarity",
+ 				                sep=""),
+ 				  subtitle = paste("ngram", sep=""),
+ 				  ) +
+    
+    # set default color for each group (otherwise geom_text text labels are "red")
+    # https://stackoverflow.com/questions/41541708/how-to-change-font-color-in-geom-text-in-ggplot2-in-r
+    # << or >>
+    # https://stackoverflow.com/questions/61209218/changing-of-color-for-geom-text-gives-completely-different-color-then-called-for
+    scale_colour_manual(values=c("#000000")) +
+    
+    theme_bw()  +
+    # turn off legend
+    theme(legend.position="none") +
+  
+    theme(axis.text.x=element_text(angle=45,hjust=1)) 
+  
+    print(gg)
+
+	
+
+```
+
+```{r saveFile, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+     
+      setwd("/Users/rcphelps/code/groq/")
+      
+      fileName <- paste("ngram.pdf", sep="")
+      wd <- getwd() 
+      dirPath <- paste(wd, "/output", sep="")
+      fullPath <- paste(dirPath, "/", fileName, sep="")
+
+      if (file.exists(fullPath)) { file.remove(fullPath) }
+
+      suppressMessages(ggsave(fileName, plot = gg, device = NULL, path = dirPath,
+       scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
+       units = "in") )
+      
+      print(paste( "saved ", fullPath, sep=" "))
+    
+    
+```  
+

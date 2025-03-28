@@ -201,11 +201,12 @@ def stacked_df_similarity(df, raw):
 					break
 
 				# access row and column value by index
-				s1_text = df.iat[1, 6]
-				s2_text = df.iat[2, 6]
+				s1_text = filtered_df.iat[1, 6]
+				s2_text = filtered_df.iat[0, 6]
 
 				print("******** ssentence1 sentence2 ************")
 				print(s1_text, " :::::::::::::: \n", s2_text, " :::::::::::::: ", )
+				print("******** end ssentence1 sentence2 ************\n")
 
 
 				cs_real = compute_ngram_quick(sentence1 = s1_text, sentence2 = s2_text)
@@ -213,15 +214,12 @@ def stacked_df_similarity(df, raw):
 				ld_int = levenshtein_distance(sentence1 = s1_text, sentence2 = s2_text)
 				ld_int_flip = levenshtein_distance(sentence1 = s2_text, sentence2 = s1_text)
 
-				print("******** ssentence1 sentence2 ************")
-				print(s1_text, " :::::::::::::: ", s2_text, " :::::::::::::: ", )
-
 				new_record = pd.DataFrame([{'julian': julian, 'time': time, 'NGRAM cosine similarity' : cs_real, 'flip NGRAM CS' : cs_real_flip,'levenshtein_distance' : ld_int, 'LD flip' : ld_int_flip}])
 				transect_compare_df = pd.concat([transect_compare_df, new_record], ignore_index=True)
 
-				print(">>>>>>>>>>>>>>>>>>. new_record >>>>>>>>>>>>>>>>>>>")
-				print(new_record)
-				print(">>>>>>>>>>>>>>>>>>. end new_record >>>>>>>>>>>>>>>>>>>")
+				#print(">>>>>>>>>>>>>>>>>>. new_record >>>>>>>>>>>>>>>>>>>")
+				#print(new_record)
+				#print(">>>>>>>>>>>>>>>>>>. end new_record >>>>>>>>>>>>>>>>>>>")
 
 
 	return(transect_compare_df)

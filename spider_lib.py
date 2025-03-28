@@ -285,7 +285,7 @@ def corpus_text_df(compressed_df):
 
 
     ###############################################################################
-    
+
     # create 4 encoded words for return as a text separated by space
     # (earlier analysis with kmeans() suggests that there are 3
     #  similar domains per vineyard row. these are:
@@ -372,19 +372,19 @@ def corpus_text_df(compressed_df):
             word_one = "false"
         else:
             word_one = "TRUE"
-        print("contents0: ", contents, " word_one: .", word_one, ".")
+        #print("contents0: ", contents, " word_one: .", word_one, ".")
 
         if contents[1] == "0":
             word_one = word_one + "false"
         else:
             word_one = word_one + "TRUE"
-        print("contents1: ", contents, " word_one: .", word_one, ".")
+        #print("contents1: ", contents, " word_one: .", word_one, ".")
 
         if contents[2] == "0":
             word_one = word_one + "false"
         else:
             word_one = word_one + "TRUE"
-        print("contents2: ", contents, " word_one: .", word_one, ".")
+        #print("contents2: ", contents, " word_one: .", word_one, ".")
 
 
         if contents[3] == "0":
