@@ -133,6 +133,101 @@ def levenshtein_distance(sentence1, sentence2):
     return dp[n][m]
 
 
+def stacked_df_similarity(df, raw):
+
+	###################################################################################
+	#
+	# add similarity metrics to the df
+	#
+	#
+	###################################################################################
+
+	import pandas as pd
+
+	# chop out columns p0 through p9 to make some room
+	df = df.drop(['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'], axis=1)
+
+	unique_julian = []
+	unique_time = []
+
+	unique_julian = df['julian'].unique()
+	unique_time = df['time'].unique()
+
+	#       transect time  ...    squashed                                        transformed
+	# 0      control   am  ...  0000000000  falsefalsefalse falsefalsefalse falsefalsefals...
+	# 1      control   am  ...  0000000000  falsefalsefalse falsefalsefalse falsefalsefals...
+	# 2      control   am  ...  0000000010  falsefalsefalse falsefalsefalse falsefalseTRUE...
+	# 3      control   pm  ...  0000000011  falsefalsefalse falsefalsefalse falsefalseTRUE...
+	# 4      control   pm  ...  0100000000  falseTRUEfalse falsefalsefalse falsefalsefalse...
+	# ..         ...  ...  ...         ...                                                ...
+	# 117  oakMargin   am  ...  1200002001  TRUETRUEfalse falsefalsefalse TRUEfalsefalse TRUE
+	# 118  oakMargin   am  ...  0100002000  falseTRUEfalse falsefalsefalse TRUEfalsefalse ...
+	# 119  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+	# 120  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+	# 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+	# 
+	# [122 rows x 7 columns]
+
+	incoming_df = df
+
+	if not raw:
+
+		# this is the compare "oakMargin to control" logic (raw == FALSE)
+		# this function is designed to compare oakMargin records to matching control 
+		# records based on an assumption of how the corpus is assembled
+
+		# compare each sentance to its pair usually originalint from the oakMargin and control 
+		# transects from the same time period.
+
+		transect_compare_df = pd.DataFrame(columns=['julian', 'time', 'NGRAM cosine similarity', 'flip NGRAM CS','levenshtein_distance', 'LD flip'])
+
+		for julian in unique_julian:
+
+			for time in unique_time:
+
+				filtered_df = incoming_df.query( f" julian == '{julian}' and time == '{time}' ")
+
+				# that should be two records (oakMargin and control)
+
+				#       transect time  ...    squashed                                    transformed
+				# 50     control   am  ...  2012120252  TRUEfalseTRUE TRUETRUETRUE falseTRUETRUE TRUE
+				# 111  oakMargin   am  ...  2223114402   TRUETRUETRUE TRUETRUETRUE TRUETRUEfalse TRUE
+				# 
+				# [2 rows x 7 columns]
+
+				if len(filtered_df) != 2:  # something broke
+					print("******** stacked_df_similarity() choked ************")
+					print(filtered_df)
+					break
+
+				# access row and column value by index
+				s1_text = df.iat[1, 6]
+				s2_text = df.iat[2, 6]
+
+				print("******** ssentence1 sentence2 ************")
+				print(s1_text, " :::::::::::::: \n", s2_text, " :::::::::::::: ", )
+
+
+				cs_real = compute_ngram_quick(sentence1 = s1_text, sentence2 = s2_text)
+				cs_real_flip = compute_ngram_quick(sentence1 = s2_text, sentence2 = s1_text)
+				ld_int = levenshtein_distance(sentence1 = s1_text, sentence2 = s2_text)
+				ld_int_flip = levenshtein_distance(sentence1 = s2_text, sentence2 = s1_text)
+
+				print("******** ssentence1 sentence2 ************")
+				print(s1_text, " :::::::::::::: ", s2_text, " :::::::::::::: ", )
+
+				new_record = pd.DataFrame([{'julian': julian, 'time': time, 'NGRAM cosine similarity' : cs_real, 'flip NGRAM CS' : cs_real_flip,'levenshtein_distance' : ld_int, 'LD flip' : ld_int_flip}])
+				transect_compare_df = pd.concat([transect_compare_df, new_record], ignore_index=True)
+
+				print(">>>>>>>>>>>>>>>>>>. new_record >>>>>>>>>>>>>>>>>>>")
+				print(new_record)
+				print(">>>>>>>>>>>>>>>>>>. end new_record >>>>>>>>>>>>>>>>>>>")
+
+
+	return(transect_compare_df)
+
+
+
 def stacked_similarity(corpus, raw):
 
 

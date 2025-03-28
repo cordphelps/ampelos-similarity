@@ -101,12 +101,17 @@ df = spider_lib.daily_spider_count(df=week_records_df)
 unique_transects = df['transect'].unique()
 unique_weeks = df['week'].unique()
 
-
 unique_times = df['time'].unique()
+
+transect_df = pd.DataFrame(columns=df.columns)
 
 for transect in unique_transects:
 
-   for week in unique_weeks: 
+    week_df = pd.DataFrame(columns=df.columns)
+
+    for week in unique_weeks: 
+
+        time_df = pd.DataFrame(columns=df.columns)
 
         for time in unique_times:
 
@@ -115,70 +120,66 @@ for transect in unique_transects:
             #  !!!!!!!  'f' is curly brace support !!!!!!!
             filtered_df = df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
 
+            # merge the dataframes by stacking rows (default behavior of concat)
+            time_df = pd.concat([time_df, filtered_df], ignore_index=True)
+
+        #print("****************** time_df ****should be time by week********************")
+        #print(time_df)
+
+        week_df = pd.concat([week_df, time_df], ignore_index=True)
+    #print("****************** week_df ************************")
+    #print(week_df)
+
+    transect_df = pd.concat([transect_df, week_df], ignore_index=True)
+#print("****************** transect_df ************************")
+#print(transect_df)
+
+filtered_df = transect_df
+
 #print(">>>>>>>>>>>>>>>> filtered df >>>>>>>>>>>>>.")
 #print(filtered_df)
 #print(">>>>>>>>>>>>>>>> end filtered df >>>>>>>>>>>>>.")
 
-#      transect    time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-# 115  oakMargin   pm   23    158           :  1  3  1  2  0  0  1  2  2  3
-# 119  oakMargin   pm   23    157           :  0  0  1  1  3  0  1  0  1  0
-# 121  oakMargin   pm   23    156           :  0  0  0  0  2  0  1  1  1  0
+#       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+# 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+# 1      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
+# 2      control   am   34    234         :  0  0  0  0  0  0  0  0  1  0
+# 3      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
+# 4      control   pm   34    235         :  0  1  0  0  0  0  0  0  0  0
+# ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+# 117  oakMargin   am   23    158         :  1  2  0  0  0  0  2  0  0  1
+# 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+# 119  oakMargin   pm   23    158         :  1  3  1  2  0  0  1  2  2  3
+# 120  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
+# 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+# 
+# [122 rows x 15 columns]
+
 
 # create a list of text strings from the available dataframe records
 corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df)
 
 
+#       transect time  ...    squashed                                        transformed
+# 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+# 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+# 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
 
-
-#print("::::::::::::::::::::::corpus_list::::::::::::::::::::::::::")
-#print(corpus_text_list)
-#print("::::::::::::::::::::::corpus_list::::::::::::::::::::::::::")
-
-# ['oakMargin pm 23 156 : 0 0 0 0 2 0 1 1 1 0', 
-#  'control pm 23 156 : 0 0 1 0 1 0 1 1 0 2', 
-#  'oakMargin pm 23 157 : 0 0 1 1 3 0 1 0 1 0', 
-#  'oakMargin am 23 157 : 0 1 0 0 0 0 2 0 0 0', 
-#  'control pm 23 157 : 0 0 1 4 0 2 2 1 0 1', 
-#  'control am 23 157 : 0 0 1 0 0 0 0 2 0 0', 
-
-
-for k in range(len(corpus_text_list)):
-    #print("sending k=", k)
-    #print(corpus_text_list[k])
-
-    # convert the corpus into a context string and a sentence composed of 4 encoded words
-    # representing TRUE/FALSE spider counts in each of the 3 kmeans() position groups
-    # sending k sentences : '163 am 24 oakMargin : 2 1 1 0 1 0 2 1 0 0' 
-    corpus_text_list[k] = spider_lib.row_text_to_three_words(corpus_text_list[k])
-    # receiving : # k list elements, the context string and a sentance containing the 4 encoded words 
-
-
-#print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
-#print(corpus_text_list[k])
-#print("::::::::::::::::::::::corpus_list k ::::::::::::::::::::::::::")
-
-# ['control am 34 236 ', 'falsefalsefalse falsefalsefalse falsefalsefalse false']
 
 ####################################################
 # compare oakMargin to control for each day and time
 ####################################################
 
-# convert the text into a dataFrame
-from io import StringIO  # allows treating text as a file-like object
-df = pd.read_csv(StringIO(data), sep='\s+', header=None)
-# Assign column names (optional)
-df.columns = ['Name', 'Profession', 'Salary']
-
-
-
-
 
 
 # trigger the compare "oakMargin to control" logic (raw == FALSE)
-# stacked_similarity() is designed to compare oakMargin records to matching control transect
-# records based on an assumption of how the corpus is assembled
+# stacked_df_similarity() is designed to compare oakMargin records to matching control transect
+# records 
 # 
-df = thad_o_mizer.stacked_similarity(corpus=corpus_text_list, raw=False)
+
+print("************* len(df): ", len(corpus_df), " *************************")
+df = thad_o_mizer.stacked_df_similarity(df=corpus_df, raw=False)
+print("************* len(df): ", len(corpus_df), " *****on the return********************")
 
 # print(df)
 
@@ -190,7 +191,7 @@ df = thad_o_mizer.stacked_similarity(corpus=corpus_text_list, raw=False)
 # [3 rows x 8 columns]
 
 
-filename = './metrics/transect-compare-' + 'week-24-' + 'am.csv'
+filename = './metrics/transect-compare-.csv'
 
 # mode='w' indicates 'overwrite'
 df.to_csv(filename, header=True, index=True, mode='w')
