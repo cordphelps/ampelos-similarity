@@ -684,7 +684,7 @@ def julian_row_compare(df):
                         # used to compare to other sentances
                         spider_list = []
 
-                        filtered_df = filtered_df.query( f" row == '{row}' ")
+                        temp_df = filtered_df.query( f" row == '{row}' ")
 
                         # print(filtered_df)
                         # 0     transect row time week julian Thomisidae (crab spider) position
@@ -700,42 +700,16 @@ def julian_row_compare(df):
                         # 130  oakMargin  79   pm   23    157                        0       10
 
 
-                        spider_list.insert(0, filtered_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
+                        spider_list.insert(0, temp_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
 
-                        print("spider_list: ", spider_list)
+                        #print("spider_list: ", spider_list)
                         # spider_list:  [['1', '0', '0', '1', '0', '0', '0', '1', '0', '0']]
                         result = " ".join(spider_list[0])  # Use space as a delimiter
-                        print("result: ", result, "  type: ", type(result))
+                        #print("result: ", result, "  type: ", type(result))
                         # result:  1 0 0 1 0 0 0 1 0 0   type:  <class 'str'>
 
 
-                        break
 
-                        #for i in range(10):
-
-                            #temp_df = filtered_df.query( f" position == '{i+1}' ")
-
-                            #print(temp_df)
-                            #print(temp_df, " loc:c", temp_df.loc[1,'Thomisidae (crab spider)'])
-                            # 0     transect row time week julian Thomisidae (crab spider) position
-                            # 121  oakMargin  79   pm   23    157                        0        1
-
-                            #print("second? : ", str(temp_df.loc[1,'Thomisidae (crab spider)']))
-
-                            #daily_row_spider += str(temp_df.loc[1,'Thomisidae (crab spider)'])
-                        
-                            #print(daily_row_spider, " type: ", type(daily_row_spider))
-
-                        #break
-
-                        # Convert each integer to a string using list comprehension
-                        # (this s a concise and Pythonic way to convert each integer in the list to a string)
-                        
-                        daily_spider_total_txt = [str(x) for x in daily_row_spider]
-
-
-
-                        #
                         # insert context (what julian, time, week, and transect is that day is from)
                         # (when you insert an element, all existing elements after the specified index are shifted 
                         #  one position to the right)
@@ -744,66 +718,50 @@ def julian_row_compare(df):
                         # (when you insert an element, all existing elements after the specified index are shifted 
                         #  one position to the right)
 
-                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,4]) # julian
-                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,3]) # week
-                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,2]) # time
-                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,0]) # transect
+                        daily_spider_list = ["", "", "", "", "", ""]
+                        
+                        daily_spider_list[0] = transect 
+                        daily_spider_list[1] = row 
+                        daily_spider_list[2] = time 
+                        daily_spider_list[3] = week 
+                        daily_spider_list[4] = julian 
+                        daily_spider_list[5] = result
 
+                        #print(daily_spider_list)
+                        # ['control', '48', 'pm', '30', '156', '0 0 1 0 0 0 0 0 0 2']
 
-                        # these are the daily totals, by position, summed across 3 vineyard rows, for a specific 
-                        # week, time, and transect
-                        #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                        #print(daily_spider_total_txt)
-                        #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> end daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-                        # ['oakMargin', 'pm', '23', '156', '0', '0', '0', '0', '2', '0', '1', '1', '1', '0']
-                        # ['control', 'pm', '23', '156', '0', '0', '1', '0', '1', '0', '1', '1', '0', '2']
+                        # append new_list to the end of parent_list
+                        # parent_list.append(new_list)
+                        list_holding_tank.append(daily_spider_list)                
 
-                            
-                        list_holding_tank.insert(0, daily_spider_total_txt)
-
-    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    #print(list_holding_tank)
-    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    # [[['control', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 
-    #   ['control', 'pm', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1'], 
-    #   ['oakMargin', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+    
+    # print(list_holding_tank)
+    # [['oakMargin', '79', 'pm', '23', '156', '0 0 0 0 0 0 1 0 1 0'], 
+    #  ['oakMargin', '81', 'pm', '23', '156', '0 0 0 0 1 0 0 1 0 0'], 
     #
 
     # build a dataframe
     import pandas as pd
-    df = pd.DataFrame(list_holding_tank, columns=['transect', 'time', 'week', 'julian',  
-                                                 'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'])
-
-
+    df = pd.DataFrame(list_holding_tank, columns=['transect','row', 'time', 'week', 'julian', 'counts'])
 
     # print(df)
-    #   julian time week   transect p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-    # 0    164   am   24  oakMargin  2  2  2  3  1  1  4  4  0  2
-    # 1    163   am   24  oakMargin  1  1  0  1  2  3  6  1  1  2
-    # 2    162   am   24  oakMargin  2  1  1  0  1  0  2  1  0  0
-
-    # # Insert a delimeter (index 4) to support string truncation 
-    df.insert(4, 'delimeter', ':')
-
-
-    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    #print(df)
-    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-
-    #       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
-    # 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
-    # 1      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
-    # 2    oakMargin   am   34    236         :  0  0  0  0  0  0  0  0  0  0
-    # 3    oakMargin   pm   34    236         :  0  0  0  0  0  0  0  0  0  0
-    # 4      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
-    # ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
-    # 117    control   pm   23    157         :  0  0  1  4  0  2  2  1  0  1
-    # 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
-    # 119  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
-    # 120    control   pm   23    156         :  0  0  1  0  1  0  1  1  0  2
-    # 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+    #        transect row time week julian               counts
+    # 0     oakMargin  79   pm   23    156  0 0 0 0 0 0 1 0 1 0
+    # 1     oakMargin  81   pm   23    156  0 0 0 0 1 0 0 1 0 0
+    # 2     oakMargin  83   pm   23    156  0 0 0 0 1 0 0 0 0 0
+    # 3       control  48   pm   23    156  0 0 1 0 0 0 0 0 0 2
+    # 4       control  50   pm   23    156  0 0 0 0 0 0 1 1 0 0
+    # ...         ...  ..  ...  ...    ...                  ...
+    # 4021    control  51   pm   34    236  0 0 0 0 0 0 0 0 1 0
+    # 4022    control  53   pm   34    236  0 0 0 0 0 0 0 0 0 1
+    # 4023    control  49   am   34    236  0 0 0 0 0 0 0 0 0 0
+    # 4024    control  51   am   34    236  0 0 0 0 0 0 0 0 0 0
+    # 4025    control  53   am   34    236  0 0 0 0 0 0 0 0 0 0
     # 
-    # [122 rows x 15 columns]
+    # [4026 rows x 6 columns]
+
+
+works up to here  
 
     return(df)
 
