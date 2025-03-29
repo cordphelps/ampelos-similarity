@@ -53,7 +53,57 @@ am.tibl <- ngram.tibl %>%
 
 ```
 
+```{r graphics.2, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('33%', '33%', '33%'), fig.show='hold'}
 
+
+gg <- ggplot() +
+
+  geom_histogram(data=am.tibl, 
+                aes( 
+                    y = NGRAM.cosine.similarity),
+                colour = 4, fill = "white", 
+                 bins = 15) +
+    stat_summary(fun = mean, geom="line", size=3) + 
+    stat_summary(fun.data = mean_se, geom = "errorbar") +
+
+    scale_y_continuous(limits=c(0, 1.1),
+                       breaks = seq(min(0), max(1.1), by = .2) ) +
+  
+    geom_histogram(data=pm.tibl, 
+                aes( 
+                    y = NGRAM.cosine.similarity),
+                colour = 4, fill = "green", 
+                 bins = 15) +
+    stat_summary(fun = mean, geom="line", size=3) + 
+    stat_summary(fun.data = mean_se, geom = "errorbar") +
+
+    scale_y_continuous(limits=c(0, 1.1),
+                       breaks = seq(min(0), max(1.1), by = .2) ) +
+
+  	labs(x = "julian", y ="NGRAM.cosine.similarity", 
+ 				  title = paste("NGRAM.cosine.similarity",
+ 				                sep=""),
+ 				  subtitle = paste("ngram", sep=""),
+ 				  ) +
+    
+    # set default color for each group (otherwise geom_text text labels are "red")
+    # https://stackoverflow.com/questions/41541708/how-to-change-font-color-in-geom-text-in-ggplot2-in-r
+    # << or >>
+    # https://stackoverflow.com/questions/61209218/changing-of-color-for-geom-text-gives-completely-different-color-then-called-for
+    scale_colour_manual(values=c("#000000")) +
+    
+    coord_flip() +
+    theme_bw()  +
+    # turn off legend
+    theme(legend.position="none") +
+  
+    theme(axis.text.x=element_text(angle=45,hjust=1)) 
+  
+    print(gg)
+
+	
+
+```
 
 
 ```{r graphics.1, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('33%', '33%', '33%'), fig.show='hold'}
@@ -73,7 +123,9 @@ gg <- ggplot() +
                     y = NGRAM.cosine.similarity),
                     color = "black", fill = "green", 
                     shape = 21, size = 3, 
-                    position = position_nudge(x = -0.1) ) + 
+                    position = position_nudge(x = -0.1) ) +
+    stat_summary(fun = mean, geom="line", size=3) + 
+    stat_summary(fun.data = mean_se, geom = "errorbar") +
 
     scale_y_continuous(limits=c(0, 1.1),
                        breaks = seq(min(0), max(1.1), by = .2) ) +
@@ -90,6 +142,7 @@ gg <- ggplot() +
     # https://stackoverflow.com/questions/61209218/changing-of-color-for-geom-text-gives-completely-different-color-then-called-for
     scale_colour_manual(values=c("#000000")) +
     
+    coord_flip() +
     theme_bw()  +
     # turn off legend
     theme(legend.position="none") +

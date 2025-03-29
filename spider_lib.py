@@ -280,12 +280,14 @@ def df_to_corpus_text(df_compressed):
     return(corpus)
 
     
-def corpus_text_df(compressed_df):
+def corpus_text_df(compressed_df, kmeans):
 
 
 
     ###############################################################################
-
+    #
+    # if KMEANS
+    #
     # create 4 encoded words for return as a text separated by space
     # (earlier analysis with kmeans() suggests that there are 3
     #  similar domains per vineyard row. these are:
@@ -361,71 +363,109 @@ def corpus_text_df(compressed_df):
 
     for contents in part2_df['squashed']:
 
-        print("len= ", len(contents), " contents[0] :", contents[0], "  contents[9] :", contents[9])
-        word_one = ""
-        word_two = ""
-        word_three = ""
-        word_four = ""
-        #sentence_list = []
+        if kmeans:
 
-        if contents[0] == "0":
-            word_one = "false"
+            print("len= ", len(contents), " contents[0] :", contents[0], "  contents[9] :", contents[9])
+            word_one = ""
+            word_two = ""
+            word_three = ""
+            word_four = ""
+            #sentence_list = []
+
+            if contents[0] == "0":
+                word_one = "false"
+            else:
+                word_one = "TRUE"
+            #print("contents0: ", contents, " word_one: .", word_one, ".")
+
+            if contents[1] == "0":
+                word_one = word_one + "false"
+            else:
+                word_one = word_one + "TRUE"
+            #print("contents1: ", contents, " word_one: .", word_one, ".")
+
+            if contents[2] == "0":
+                word_one = word_one + "false"
+            else:
+                word_one = word_one + "TRUE"
+            #print("contents2: ", contents, " word_one: .", word_one, ".")
+
+
+            if contents[3] == "0":
+                word_two = "false"
+            else:
+                word_two = "TRUE"
+
+            if contents[4] == "0":
+                word_two = word_two + "false"
+            else:
+                word_two = word_two + "TRUE"
+
+            if contents[5] == "0":
+                word_two = word_two + "false"
+            else:
+                word_two = word_two + "TRUE"
+
+
+            if contents[6] == "0":
+                word_three = "false"
+            else:
+                word_three = "TRUE"
+
+            if contents[7] == "0":
+                word_three = word_three + "false"
+            else:
+                word_three = word_three + "TRUE"
+
+            if contents[8] == "0":
+                word_three = word_three + "false"
+            else:
+                word_three = word_three + "TRUE"
+
+
+            if contents[9] == "0":
+                word_four = "false"
+            else:
+                word_four = "TRUE"
+
+
+            new_sentence = word_one + " " + word_two + " " + word_three + " " + word_four
+
         else:
-            word_one = "TRUE"
-        #print("contents0: ", contents, " word_one: .", word_one, ".")
 
-        if contents[1] == "0":
-            word_one = word_one + "false"
-        else:
-            word_one = word_one + "TRUE"
-        #print("contents1: ", contents, " word_one: .", word_one, ".")
+            w0 = 'TRUE'
+            w1 = 'TRUE'
+            w2 = 'TRUE'
+            w3 = 'TRUE'
+            w4 = 'TRUE'
+            w5 = 'TRUE'
+            w6 = 'TRUE'
+            w7 = 'TRUE'
+            w8 = 'TRUE'
+            w9 = 'TRUE'
 
-        if contents[2] == "0":
-            word_one = word_one + "false"
-        else:
-            word_one = word_one + "TRUE"
-        #print("contents2: ", contents, " word_one: .", word_one, ".")
+            if contents[0] == "0":
+                w0 = "false"
+            if contents[1] == "0":
+                w1 = "false"
+            if contents[2] == "0":
+                w2 = "false"
+            if contents[3] == "0":
+                w3 = "false"
+            if contents[4] == "0":
+                w4 = "false"
+            if contents[5] == "0":
+                w5 = "false"
+            if contents[6] == "0":
+                w6 = "false"
+            if contents[7] == "0":
+                w7 = "false"
+            if contents[8] == "0":
+                w8 = "false"
+            if contents[9] == "0":
+                w9 = "false"
 
-
-        if contents[3] == "0":
-            word_two = "false"
-        else:
-            word_two = "TRUE"
-
-        if contents[4] == "0":
-            word_two = word_two + "false"
-        else:
-            word_two = word_two + "TRUE"
-
-        if contents[5] == "0":
-            word_two = word_two + "false"
-        else:
-            word_two = word_two + "TRUE"
-
-
-        if contents[6] == "0":
-            word_three = "false"
-        else:
-            word_three = "TRUE"
-
-        if contents[7] == "0":
-            word_three = word_three + "false"
-        else:
-            word_three = word_three + "TRUE"
-
-        if contents[8] == "0":
-            word_three = word_three + "false"
-        else:
-            word_three = word_three + "TRUE"
-
-
-        if contents[9] == "0":
-            word_four = "false"
-        else:
-            word_four = "TRUE"
-
-
-        new_sentence = word_one + " " + word_two + " " + word_three + " " + word_four
+            new_sentence = w0 + " " + w1 + " " + w2 + " " + w3 + " " + w4 + " " + w5 + " " + w6 + " " + w7 + " " + w8 + " " + w9
 
         sentence_list.append(new_sentence)
         #print("sentence_list: ", sentence_list)
@@ -541,5 +581,231 @@ def TWT_row_similarity(records_list, transect, week, time):
 
 
     # ------------------------------------------------------------------------------
+def julian_row_compare(df):
+
+    ########################################################################
+    #
+    # compare spider count text similarity by julian day for each row by transect and time
+    # for each julian day, there are 3 rows that were sampled
+    # 
+    # return a dataframe 
+    #
+    #      transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
+    #
+    ########################################################################
+
+    import pandas as pd
+    
+    unique_weeks = df['week'].unique()
+    unique_time = df['time'].unique()
+
+
+    # prep a list of lists to load a dataframe for return
+    list_holding_tank = []
+
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+    #print(unique_time)
+    #print(unique_transect)
+    #print(unique_week)
+
+    #['156', '157', '158', '162', '163', '164', '170', '171', '172', '177', '178', 
+    # '179', '183', '184', '191', '192', '193', '201', '202', '203', '204', '205', 
+    # '206', '212', '213', '214', '218', '219', '220', '234', '235', '236']
+    #['pm', 'am']
+    #['oakMargin', 'control']
+    #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
+
+    incoming_df = df
+    
+    for julian in unique_julian:
+
+        for week in unique_week:
+
+            for transect in unique_transect:
+
+                for time in unique_time:
+
+
+                    filtered_df = pd.DataFrame()
+
+                    #  !!!!!!!  'f' is curly brace support !!!!!!!
+                    filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+                    # 0    transect row time week julian Thomisidae (crab spider) position
+
+                    unique_rows = filtered_df['row'].unique()
+
+                    if  unique_rows.size == 0:
+                        break
+
+                    # print(filtered_df)
+                    # 0    transect row time week julian Thomisidae (crab spider) position
+                    # 3661  control  49   pm   34    236                        0        1
+                    # 3662  control  49   pm   34    236                        0        2
+                    # 3663  control  49   pm   34    236                        0        3
+                    # 3664  control  49   pm   34    236                        0        4
+                    # 3665  control  49   pm   34    236                        0        5
+                    # 3666  control  49   pm   34    236                        0        6
+                    # 3667  control  49   pm   34    236                        0        7
+                    # 3668  control  49   pm   34    236                        0        8
+                    # 3669  control  49   pm   34    236                        0        9
+                    # 3670  control  49   pm   34    236                        0       10
+                    # 3671  control  51   pm   34    236                        0        1
+                    # 3672  control  51   pm   34    236                        0        2
+                    # 3673  control  51   pm   34    236                        0        3
+                    # 3674  control  51   pm   34    236                        0        4
+                    # 3675  control  51   pm   34    236                        0        5
+                    # 3676  control  51   pm   34    236                        0        6
+                    # 3677  control  51   pm   34    236                        0        7
+                    # 3678  control  51   pm   34    236                        0        8
+                    # 3679  control  51   pm   34    236                        1        9
+                    # 3680  control  51   pm   34    236                        0       10
+                    # 3681  control  53   pm   34    236                        0        1
+                    # 3682  control  53   pm   34    236                        0        2
+                    # 3683  control  53   pm   34    236                        0        3
+                    # 3684  control  53   pm   34    236                        0        4
+                    # 3685  control  53   pm   34    236                        0        5
+                    # 3686  control  53   pm   34    236                        0        6
+                    # 3687  control  53   pm   34    236                        0        7
+                    # 3688  control  53   pm   34    236                        0        8
+                    # 3689  control  53   pm   34    236                        0        9
+                    # 3690  control  53   pm   34    236                        1       10
+
+
+                    spider_list = []
+
+                    for row in unique_rows:
+
+                        # build a sentence in the language of spider counts that will ultimatedly be
+                        # used to compare to other sentances
+                        spider_list = []
+
+                        filtered_df = filtered_df.query( f" row == '{row}' ")
+
+                        # print(filtered_df)
+                        # 0     transect row time week julian Thomisidae (crab spider) position
+                        # 121  oakMargin  79   pm   23    157                        0        1
+                        # 122  oakMargin  79   pm   23    157                        0        2
+                        # 123  oakMargin  79   pm   23    157                        0        3
+                        # 124  oakMargin  79   pm   23    157                        0        4
+                        # 125  oakMargin  79   pm   23    157                        2        5
+                        # 126  oakMargin  79   pm   23    157                        0        6
+                        # 127  oakMargin  79   pm   23    157                        1        7
+                        # 128  oakMargin  79   pm   23    157                        0        8
+                        # 129  oakMargin  79   pm   23    157                        0        9
+                        # 130  oakMargin  79   pm   23    157                        0       10
+
+
+                        spider_list.insert(0, filtered_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
+
+                        print("spider_list: ", spider_list)
+                        # spider_list:  [['1', '0', '0', '1', '0', '0', '0', '1', '0', '0']]
+                        result = " ".join(spider_list[0])  # Use space as a delimiter
+                        print("result: ", result, "  type: ", type(result))
+                        # result:  1 0 0 1 0 0 0 1 0 0   type:  <class 'str'>
+
+
+                        break
+
+                        #for i in range(10):
+
+                            #temp_df = filtered_df.query( f" position == '{i+1}' ")
+
+                            #print(temp_df)
+                            #print(temp_df, " loc:c", temp_df.loc[1,'Thomisidae (crab spider)'])
+                            # 0     transect row time week julian Thomisidae (crab spider) position
+                            # 121  oakMargin  79   pm   23    157                        0        1
+
+                            #print("second? : ", str(temp_df.loc[1,'Thomisidae (crab spider)']))
+
+                            #daily_row_spider += str(temp_df.loc[1,'Thomisidae (crab spider)'])
+                        
+                            #print(daily_row_spider, " type: ", type(daily_row_spider))
+
+                        #break
+
+                        # Convert each integer to a string using list comprehension
+                        # (this s a concise and Pythonic way to convert each integer in the list to a string)
+                        
+                        daily_spider_total_txt = [str(x) for x in daily_row_spider]
+
+
+
+                        #
+                        # insert context (what julian, time, week, and transect is that day is from)
+                        # (when you insert an element, all existing elements after the specified index are shifted 
+                        #  one position to the right)
+
+                        # insert context (what julian, time, week, and transect is that day from)
+                        # (when you insert an element, all existing elements after the specified index are shifted 
+                        #  one position to the right)
+
+                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,4]) # julian
+                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,3]) # week
+                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,2]) # time
+                        daily_spider_total_txt.insert(0, filtered_df.iloc[0,0]) # transect
+
+
+                        # these are the daily totals, by position, summed across 3 vineyard rows, for a specific 
+                        # week, time, and transect
+                        #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                        #print(daily_spider_total_txt)
+                        #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> end daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                        # ['oakMargin', 'pm', '23', '156', '0', '0', '0', '0', '2', '0', '1', '1', '1', '0']
+                        # ['control', 'pm', '23', '156', '0', '0', '1', '0', '1', '0', '1', '1', '0', '2']
+
+                            
+                        list_holding_tank.insert(0, daily_spider_total_txt)
+
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(list_holding_tank)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    # [[['control', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 
+    #   ['control', 'pm', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1'], 
+    #   ['oakMargin', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+    #
+
+    # build a dataframe
+    import pandas as pd
+    df = pd.DataFrame(list_holding_tank, columns=['transect', 'time', 'week', 'julian',  
+                                                 'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'])
+
+
+
+    # print(df)
+    #   julian time week   transect p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0    164   am   24  oakMargin  2  2  2  3  1  1  4  4  0  2
+    # 1    163   am   24  oakMargin  1  1  0  1  2  3  6  1  1  2
+    # 2    162   am   24  oakMargin  2  1  1  0  1  0  2  1  0  0
+
+    # # Insert a delimeter (index 4) to support string truncation 
+    df.insert(4, 'delimeter', ':')
+
+
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(df)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+    #       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 1      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
+    # 2    oakMargin   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 3    oakMargin   pm   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 4      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
+    # ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+    # 117    control   pm   23    157         :  0  0  1  4  0  2  2  1  0  1
+    # 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+    # 119  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
+    # 120    control   pm   23    156         :  0  0  1  0  1  0  1  1  0  2
+    # 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+    # 
+    # [122 rows x 15 columns]
+
+    return(df)
+
 
     

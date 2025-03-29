@@ -70,6 +70,10 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 #>>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.
 
 
+df = spider_lib.julian_row_compare(df=week_records_df)
+print("done")
+sys.exit()
+
 # compress the daily counts by row into daily total counts (add counts by position)
 df = spider_lib.daily_spider_count(df=week_records_df)
 
@@ -93,10 +97,11 @@ df = spider_lib.daily_spider_count(df=week_records_df)
 # 
 # [122 rows x 15 columns]
 
-
-
-# compare the samples from the same transect, time, and day 
-# 
+#########################################################################
+#
+# ha! the logic below just seems to re-arrange the records
+#  
+#########################################################################
 
 unique_transects = df['transect'].unique()
 unique_weeks = df['week'].unique()
@@ -157,7 +162,8 @@ filtered_df = transect_df
 
 
 # create a list of text strings from the available dataframe records
-corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df)
+# 
+corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df, kmeans=False)
 
 
 #       transect time  ...    squashed                                        transformed
@@ -210,51 +216,37 @@ df.to_csv(filename, header=True, index=True, mode='w')
 
 
 ######################################################################################################
-
+#
 # now compare the row similarity in a dataset 
-# optional: pre-filter for a specific transect / week / time
+# 
+# the theory here is that the counts in 3 adjacent rows should be about as similar as
+# they can be. This is an indicator of the values of the NGRAM cosine similarity metric
+#
+#####################################################################################################
+#
+# from the top
+# week_records_df = spider_lib.rough_dataset_clean(df)
+#
+#print(week_records_df)
+#
+#>>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.
+#0      transect row time week julian Thomisidae (crab spider) position
+#1     oakMargin  79   pm   23    156                        0        1
+#2     oakMargin  79   pm   23    156                        0        2
+#3     oakMargin  79   pm   23    156                        0        3
+#4     oakMargin  79   pm   23    156                        0        4
+#5     oakMargin  79   pm   23    156                        0        5
+#...         ...  ..  ...  ...    ...                      ...      ...
+#3716    control  53   am   34    236                        0        6
+#3717    control  53   am   34    236                        0        7
+#3718    control  53   am   34    236                        0        8
+#3719    control  53   am   34    236                        0        9
+#3720    control  53   am   34    236                        0       10
 
-######################################################################################################
-
-
-
-# Convert DataFrame to a list of lists
-all_records_list = week_records_df.values.tolist()
-
-#print(">>>>>>>>>>>>>>>>>>>>>>>.all records list>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-#print(all_records_list)
-#print(bugs_list)
-#print(">>>>>>>>>>>>>>>>>>>>>>>.all records list>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-
-
-# filename = './metrics/control-' + 'week-24-' + 'am.csv'
-filename = './metrics/row-compare.csv'
-
-columns = ['BOW cosine similarity', 'levenshtein distance', 
-    'NGRAM cosine similarity', 'BPW flip', 'LD flip', 'NGRAM flip', 'data ID 1', 'data ID 2']
-# Create an empty DataFrame with the specified columns
-empty_df = pd.DataFrame(columns=columns)
-# create csv (overwite if it exists)
-empty_df.to_csv(filename, index=True)
-
-# mode='w' indicates 'overwrite'
-#df.to_csv(filename, header=True, index=True, mode='w')
-
-# get a list of weeks 
-unique_weeks_list = week_records_df['week'].unique()
-
-print(">>>>>>>>>>>>>>>>>>>>>>>.unique_weeks_list>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print(unique_weeks_list)
-#print(bugs_list)
-print(">>>>>>>>>>>>>>>>>>>>>>>.unique_weeks_list>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-
-
-for k in range(len(unique_weeks_list)):
-
-    df = spider_lib.TWT_row_similarity(records_list=all_records_list, transect='oakMargin', week=k, time='am')
-
-    df.to_csv(filename, header=False, index=True, mode='a')
-
+#[3720 rows x 7 columns]
+#>>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.
+#
+#####################################################################################################
 
 
 

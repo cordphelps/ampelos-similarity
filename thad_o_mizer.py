@@ -81,7 +81,7 @@ def compute_cosine_similarity_ngram(sentence1, sentence2):
 ###################################################################################
 #   N-gram quick
 #
-def compute_ngram_quick(sentence1, sentence2):
+def compute_ngram_quick(sentence1, sentence2, ngrams):
 
 	import ngram
 
@@ -89,7 +89,7 @@ def compute_ngram_quick(sentence1, sentence2):
 	# similarity = ngram.NGram.compare('Ham', 'Spam', N=1) # Output: 0.4
 
 	# bigram : N=2
-	similarity = ngram.NGram.compare(sentence1, sentence2, N=2)
+	similarity = ngram.NGram.compare(sentence1, sentence2, N=ngrams)
 
 	return(similarity)  
 
@@ -209,8 +209,8 @@ def stacked_df_similarity(df, raw):
 				print("******** end ssentence1 sentence2 ************\n")
 
 
-				cs_real = compute_ngram_quick(sentence1 = s1_text, sentence2 = s2_text)
-				cs_real_flip = compute_ngram_quick(sentence1 = s2_text, sentence2 = s1_text)
+				cs_real = compute_ngram_quick(sentence1 = s1_text, sentence2 = s2_text, ngrams=4)
+				cs_real_flip = compute_ngram_quick(sentence1 = s2_text, sentence2 = s1_text, ngrams=4)
 				ld_int = levenshtein_distance(sentence1 = s1_text, sentence2 = s2_text)
 				ld_int_flip = levenshtein_distance(sentence1 = s2_text, sentence2 = s1_text)
 
