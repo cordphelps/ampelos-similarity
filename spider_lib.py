@@ -624,7 +624,7 @@ def julian_row_compare(df):
     
     for julian in unique_julian:
 
-        for week in unique_week:
+        for week in unique_week:      # <---- wrong, do not loop on week
 
             for transect in unique_transect:
 
@@ -761,7 +761,7 @@ def julian_row_compare(df):
     # [4026 rows x 6 columns]
 
 
-works up to here  
+works up to here  ; why 4026 rows ; wrong, do not loop on week
 
     return(df)
 
