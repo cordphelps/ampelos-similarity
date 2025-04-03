@@ -72,8 +72,6 @@ def rough_dataset_clean(df):
     return(selected_columns_df)
 
 
-
-
 def daily_spider_count(df):
 
     ########################################################################
@@ -252,7 +250,6 @@ def daily_spider_count(df):
     # [122 rows x 15 columns]
 
     return(df)
-
 
 
 def df_to_corpus_text(df_compressed):
@@ -498,8 +495,6 @@ def corpus_text_df(compressed_df, kmeans):
     return(result)
 
 
-
-
 def TWT_row_similarity(records_list, transect, week, time):
 
     ####################################################################################################
@@ -581,6 +576,7 @@ def TWT_row_similarity(records_list, transect, week, time):
 
 
     # ------------------------------------------------------------------------------
+
 def julian_row_compare(df):
 
     ########################################################################
@@ -595,10 +591,10 @@ def julian_row_compare(df):
     ########################################################################
 
     import pandas as pd
+    import sys
     
     unique_weeks = df['week'].unique()
     unique_time = df['time'].unique()
-
 
     # prep a list of lists to load a dataframe for return
     list_holding_tank = []
@@ -624,117 +620,123 @@ def julian_row_compare(df):
     
     for julian in unique_julian:
 
-        for week in unique_week:      # <---- wrong, do not loop on week
+        for transect in unique_transect:
 
-            for transect in unique_transect:
+            for time in unique_time:
 
-                for time in unique_time:
+                filtered_df = pd.DataFrame()
 
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
 
-                    filtered_df = pd.DataFrame()
+                unique_rows = filtered_df['row'].unique()
 
-                    #  !!!!!!!  'f' is curly brace support !!!!!!!
-                    filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
-                    # 0    transect row time week julian Thomisidae (crab spider) position
+                if  unique_rows.size == 0:
+                    break
 
-                    unique_rows = filtered_df['row'].unique()
-
-                    if  unique_rows.size == 0:
-                        break
-
-                    # print(filtered_df)
-                    # 0    transect row time week julian Thomisidae (crab spider) position
-                    # 3661  control  49   pm   34    236                        0        1
-                    # 3662  control  49   pm   34    236                        0        2
-                    # 3663  control  49   pm   34    236                        0        3
-                    # 3664  control  49   pm   34    236                        0        4
-                    # 3665  control  49   pm   34    236                        0        5
-                    # 3666  control  49   pm   34    236                        0        6
-                    # 3667  control  49   pm   34    236                        0        7
-                    # 3668  control  49   pm   34    236                        0        8
-                    # 3669  control  49   pm   34    236                        0        9
-                    # 3670  control  49   pm   34    236                        0       10
-                    # 3671  control  51   pm   34    236                        0        1
-                    # 3672  control  51   pm   34    236                        0        2
-                    # 3673  control  51   pm   34    236                        0        3
-                    # 3674  control  51   pm   34    236                        0        4
-                    # 3675  control  51   pm   34    236                        0        5
-                    # 3676  control  51   pm   34    236                        0        6
-                    # 3677  control  51   pm   34    236                        0        7
-                    # 3678  control  51   pm   34    236                        0        8
-                    # 3679  control  51   pm   34    236                        1        9
-                    # 3680  control  51   pm   34    236                        0       10
-                    # 3681  control  53   pm   34    236                        0        1
-                    # 3682  control  53   pm   34    236                        0        2
-                    # 3683  control  53   pm   34    236                        0        3
-                    # 3684  control  53   pm   34    236                        0        4
-                    # 3685  control  53   pm   34    236                        0        5
-                    # 3686  control  53   pm   34    236                        0        6
-                    # 3687  control  53   pm   34    236                        0        7
-                    # 3688  control  53   pm   34    236                        0        8
-                    # 3689  control  53   pm   34    236                        0        9
-                    # 3690  control  53   pm   34    236                        1       10
+                #print(filtered_df)
+                # 0    transect row time week julian Thomisidae (crab spider) position
+                # 3661  control  49   pm   34    236                        0        1
+                # 3662  control  49   pm   34    236                        0        2
+                # 3663  control  49   pm   34    236                        0        3
+                # 3664  control  49   pm   34    236                        0        4
+                # 3665  control  49   pm   34    236                        0        5
+                # 3666  control  49   pm   34    236                        0        6
+                # 3667  control  49   pm   34    236                        0        7
+                # 3668  control  49   pm   34    236                        0        8
+                # 3669  control  49   pm   34    236                        0        9
+                # 3670  control  49   pm   34    236                        0       10
+                # 3671  control  51   pm   34    236                        0        1
+                # 3672  control  51   pm   34    236                        0        2
+                # 3673  control  51   pm   34    236                        0        3
+                # 3674  control  51   pm   34    236                        0        4
+                # 3675  control  51   pm   34    236                        0        5
+                # 3676  control  51   pm   34    236                        0        6
+                # 3677  control  51   pm   34    236                        0        7
+                # 3678  control  51   pm   34    236                        0        8
+                # 3679  control  51   pm   34    236                        1        9
+                # 3680  control  51   pm   34    236                        0       10
+                # 3681  control  53   pm   34    236                        0        1
+                # 3682  control  53   pm   34    236                        0        2
+                # 3683  control  53   pm   34    236                        0        3
+                # 3684  control  53   pm   34    236                        0        4
+                # 3685  control  53   pm   34    236                        0        5
+                # 3686  control  53   pm   34    236                        0        6
+                # 3687  control  53   pm   34    236                        0        7
+                # 3688  control  53   pm   34    236                        0        8
+                # 3689  control  53   pm   34    236                        0        9
+                # 3690  control  53   pm   34    236                        1       10
 
 
+                spider_list = []
+                i=0
+
+                for row in unique_rows:
+
+                    # build a sentence in the language of spider counts that will ultimatedly be
+                    # used to compare to other sentances
                     spider_list = []
 
-                    for row in unique_rows:
+                    temp_df = filtered_df.query( f" row == '{row}' ")
 
-                        # build a sentence in the language of spider counts that will ultimatedly be
-                        # used to compare to other sentances
-                        spider_list = []
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    #print(temp_df.to_string())
+                    #print("to_string done")
+                    #sys.exit()
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    
+                    # 0     transect row time week julian Thomisidae (crab spider) position
+                    # 121  oakMargin  79   pm   23    157                        0        1
+                    # 122  oakMargin  79   pm   23    157                        0        2
+                    # 123  oakMargin  79   pm   23    157                        0        3
+                    # 124  oakMargin  79   pm   23    157                        0        4
+                    # 125  oakMargin  79   pm   23    157                        2        5
+                    # 126  oakMargin  79   pm   23    157                        0        6
+                    # 127  oakMargin  79   pm   23    157                        1        7
+                    # 128  oakMargin  79   pm   23    157                        0        8
+                    # 129  oakMargin  79   pm   23    157                        0        9
+                    # 130  oakMargin  79   pm   23    157                        0       10
 
-                        temp_df = filtered_df.query( f" row == '{row}' ")
+                    spider_list.insert(0, temp_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
 
-                        # print(filtered_df)
-                        # 0     transect row time week julian Thomisidae (crab spider) position
-                        # 121  oakMargin  79   pm   23    157                        0        1
-                        # 122  oakMargin  79   pm   23    157                        0        2
-                        # 123  oakMargin  79   pm   23    157                        0        3
-                        # 124  oakMargin  79   pm   23    157                        0        4
-                        # 125  oakMargin  79   pm   23    157                        2        5
-                        # 126  oakMargin  79   pm   23    157                        0        6
-                        # 127  oakMargin  79   pm   23    157                        1        7
-                        # 128  oakMargin  79   pm   23    157                        0        8
-                        # 129  oakMargin  79   pm   23    157                        0        9
-                        # 130  oakMargin  79   pm   23    157                        0       10
-
-
-                        spider_list.insert(0, temp_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
-
-                        #print("spider_list: ", spider_list)
-                        # spider_list:  [['1', '0', '0', '1', '0', '0', '0', '1', '0', '0']]
-                        result = " ".join(spider_list[0])  # Use space as a delimiter
-                        #print("result: ", result, "  type: ", type(result))
-                        # result:  1 0 0 1 0 0 0 1 0 0   type:  <class 'str'>
-
+                    #print("spider_list: ", spider_list)
+                    # spider_list:  [['1', '0', '0', '1', '0', '0', '0', '1', '0', '0']]
+                    result = " ".join(spider_list[0])  # Use space as a delimiter
+                    i=i+1
+                    print("i: ", i, "  result: ", result, "  type: ", type(result))
+                    # result:  1 0 0 1 0 0 0 1 0 0   type:  <class 'str'>
 
 
-                        # insert context (what julian, time, week, and transect is that day is from)
-                        # (when you insert an element, all existing elements after the specified index are shifted 
-                        #  one position to the right)
+                    # insert context (what julian, time, week, and transect is that day is from)
+                    # (when you insert an element, all existing elements after the specified index are shifted 
+                    #  one position to the right)
 
-                        # insert context (what julian, time, week, and transect is that day from)
-                        # (when you insert an element, all existing elements after the specified index are shifted 
-                        #  one position to the right)
+                    # insert context (what julian, time, week, and transect is that day from)
+                    # (when you insert an element, all existing elements after the specified index are shifted 
+                    #  one position to the right)
 
-                        daily_spider_list = ["", "", "", "", "", ""]
-                        
-                        daily_spider_list[0] = transect 
-                        daily_spider_list[1] = row 
-                        daily_spider_list[2] = time 
-                        daily_spider_list[3] = week 
-                        daily_spider_list[4] = julian 
-                        daily_spider_list[5] = result
+                    # and, "access a cell value using only the row number and column label"
+                    # # Row number (e.g., 1) and column label (e.g., "Age")
+                    # value = df.iloc[row_number, df.columns.get_loc(column_label)]
 
-                        #print(daily_spider_list)
-                        # ['control', '48', 'pm', '30', '156', '0 0 1 0 0 0 0 0 0 2']
+                    daily_spider_list = ["", "", "", "", "", ""]
+                    
+                    daily_spider_list[0] = transect 
+                    daily_spider_list[1] = row 
+                    daily_spider_list[2] = time  
+                    daily_spider_list[3] = temp_df.iloc[1, temp_df.columns.get_loc('week')]
+                    daily_spider_list[4] = julian 
+                    daily_spider_list[5] = result
 
-                        # append new_list to the end of parent_list
-                        # parent_list.append(new_list)
-                        list_holding_tank.append(daily_spider_list)                
+                    #print(daily_spider_list)
+                    # ['oakMargin', '81', 'pm', '34', '235', '0 0 0 0 0 0 0 0 0 0']
 
-    
+                    # append new_list to the end of parent_list
+                    # parent_list.append(new_list)
+                    list_holding_tank.append(daily_spider_list) 
+              
+
     # print(list_holding_tank)
     # [['oakMargin', '79', 'pm', '23', '156', '0 0 0 0 0 0 1 0 1 0'], 
     #  ['oakMargin', '81', 'pm', '23', '156', '0 0 0 0 1 0 0 1 0 0'], 
@@ -744,6 +746,7 @@ def julian_row_compare(df):
     import pandas as pd
     df = pd.DataFrame(list_holding_tank, columns=['transect','row', 'time', 'week', 'julian', 'counts'])
 
+
     # print(df)
     #        transect row time week julian               counts
     # 0     oakMargin  79   pm   23    156  0 0 0 0 0 0 1 0 1 0
@@ -751,19 +754,437 @@ def julian_row_compare(df):
     # 2     oakMargin  83   pm   23    156  0 0 0 0 1 0 0 0 0 0
     # 3       control  48   pm   23    156  0 0 1 0 0 0 0 0 0 2
     # 4       control  50   pm   23    156  0 0 0 0 0 0 1 1 0 0
-    # ...         ...  ..  ...  ...    ...                  ...
-    # 4021    control  51   pm   34    236  0 0 0 0 0 0 0 0 1 0
-    # 4022    control  53   pm   34    236  0 0 0 0 0 0 0 0 0 1
-    # 4023    control  49   am   34    236  0 0 0 0 0 0 0 0 0 0
-    # 4024    control  51   am   34    236  0 0 0 0 0 0 0 0 0 0
-    # 4025    control  53   am   34    236  0 0 0 0 0 0 0 0 0 0
+    #  ..         ...  ..  ...  ...    ...                  ...
+    # 361     control  51   pm   34    236  0 0 0 0 0 0 0 0 1 0
+    # 362     control  53   pm   34    236  0 0 0 0 0 0 0 0 0 1
+    # 363     control  49   am   34    236  0 0 0 0 0 0 0 0 0 0
+    # 364     control  51   am   34    236  0 0 0 0 0 0 0 0 0 0
+    # 365     control  53   am   34    236  0 0 0 0 0 0 0 0 0 0
     # 
-    # [4026 rows x 6 columns]
+    # [366 rows x 6 columns]
 
 
-works up to here  ; why 4026 rows ; wrong, do not loop on week
+    # # Insert a delimeter (index 5) to support string truncation 
+    df.insert(5, 'delimeter', ':')
+
+    # squash to count text and construct words
+    df = squash_and_translate(df)
+
 
     return(df)
 
 
+def squash_and_translate(df):
+
+    #print("input")
+    #print(df)
+    #print("end input")
+
+
+    ###############################################################################
+    #
+    #
+    # create 4 encoded words for return as a text separated by space
+    #
+    # returning the context string and a 'sentence' formed by 4 encoded words
+    #
+    #----------------------------------------------------------------------------
+    #
+    # input df
+    #   
+    #        transect row time week julian  delimeter                 counts
+    # 0     oakMargin  79   pm   23    156          :    0 0 0 0 0 0 1 0 1 0
+    # 1     oakMargin  81   pm   23    156          :    0 0 0 0 1 0 0 1 0 0
+    # 2     oakMargin  83   pm   23    156          :    0 0 0 0 1 0 0 0 0 0
+    # 3       control  48   pm   23    156          :    0 0 1 0 0 0 0 0 0 2
+    # 4       control  50   pm   23    156          :    0 0 0 0 0 0 1 1 0 0
+    #  ..         ...  ..  ...  ...    ...                  ...
+    # 361     control  51   pm   34    236          :    0 0 0 0 0 0 0 0 1 0
+    # 362     control  53   pm   34    236          :    0 0 0 0 0 0 0 0 0 1
+    # 363     control  49   am   34    236          :    0 0 0 0 0 0 0 0 0 0
+    # 364     control  51   am   34    236          :    0 0 0 0 0 0 0 0 0 0
+    # 365     control  53   am   34    236          :    0 0 0 0 0 0 0 0 0 0
+    # 
+    # [366 rows x 6 columns]
+    #
+    # output df
+    #
+    #       transect time  ...    squashed                                        transformed
+    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+    # 
+    # [3 rows x 17 columns]
+    #
+    ###############################################################################
+
+    import sys
+    import pandas as pd 
+
+    compressed_df = df
+
+    print(df.to_string())
+    print("to_string done")
+    sys.exit()
+
+    part1_df = compressed_df.iloc[:, :6]
+    #print(part1_df)
+    #       transect row time week julian delimeter
+    # 0    oakMargin  79   pm   23    156         :
+    # 1    oakMargin  81   pm   23    156         :
+    # 2    oakMargin  83   pm   23    156         :
+    # 3      control  48   pm   23    156         :
+    # 4      control  50   pm   23    156         :
+    # ..         ...  ..  ...  ...    ...       ...
+    # 361    control  51   pm   34    236         :
+    # 362    control  53   pm   34    236         :
+    # 363    control  49   am   34    236         :
+    # 364    control  51   am   34    236         :
+    # 365    control  53   am   34    236         :
+    # 
+    # [366 rows x 6 columns]
+
     
+
+    part2_df = compressed_df.iloc[:, 6:]
+    #print(part2_df.to_string())
+    #                   counts
+    # 0    0 0 0 0 0 0 1 0 1 0
+    # 1    0 0 0 0 1 0 0 1 0 0
+    # 2    0 0 0 0 1 0 0 0 0 0
+    # 3    0 0 1 0 0 0 0 0 0 2
+    # 4    0 0 0 0 0 0 1 1 0 0
+    # ..                   ...
+    # 361  0 0 0 0 0 0 0 0 1 0
+    # 362  0 0 0 0 0 0 0 0 0 1
+    # 363  0 0 0 0 0 0 0 0 0 0
+    # 364  0 0 0 0 0 0 0 0 0 0
+    # 365  0 0 0 0 0 0 0 0 0 0
+    # 
+    # [366 rows x 1 columns]
+
+    #print("to_string done")
+    #sys.exit()
+
+    # remove the whitespace from the section of 10 "integers" 
+    # Remove all spaces from the 'City' column
+    part2_df['squashed'] = part2_df['counts'].str.replace(" ", "", regex=False)
+
+    #                   counts    squashed
+    # 0    0 0 0 0 0 0 1 0 1 0  0000001010
+    # 1    0 0 0 0 1 0 0 1 0 0  0000100100
+    # 2    0 0 0 0 1 0 0 0 0 0  0000100000
+    # 3    0 0 1 0 0 0 0 0 0 2  0010000002
+    # 4    0 0 0 0 0 0 1 1 0 0  0000001100
+    # ..                   ...         ...
+    # 361  0 0 0 0 0 0 0 0 1 0  0000000010
+    # 362  0 0 0 0 0 0 0 0 0 1  0000000001
+    # 363  0 0 0 0 0 0 0 0 0 0  0000000000
+    # 364  0 0 0 0 0 0 0 0 0 0  0000000000
+    # 365  0 0 0 0 0 0 0 0 0 0  0000000000
+    # 
+    # [366 rows x 2 columns]
+
+    # make some bogus words for use in sentence comparison
+
+    
+    sentence_list = []
+    i=-1
+
+    for contents in part2_df['squashed']:
+
+        i=i+1
+
+        print("part1: ", "contents: ", contents, " i= ", i, " part1: ", part1_df.iloc[i])
+
+        w0 = 'TRUE'
+        w1 = 'TRUE'
+        w2 = 'TRUE'
+        w3 = 'TRUE'
+        w4 = 'TRUE'
+        w5 = 'TRUE'
+        w6 = 'TRUE'
+        w7 = 'TRUE'
+        w8 = 'TRUE'
+        w9 = 'TRUE'
+
+        if contents[0] == "0":
+            w0 = "false"
+        if contents[1] == "0":
+            w1 = "false"
+        if contents[2] == "0":
+            w2 = "false"
+        if contents[3] == "0":
+            w3 = "false"
+        if contents[4] == "0":
+            w4 = "false"
+        if contents[5] == "0":
+            w5 = "false"
+        if contents[6] == "0":
+            w6 = "false"
+        if contents[7] == "0":
+            w7 = "false"
+        if contents[8] == "0":
+            w8 = "false"
+        if contents[9] == "0":
+            w9 = "false"
+
+        new_sentence = w0 + " " + w1 + " " + w2 + " " + w3 + " " + w4 + " " + w5 + " " + w6 + " " + w7 + " " + w8 + " " + w9
+
+        sentence_list.append(new_sentence)
+
+        
+    print("adding new column: ", sentence_list)
+    part2_df['transformed'] = sentence_list
+
+    print(">>>>>>>>>>>>> transformed>>>>>>>>>>>>>>")
+    print(part2_df)
+    print(">>>>>>>>>>>>> end transformed>>>>>>>>>>>>>>") 
+
+    #     p0 p1 p2 p3  ... p8 p9    squashed                                        transformed
+    # 115  1  3  1  2  ...  2  3  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  0  0  1  1  ...  1  0  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  0  0  0  0  ...  1  0  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+    # 
+    # [3 rows x 12 columns]
+
+    # join the dataframes side-by-side
+    result = pd.concat([part1_df, part2_df], axis=1)
+
+    print(result)
+    #       transect time  ...    squashed                                        transformed
+    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
+    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
+    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
+    # 
+    # [3 rows x 17 columns]
+
+
+    return(result)
+
+
+
+
+def julian_row_compare_alternate(df):
+
+    ########################################################################
+    #
+    # compare spider count text similarity by julian day for each row by transect and time
+    # for each julian day, there are 3 rows that were sampled
+    # 
+    # return a dataframe 
+    #
+    #      transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
+    #
+    ########################################################################
+
+    import pandas as pd
+    import sys
+
+    # prep a list of lists to load a dataframe for return
+    list_holding_tank = []
+
+    sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
+        't1_text', 't2_text', 't3_text', 't1_t2', 't1_t3', 't2_t3'])
+
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+    #['156', '157', '158', '162', '163', '164', '170', '171', '172', '177', '178', 
+    # '179', '183', '184', '191', '192', '193', '201', '202', '203', '204', '205', 
+    # '206', '212', '213', '214', '218', '219', '220', '234', '235', '236']
+    #['pm', 'am']
+    #['oakMargin', 'control']
+    #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
+
+    incoming_df = df
+    
+    for julian in unique_julian:
+
+        for transect in unique_transect:
+
+            for time in unique_time:
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
+
+                unique_rows = filtered_df['row'].unique()
+
+                if  unique_rows.size == 0:
+                    break
+
+                #print(filtered_df)
+                # 0    transect row time week julian Thomisidae (crab spider) position
+                # 3661  control  49   pm   34    236                        0        1
+                # 3662  control  49   pm   34    236                        0        2
+                # 3663  control  49   pm   34    236                        0        3
+                # 3664  control  49   pm   34    236                        0        4
+                # 3665  control  49   pm   34    236                        0        5
+                # 3666  control  49   pm   34    236                        0        6
+                # 3667  control  49   pm   34    236                        0        7
+                # 3668  control  49   pm   34    236                        0        8
+                # 3669  control  49   pm   34    236                        0        9
+                # 3670  control  49   pm   34    236                        0       10
+                # 3671  control  51   pm   34    236                        0        1
+                # 3672  control  51   pm   34    236                        0        2
+                # 3673  control  51   pm   34    236                        0        3
+                # 3674  control  51   pm   34    236                        0        4
+                # 3675  control  51   pm   34    236                        0        5
+                # 3676  control  51   pm   34    236                        0        6
+                # 3677  control  51   pm   34    236                        0        7
+                # 3678  control  51   pm   34    236                        0        8
+                # 3679  control  51   pm   34    236                        1        9
+                # 3680  control  51   pm   34    236                        0       10
+                # 3681  control  53   pm   34    236                        0        1
+                # 3682  control  53   pm   34    236                        0        2
+                # 3683  control  53   pm   34    236                        0        3
+                # 3684  control  53   pm   34    236                        0        4
+                # 3685  control  53   pm   34    236                        0        5
+                # 3686  control  53   pm   34    236                        0        6
+                # 3687  control  53   pm   34    236                        0        7
+                # 3688  control  53   pm   34    236                        0        8
+                # 3689  control  53   pm   34    236                        0        9
+                # 3690  control  53   pm   34    236                        1       10
+
+
+                spider_list = [] 
+
+                new_string_list = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']
+
+                # build a dataframe
+                n1_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts'])
+
+                for row in unique_rows:
+
+                    # build a sentence in the language of spider counts that will ultimatedly be
+                    # used to compare to other sentances
+
+                    temp_df = filtered_df.query( f" row == '{row}' ")
+
+                    week = temp_df.iloc[1, temp_df.columns.get_loc('week')]
+
+                    if len(temp_df) != 10:
+
+                        #print("weirdness: ") # julian 203, control, pm, week 29, row 48 
+                        #print(temp_df)
+
+                        filename = './metrics/discrepancy_log.csv'
+
+                        # mode='w' indicates 'overwrite'
+                        temp_df.to_csv(filename, header=True, index=True, mode='a')
+
+                        print("*********  discrepancy written to ", filename) # julian 203, control, pm, week 29, row 48 
+                        
+                    else:
+
+                        # (each row should have data from 10 different positions)
+
+                        for i in range(10):
+
+                            if temp_df.iloc[i, temp_df.columns.get_loc('Thomisidae (crab spider)')] == '0':
+
+                                new_string_list[i] = 'f '  # spider count is zero for that position
+
+                            else:
+
+                                new_string_list[i] = 'T '  # spider count is non-zero for that position
+
+
+                    new_string_text = new_string_list[0] + new_string_list[1] + new_string_list[2] + \
+                     new_string_list[3] + new_string_list[4] + new_string_list[5] + \
+                     new_string_list[6] + new_string_list[7] + new_string_list[8] + new_string_list[9]
+
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    # print(temp_df.to_string())
+                    #print("new_string: ", new_string_text)
+                    #print("to_string done")
+                    #sys.exit()
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    
+            
+                    # new row as a df in dictionary format
+                    n2_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
+                        'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
+                    # 
+                    #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
+                    #print(n2_df)
+                    #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>")
+
+                    n1_df = pd.concat([n1_df, n2_df], ignore_index=True)
+
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    #print(n1_df.to_string())
+    #print("to_string done")
+    #sys.exit()
+    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    #############################################################################################
+    #
+    # find all rows sampled in the same transect/time/julian (normally 3) and compute NGRAM cosine 
+    # similarity between them
+    #
+    #############################################################################################
+
+    import thad_o_mizer
+
+    for julian in unique_julian:
+
+            for transect in unique_transect:
+
+                for time in unique_time:
+
+                    filtered_df = pd.DataFrame()
+
+                    #  !!!!!!!  'f' is curly brace support !!!!!!!
+                    filtered_df = n1_df.query( f" transect == '{transect}' and julian == '{julian}' \
+                        and time == '{time}' ")
+                    # 0    transect row time week julian Thomisidae (crab spider) position
+
+                    week = filtered_df.iloc[1, filtered_df.columns.get_loc('week')]
+
+                    if len(filtered_df) != 3:     # there should be 3 rows of data
+
+                        filename = './metrics/discrepancy_log.csv'
+                        # mode='w' indicates 'overwrite'
+                        filtered_df.to_csv(filename, header=True, index=True, mode='a')
+                        print("*********  discrepancy written to ", filename) # julian 203, control, pm, week 29, row 48 
+                        
+                    else:
+
+                        # get the T/f text strings associated with each vineyard row and compute the
+                        # NGRAM similarity 
+
+                        t1_text = filtered_df.iloc[0, filtered_df.columns.get_loc('counts')] 
+                        t2_text = filtered_df.iloc[1, filtered_df.columns.get_loc('counts')] 
+                        t3_text = filtered_df.iloc[2, filtered_df.columns.get_loc('counts')]
+
+                        print("triplet: ", t1_text, "     ", t2_text, "    ", t3_text)
+
+                        t1_t2 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t2_text, ngrams=4)
+                        t1_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t3_text, ngrams=4)
+                        t2_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t2_text, sentence2 = t3_text, ngrams=4)
+
+                        print("sims: ", t1_t2, "     ", t1_t3, "    ", t2_t3)
+
+                        sim_df = pd.DataFrame({'transect': [transect], \
+                            'julian' : [julian], 'time' : [time], 'week' : [week], \
+                            't1_text' : [t1_text], 't2_text' : [t2_text], 't3_text' : [t3_text], \
+                            't1_t2' : [t1_t2], 't1_t3' : [t1_t3], 't2_t3' : [t2_t3]})
+  
+    print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
+    print(sim_df)
+
+    filename = './metrics/row_similarity.csv'
+
+    # mode='w' indicates 'overwrite'
+    sim_df.to_csv(filename, header=True, index=True, mode='w')
+
+
+    return(sim_df)
+

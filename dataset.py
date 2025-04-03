@@ -69,9 +69,9 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 #[3720 rows x 7 columns]
 #>>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.
 
-
+#### temporarity here
 df = spider_lib.julian_row_compare(df=week_records_df)
-print("done")
+print("temporarity done")
 sys.exit()
 
 # compress the daily counts by row into daily total counts (add counts by position)
@@ -249,8 +249,18 @@ df.to_csv(filename, header=True, index=True, mode='w')
 #####################################################################################################
 
 
+df = spider_lib.julian_row_compare(df=week_records_df)
+print("done")
+sys.exit()
 
 
+
+
+
+
+# create a list of text strings from the available dataframe records
+# 
+corpus_df = spider_lib.corpus_text_df(compressed_df=filtered_df, kmeans=False)
 
 
 
