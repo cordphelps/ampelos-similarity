@@ -175,3 +175,78 @@ gg <- ggplot() +
     
 ```  
 
+```{r graphics.1, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('33%', '33%', '33%'), fig.show='hold'}
+
+source.url <- c("./metrics/row_similarity.csv")
+
+# get a lot of insect observations
+rows.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+# thrips
+t1_t2.tibl <- rows.tibl %>% 
+  dplyr::select(julian, time, t1_t2) 
+t1_t2.tibl <- t1_t2.tibl %>% rename(ngram_similarity = t1_t2)
+
+t2_t3.tibl <- rows.tibl %>% 
+  dplyr::select(julian, time, t2_t3) 
+t2_t3.tibl <- t2_t3.tibl %>% rename(ngram_similarity = t2_t3)
+
+t1_t3.tibl <- rows.tibl %>% 
+  dplyr::select(julian, time, t1_t3) 
+t1_t3.tibl <- t1_t3.tibl %>% rename(ngram_similarity = t1_t3)
+
+stacked_df <- bind_rows(t1_t2.tibl, t2_t3.tibl)
+
+stacked_df <- bind_rows(stacked_df, t1_t3.tibl)
+
+stacked_am.tibl <- stacked_df %>% dplyr::filter(time == 'am')
+stacked_pm.tibl <- stacked_df %>% dplyr::filter(time == 'pm')
+
+gg <- ggplot() +
+  
+    geom_boxplot(data=stacked_am.tibl, 
+                aes(x = as.character(julian), 
+                    y = ngram_similarity),
+                    #color = "black", 
+                    fill = "green", 
+                    alpha = 0.2,
+                    #shape = 21, size = 3, 
+                    position = position_nudge(x = -0.2) ) +
+  
+    geom_boxplot(data=stacked_pm.tibl, 
+                aes(x = as.character(julian), 
+                    y = ngram_similarity),
+                    #color = "white", 
+                    fill = "blue", 
+                    alpha = 0.6,
+                    #shape = 21, size = 3, 
+                    position = position_nudge(x = +0.2) ) +
+  
+
+    scale_y_continuous(limits=c(0, 1.1),
+                       breaks = seq(min(0), max(1.1), by = .2) ) +
+
+  	labs(x = "julian", y ="NGRAM.cosine.similarity", 
+ 				  title = paste("NGRAM.cosine.similarity",
+ 				                sep=""),
+ 				  subtitle = paste("ngram", sep=""),
+ 				  ) +
+    
+    # set default color for each group (otherwise geom_text text labels are "red")
+    # https://stackoverflow.com/questions/41541708/how-to-change-font-color-in-geom-text-in-ggplot2-in-r
+    # << or >>
+    # https://stackoverflow.com/questions/61209218/changing-of-color-for-geom-text-gives-completely-different-color-then-called-for
+    scale_colour_manual(values=c("#000000")) +
+    
+    # coord_flip() +
+    theme_bw()  +
+    # turn off legend
+    theme(legend.position="none") +
+  
+    theme(axis.text.x=element_text(angle=45,hjust=1)) 
+  
+    print(gg)
+
+	
+
+```

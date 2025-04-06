@@ -1001,12 +1001,17 @@ def julian_row_compare_alternate(df):
     #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
 
     incoming_df = df
-    
+
+    n1_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts']) 
+    n2_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts']) 
+
     for julian in unique_julian:
 
         for transect in unique_transect:
 
             for time in unique_time:
+
+                #print("%%%%%%%%%%%%%\n", "julian: ", julian, " transect: ", transect, " time: ", time, "\n%%%%%%%%%")
 
                 filtered_df = pd.DataFrame()
 
@@ -1019,7 +1024,7 @@ def julian_row_compare_alternate(df):
                 if  unique_rows.size == 0:
                     break
 
-                #print(filtered_df)
+                # print(filtered_df)
                 # 0    transect row time week julian Thomisidae (crab spider) position
                 # 3661  control  49   pm   34    236                        0        1
                 # 3662  control  49   pm   34    236                        0        2
@@ -1057,10 +1062,8 @@ def julian_row_compare_alternate(df):
 
                 new_string_list = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']
 
-                # build a dataframe
-                n1_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts'])
 
-                for row in unique_rows:
+                for row in unique_rows:                  
 
                     # build a sentence in the language of spider counts that will ultimatedly be
                     # used to compare to other sentances
@@ -1096,32 +1099,51 @@ def julian_row_compare_alternate(df):
                                 new_string_list[i] = 'T '  # spider count is non-zero for that position
 
 
-                    new_string_text = new_string_list[0] + new_string_list[1] + new_string_list[2] + \
-                     new_string_list[3] + new_string_list[4] + new_string_list[5] + \
-                     new_string_list[6] + new_string_list[7] + new_string_list[8] + new_string_list[9]
+                        new_string_text = new_string_list[0] + new_string_list[1] + new_string_list[2] + \
+                         new_string_list[3] + new_string_list[4] + new_string_list[5] + \
+                         new_string_list[6] + new_string_list[7] + new_string_list[8] + new_string_list[9]
 
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    # print(temp_df.to_string())
-                    #print("new_string: ", new_string_text)
-                    #print("to_string done")
-                    #sys.exit()
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    
-            
-                    # new row as a df in dictionary format
-                    n2_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
-                        'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
-                    # 
-                    #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
-                    #print(n2_df)
-                    #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>")
+                        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        # print(temp_df.to_string())
+                        #print("new_string: ", new_string_text)
+                        #print("to_string done")
+                        #sys.exit()
+                        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                        
+                
+                        # new row as a df in dictionary format
+                        n2_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
+                            'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
+                        # 
+                        #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
+                        #print(n2_df)
+                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>")
 
                     n1_df = pd.concat([n1_df, n2_df], ignore_index=True)
 
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    #print(n1_df.to_string())
-    #print("to_string done")
-    #sys.exit()
+    # print(n1_df.to_string())
+    #
+    #       transect time week julian row                counts
+    # 0    oakMargin   pm   23    156  79  f f f f f f T f T f 
+    # 1    oakMargin   pm   23    156  81  f f f f T f f T f f 
+    #  2    oakMargin   pm   23    156  83  f f f f T f f f f f 
+    #  3      control   pm   23    156  48  f f T f f f f f f T 
+    #  4      control   pm   23    156  50  f f f f f f T T f f 
+    #  5      control   pm   23    156  52  f f f f T f f f f f 
+    #  6    oakMargin   pm   23    157  79  f f f f T f T f f f 
+    #  7    oakMargin   pm   23    157  81  f f f T T f f f T f 
+    #  8    oakMargin   pm   23    157  83  f f T f f f f f f f 
+    #  9    oakMargin   am   23    157  79  f T f f f f T f f f 
+    #  10   oakMargin   am   23    157  81  f f f f f f T f f f 
+    #  11   oakMargin   am   23    157  83  f f f f f f f f f f 
+    #  12     control   pm   23    157  48  f f T T f f T T f f 
+    #  13     control   pm   23    157  50  f f f T f f T f f f 
+    #  14     control   pm   23    157  52  f f f T f T f f f T 
+    #  15     control   am   23    157  48  f f T f f f f T f f 
+    #  16     control   am   23    157  50  f f f f f f f f f f 
+    #  17     control   am   23    157  52  f f f f f f f T f f 
+    #
     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     #############################################################################################
@@ -1132,6 +1154,9 @@ def julian_row_compare_alternate(df):
     #############################################################################################
 
     import thad_o_mizer
+
+    sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
+        't1_text', 't2_text', 't3_text', 't1_t2', 't1_t3', 't2_t3']) 
 
     for julian in unique_julian:
 
@@ -1146,7 +1171,10 @@ def julian_row_compare_alternate(df):
                         and time == '{time}' ")
                     # 0    transect row time week julian Thomisidae (crab spider) position
 
-                    week = filtered_df.iloc[1, filtered_df.columns.get_loc('week')]
+                    print(">>>>>>> filtered df >>>>>>>>\n")
+                    print(filtered_df)
+                    print(">>>>>>> end filtered df >>>>>>>>\n")
+
 
                     if len(filtered_df) != 3:     # there should be 3 rows of data
 
@@ -1154,8 +1182,11 @@ def julian_row_compare_alternate(df):
                         # mode='w' indicates 'overwrite'
                         filtered_df.to_csv(filename, header=True, index=True, mode='a')
                         print("*********  discrepancy written to ", filename) # julian 203, control, pm, week 29, row 48 
+                        #                                                     # julian 156 did not have am samples
                         
                     else:
+
+                        week = filtered_df.iloc[1, filtered_df.columns.get_loc('week')]
 
                         # get the T/f text strings associated with each vineyard row and compute the
                         # NGRAM similarity 
@@ -1172,18 +1203,22 @@ def julian_row_compare_alternate(df):
 
                         print("sims: ", t1_t2, "     ", t1_t3, "    ", t2_t3)
 
-                        sim_df = pd.DataFrame({'transect': [transect], \
+                        new_sim_df = pd.DataFrame({'transect': [transect], \
                             'julian' : [julian], 'time' : [time], 'week' : [week], \
                             't1_text' : [t1_text], 't2_text' : [t2_text], 't3_text' : [t3_text], \
                             't1_t2' : [t1_t2], 't1_t3' : [t1_t3], 't2_t3' : [t2_t3]})
   
-    print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
-    print(sim_df)
+                        #print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
+                        #print(new_sim_df)
+
+                        sim_df = pd.concat([sim_df, new_sim_df], ignore_index=True)
 
     filename = './metrics/row_similarity.csv'
 
     # mode='w' indicates 'overwrite'
-    sim_df.to_csv(filename, header=True, index=True, mode='w')
+    sim_df.to_csv(filename, header=True, index=False, mode='a')
+
+
 
 
     return(sim_df)

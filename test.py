@@ -1,4 +1,10 @@
 
+
+# looking at geombox plot, maybe the amont of wind, one transect to another , has a sppressive effect on the 
+# appearance or migration of the spiders.
+
+
+
 import requests
 import csv 
 import io
@@ -41,15 +47,15 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 #print(week_records_df)
 #print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")
 
-julian = '184'
+julian = '193'
 transect = 'oakMargin'
 time = 'pm'
 
-filtered_df = week_records_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+#filtered_df = week_records_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
 
 #print(filtered_df.to_string())
 #print("to_string done")
 #sys.exit()
 
-df = spider_lib.julian_row_compare_alternate(filtered_df)
-
+#df = spider_lib.julian_row_compare_alternate(filtered_df)
+df = spider_lib.julian_row_compare_alternate(week_records_df)
