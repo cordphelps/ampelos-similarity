@@ -1223,3 +1223,136 @@ def julian_row_compare_alternate(df):
 
     return(sim_df)
 
+
+# *********************** bayes ***********************
+# *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
+# *********************** https://github.com/rasmusab/bayesianprobabilitiesworkshop/blob/master/Exercise%201.ipynb
+# *********************** https://www.sumsar.net/files/posts/2017-bayesian-tutorial-exercises/modeling_exercise1.html
+# ***********************       ***********************
+
+# Bayesian statistical models are used to predict the total number of tools in a society based on 
+# he log of population size and contact rates. For example, in the “Kline” dataset, researchers model 
+# the number of tools as a function of log(population) and whether the population had high or low contact 
+# with others. This approach allows for probabilistic  inference about the drivers of technological 
+# complexity in oceanic populations
+#
+# Example Bayesian Model Structure:
+# •   Response variable: Number of tools in a society
+# •   Predictors: Log of population size, contact rate (high vs. low)
+# •   Bayesian inference: Used to estimate the posterior distributions of 
+#     model parameters, providing uncertainty quantification and the ability 
+#     to incorporate prior knowledge
+
+def rasmus(df):
+
+    # Import libraries
+    import pandas as pd
+    import numpy as np
+
+    # Number of random draws from the prior
+    n_draws = 10000
+
+    # Here you sample n_draws draws from the prior into a pandas Series (to have convenient
+    # methods available for histograms and descriptive statistics, e.g. median)
+    #
+    # In Bayesian statistics, the prior represents initial beliefs about a parameter before 
+    # considering data. The prior does not need to be a valid probability distribution (i.e., 
+    # a “proper” function that integrates/sums to 1), 
+    # but it is always mathematically represented as a function. 
+    #
+
+    prior = pd.Series(np.random.uniform(0, 1, size = n_draw))  
+
+    prior.hist() # It's always good to eyeball the prior to make sure it looks ok.
+
+    # Here you define the generative model 
+    #
+    # (given params, generate simulated data numerous times to understand how much the data can change)
+    # <or>
+    # given data, what are reasonable parameter values that could have generated the data
+    #
+    # assume there is one rate at which people sign-up for a fish subscription
+    # select a specific number of people to "ask" if they want to sign-up 
+    # count how many people signed up (this is the "data")
+    # do it a lot of times and this is the simulated data
+    # "what is likely the rate of sign-up given that 6 of 16 signed-up"
+
+
+
+    def gen_model(prob):
+    return(np.random.binomial(16, prob))
+
+    # Here you simulate data using the parameters from the prior and the 
+    # generative model
+    sim_data = list()
+    for p in prior:
+        sim_data.append(generative_model(p))
+                        
+    # Here you filter off all draws that do not match the data.
+    posterior = prior[list(map(lambda x: x == observed_data, sim_data))]
+
+    posterior.hist() # Eyeball the posterior
+
+
+    # See that we got enought draws left after the filtering. 
+    # There are no rules here, but you probably want to aim for >1000 draws.
+
+    # Now you can summarize the posterior, where a common summary is to take the mean or the median posterior, 
+    # and perhaps a 95% quantile interval.
+
+
+    print('Number of draws left: %d, Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
+          (len(posterior), posterior.median(), posterior.quantile(.025), posterior.quantile(.975)))
+
+    return()
+
+
+# *********************** central limit theorem ***********************
+# *********************** https://www.youtube.com/watch?v=zeJD6dqJ5lo 
+# ***********************       ***********************
+
+# input daily spider count
+# separate into control and oakMargin = by transect
+# find the max count
+# create the frequency of each count
+# histogram (mean aand confidence interval)
+#
+
+def central_limit(both_transects_dataframe):
+
+    # Import libraries
+    import pandas as pd
+    import numpy as np
+
+    df = both_transects_dataframe
+
+    df_control = df[df['column_name'] == 'control']
+    df_oakMargin = df[df['column_name'] != 'oakMargin']
+
+    df_control = df_control.rename(columns={'Thomisidae (crab spider)': 'count'})
+    df_oakMargin = df_oakMargin.rename(columns={'Thomisidae (crab spider)': 'count'})
+
+    # "from a pandas dataframe column of count data, create a dataframe of normalized probabilities of each count value"
+
+    # df = pd.DataFrame({'count': [3, 2, 3, 1, 2, 3, 1]})
+    #### Step 1: Calculate Normalized Probabilities
+    # probs = df['count'].value_counts(normalize=True)
+    # This returns a Series where the index is the unique count value and the value is its probability.
+    #### Step 2: Convert to DataFrame (optional)
+    # prob_df = probs.reset_index()
+    # prob_df.columns = ['count', 'probability']
+    #### Output
+    #   count  probability
+    # 0      3     0.428571
+    # 1      2     0.285714
+    # 2      1     0.285714
+
+    probs = df_oakMargin['count'].value_counts(normalize=True)
+    prob_df = probs.reset_index()
+    prob_df.columns = ['count', 'probability']
+
+
+
+    return()
+
+
