@@ -42,7 +42,7 @@ source.url <- c("./metrics/transect-compare-.csv")
 # get a lot of insect observations
 ngram.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
-# thrips
+# 
 pm.tibl <- ngram.tibl %>% 
   dplyr::filter(time == 'pm') %>%
   dplyr::select(julian, time, NGRAM.cosine.similarity) 
@@ -50,6 +50,72 @@ pm.tibl <- ngram.tibl %>%
 am.tibl <- ngram.tibl %>% 
   dplyr::filter(time == 'am') %>%
   dplyr::select(julian, time, NGRAM.cosine.similarity) 
+
+```
+
+```{r mcmc, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+# normalized poisson data
+library(MCMCpack)
+
+source.url <- c("./metrics/prob_control_df-pm_5to7_-.csv")
+control.pm.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+source.url <- c("./metrics/prob_oakMargin_df-pm_5to7_-.csv")
+oakMargin.pm.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+
+# Define log-posterior
+log_post <- function(params, counts, frequencies) {
+  lambda <- params[1]
+  if (lambda <= 0) return(-Inf)  # Ensure positivity
+  
+  # Weighted log-likelihood using normalized frequencies
+  log_lik <- sum(frequencies * dpois(counts, lambda, log = TRUE))
+  
+  # Gamma(1,1) prior for lambda
+  log_prior <- dgamma(lambda, shape = 1, rate = 1, log = TRUE)
+  
+  return(log_lik + log_prior)
+}
+
+df <- control.pm.tibl
+#df <- oakMargin.pm.tibl
+
+posterior <- MCMCmetrop1R(
+  log_post, 
+  theta.init = 1, 
+  burnin = 3000,
+  mcmc = 50000,
+  thin = 10,
+  tune = 0.5,
+  counts = df$count,
+  frequencies = df$probability
+)
+
+# Diagnostics and visualization
+library(coda)
+plot(posterior)
+summary(posterior)
+
+# In summary:
+# `MCMCmetrop1R` is a general-purpose tool for MCMC sampling from any user-defined posterior,
+# especially useful when your model or likelihood is nonstandard or when you need to 
+# incorporate custom data structures like normalized frequencies
+# Diagnostics and Output
+# 	•	The result is a `coda` mcmc object: use `summary(posterior)`, `plot(posterior)`, 
+#     and diagnostics like `raftery.diag(posterior)`
+# Notes
+#	•	Alternative Distributions: Replace `dpois` with `dnbinom` (negative binomial) 
+#   for overdispersed counts.
+#	•	Priors: Adjust the gamma hyperparameters if you have prior knowledge about .
+#	•	Efficiency: Increase `mcmc`/`burnin` if convergence is slow.
+
+# https://search.r-project.org/CRAN/refmans/MCMCpack/html/MCMCmetrop1R.html
+# https://faculty.ucr.edu/~jflegal/203/mcmcpack_huiling.html#1
+# https://github.com/cran/MCMCpack/blob/master/R/MCMCmetrop1R.R
+# https://andrewdmartin.washu.edu/app/uploads/2019/01/Applied-Bayesian-Inference-in-R-using-MCMCpack-2cv9ct9.pdf
+# 
 
 ```
 

@@ -43,6 +43,31 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+time = 'pm'
+
+# get the relative frequencies by count
+
+hoser = spider_lib.central_limit(both_transects_dataframe=week_records_df, daytime=time, file_label='_1to10_')
+
+# ^^^^^^^^^^^^^ MCMC analysis in ngram.Rmd ^^^^^^^^^^^^^
+
+# partition data by position 1-4 ; 5-7 ; 8-10
+
+group1_df = spider_lib.chop(df=week_records_df, position_list=['1', '2', '3', '4'])
+hoser = spider_lib.central_limit(both_transects_dataframe=group1_df, daytime=time, file_label='_1to4_')
+
+group2_df = spider_lib.chop(df=week_records_df, position_list=['5', '6', '7'])
+hoser = spider_lib.central_limit(both_transects_dataframe=group2_df, daytime=time, file_label='_5to7_')
+
+group3_df = spider_lib.chop(df=week_records_df, position_list=['8', '9', '10'])
+hoser = spider_lib.central_limit(both_transects_dataframe=group3_df, daytime=time, file_label='_8to10_')
+
+# now segment by week.................
+
+
+print("csv written")
+sys.exit(1)
+
 #print(">>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.")
 #print(week_records_df)
 #print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")

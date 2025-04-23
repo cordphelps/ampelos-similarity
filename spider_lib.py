@@ -1280,7 +1280,7 @@ def rasmus(df):
 
 
     def gen_model(prob):
-    return(np.random.binomial(16, prob))
+        return(np.random.binomial(16, prob))
 
     # Here you simulate data using the parameters from the prior and the 
     # generative model
@@ -1318,7 +1318,7 @@ def rasmus(df):
 # histogram (mean aand confidence interval)
 #
 
-def central_limit(both_transects_dataframe):
+def central_limit(both_transects_dataframe, daytime, file_label):
 
     # Import libraries
     import pandas as pd
@@ -1326,11 +1326,11 @@ def central_limit(both_transects_dataframe):
 
     df = both_transects_dataframe
 
-    df_control = df[df['column_name'] == 'control']
-    df_oakMargin = df[df['column_name'] != 'oakMargin']
+    control_df = df[df['transect'] == 'control']
+    oakMargin_df = df[df['transect'] == 'oakMargin']
 
-    df_control = df_control.rename(columns={'Thomisidae (crab spider)': 'count'})
-    df_oakMargin = df_oakMargin.rename(columns={'Thomisidae (crab spider)': 'count'})
+    control_df = control_df.rename(columns={'Thomisidae (crab spider)': 'count'})
+    oakMargin_df = oakMargin_df.rename(columns={'Thomisidae (crab spider)': 'count'})
 
     # "from a pandas dataframe column of count data, create a dataframe of normalized probabilities of each count value"
 
@@ -1347,12 +1347,31 @@ def central_limit(both_transects_dataframe):
     # 1      2     0.285714
     # 2      1     0.285714
 
-    probs = df_oakMargin['count'].value_counts(normalize=True)
-    prob_df = probs.reset_index()
-    prob_df.columns = ['count', 'probability']
+    probs = oakMargin_df['count'].value_counts(normalize=True)
+    prob_oakMargin_df = probs.reset_index()
+    prob_oakMargin_df.columns = ['count', 'probability']
+
+    filename = './metrics/prob_oakMargin_df-' + daytime + file_label + '-.csv'
+    prob_oakMargin_df.to_csv(filename, header=True, index=True, mode='w')
 
 
+    probs = control_df['count'].value_counts(normalize=True)
+    prob_control_df = probs.reset_index()
+    prob_control_df.columns = ['count', 'probability']
+
+    filename = './metrics/prob_control_df-' + daytime + file_label + '-.csv'
+    prob_control_df.to_csv(filename, header=True, index=True, mode='w')
+
+    # take samples from the distribution 
+    # record the sum (size = 10) of the sample on a plot
 
     return()
 
 
+def chop(df, position_list):
+
+    # filtered_df = df[df['col'].isin(['A', 'B', 'C'])]
+    filtered_df = df[df['position'].isin(position_list)]
+
+
+    return(filtered_df)
