@@ -58,10 +58,10 @@ am.tibl <- ngram.tibl %>%
 # normalized poisson data
 library(MCMCpack)
 
-source.url <- c("./metrics/prob_control_df-pm_5to7_-.csv")
+source.url <- c("./metrics/prob_control_df-pm_1to4_23to25-.csv")
 control.pm.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
-source.url <- c("./metrics/prob_oakMargin_df-pm_5to7_-.csv")
+source.url <- c("./metrics/prob_oakMargin_df-pm_1to4_23to25-.csv")
 oakMargin.pm.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
 
@@ -79,8 +79,8 @@ log_post <- function(params, counts, frequencies) {
   return(log_lik + log_prior)
 }
 
-df <- control.pm.tibl
-#df <- oakMargin.pm.tibl
+#df <- control.pm.tibl
+df <- oakMargin.pm.tibl
 
 posterior <- MCMCmetrop1R(
   log_post, 

@@ -252,6 +252,227 @@ def daily_spider_count(df):
     return(df)
 
 
+def weekly_spider_count(df):
+
+    ########################################################################
+    #
+    # sum spider counts by julian day
+    # input can mix records for 'transect', 'week', and 'time'.
+    # dataframe should be compressed by vindeyard row 
+    # 
+    # return a dataframe with text identifiers, a delimeter, and the totalized count by position
+    ########################################################################
+
+    
+    #       transect time week julian delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0      control   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 1      control   pm   34    236         :  0  0  0  0  0  0  0  0  1  1
+    # 2    oakMargin   am   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 3    oakMargin   pm   34    236         :  0  0  0  0  0  0  0  0  0  0
+    # 4      control   am   34    235         :  0  0  0  0  0  0  0  0  0  0
+    # ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+    # 117    control   pm   23    157         :  0  0  1  4  0  2  2  1  0  1
+    # 118  oakMargin   am   23    157         :  0  1  0  0  0  0  2  0  0  0
+    # 119  oakMargin   pm   23    157         :  0  0  1  1  3  0  1  0  1  0
+    # 120    control   pm   23    156         :  0  0  1  0  1  0  1  1  0  2
+    # 121  oakMargin   pm   23    156         :  0  0  0  0  2  0  1  1  1  0
+    # 
+    # [122 rows x 15 columns]
+
+
+    import pandas as pd
+    
+    unique_weeks = df['week'].unique()
+    unique_time = df['time'].unique()
+
+    # prep a list of lists to load a dataframe for return
+    list_holding_tank = []
+
+    # without specifying the specific vineyard weeks sampled, we can sum the spider counts
+    # by week, transect, and time represented in the dataframe
+
+    # create records that represent the number of spiders occurring in sequential positions
+    # read each record, examine the position, and place the spider count for that position in 
+    # the matching column. Then we have ordered sequences of counts (that represent a pattern)
+
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+    #print(unique_time)
+    #print(unique_transect)
+    #print(unique_week)
+
+    #['156', '157', '158', '162', '163', '164', '170', '171', '172', '177', '178', 
+    # '179', '183', '184', '191', '192', '193', '201', '202', '203', '204', '205', 
+    # '206', '212', '213', '214', '218', '219', '220', '234', '235', '236']
+    #['pm', 'am']
+    #['oakMargin', 'control']
+    #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
+
+    incoming_df = df
+
+    
+    for week in unique_week:
+
+        for transect in unique_transect:
+
+            for time in unique_time:
+
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
+
+                unique_julian = filtered_df['julian'].unique()
+
+                #print("type= ", type(unique_rows)) 
+                # type=  <class 'numpy.ndarray'>
+
+                if  unique_julian.size == 0:
+                    print("julian size was 0")
+                    break
+
+                #print("transect ", transect, " time ", time, " rows :", unique_rows)
+
+                # build a sentence in the language of spider counts that will ultimatedly be
+                # used to compare to other sentances
+                daily_spider_total_int = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+                # the df represents the counts for transect day and time 
+                # for each position across each sampled vineyard row
+                # now sum all the counts by position
+
+                # filter on 'position'; (so now the df contains positional spiders by row)
+                for i in range(10):
+
+                    temp_df = filtered_df
+                    temp_df = temp_df.query( f" position == '{i+1}' ")
+                    daily_spider_total_int[i] = temp_df['Thomisidae (crab spider)'].astype(int).sum()
+
+                #print(":::::::::::::::::::::count total for filtered_df :::::::::::::::::::::::::::")
+
+                # print(daily_spider_total_int, ' ', week, ' ', time, ' ', transect)
+
+                # [1, 3, 2, 3, 5, 0, 3, 3, 4, 3]   23   pm   oakMargin
+                # [1, 3, 0, 0, 0, 0, 4, 0, 0, 1]   23   am   oakMargin
+                # [1, 3, 4, 5, 1, 5, 6, 5, 1, 4]   23   pm   control
+                # [0, 2, 1, 1, 0, 1, 1, 3, 0, 1]   23   am   control
+                # [10, 9, 6, 2, 7, 5, 7, 9, 14, 6]   24   pm   oakMargin
+                # [5, 4, 3, 4, 4, 4, 12, 6, 1, 4]   24   am   oakMargin
+                # [8, 6, 10, 3, 10, 7, 10, 5, 14, 15]   24   pm   control
+                # [3, 2, 4, 5, 3, 2, 1, 3, 9, 6]   24   am   control
+
+                
+                # Convert each integer to a string using list comprehension
+                # (this s a concise and Pythonic way to convert each integer in the list to a string)
+                daily_spider_total_txt = [str(x) for x in daily_spider_total_int]
+                #
+                # insert context (what time, week, and transect is that daya from)
+                # (when you insert an element, all existing elements after the specified index are shifted 
+                #  one position to the right)
+
+                # insert context (what julian, time, week, and transect is that day from)
+                # (when you insert an element, all existing elements after the specified index are shifted 
+                #  one position to the right)
+
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,3]) # week
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,2]) # time
+                daily_spider_total_txt.insert(0, filtered_df.iloc[0,0]) # transect
+
+
+                # these are the daily totals, by position, summed across 3 vineyard rows, for a specific 
+                # week, time, and transect
+                #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                #print(daily_spider_total_txt)
+                #print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>> end daily_spider_total_txt >>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                # ['oakMargin', 'pm', '23', '156', '0', '0', '0', '0', '2', '0', '1', '1', '1', '0']
+                # ['control', 'pm', '23', '156', '0', '0', '1', '0', '1', '0', '1', '1', '0', '2']
+
+                    
+                list_holding_tank.insert(0, daily_spider_total_txt)
+
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(list_holding_tank)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end list_holding_tank>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    # [[['control', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 
+    #   ['control', 'pm', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '1', '1'], 
+    #   ['oakMargin', 'am', '34', '236', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
+    #
+
+    # build a dataframe
+    import pandas as pd
+    df = pd.DataFrame(list_holding_tank, columns=['transect', 'time', 'week',  
+                                                 'p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9'])
+
+    # print(df)
+    #      transect time week  p0 p1  p2 p3  p4 p5  p6 p7  p8  p9
+    # 0     control   am   34   0  0   0  0   0  0   0  0   1   0
+    # 1     control   pm   34   0  1   0  0   0  0   0  0   1   1
+    # 2   oakMargin   am   34   0  0   0  0   0  0   0  0   0   0
+    # 3   oakMargin   pm   34   1  0   0  0   0  0   0  0   0   0
+    # 4     control   am   32   1  1   0  0   0  0   1  1   0   0
+    # 5     control   pm   32   0  0   1  0   0  0   0  3   0   2
+    # 6   oakMargin   am   32   1  0   0  0   0  0   0  0   1   0
+    # 7   oakMargin   pm   32   1  0   0  2   0  2   3  0   1   0
+    #
+    # 
+
+    # # Insert a delimeter (index 4) to support string truncation 
+    df.insert(4, 'delimeter', ':')
+
+
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    #print(df)
+    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+    #       transect time week delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
+    # 0      control   am   34    :      0  0  0  0  0  0  0  0  0  0
+    # 1      control   pm   34    :      0  0  0  0  0  0  0  0  1  1
+    # 2    oakMargin   am   34    :      0  0  0  0  0  0  0  0  0  0
+    # 3    oakMargin   pm   34    :      0  0  0  0  0  0  0  0  0  0
+    # 4      control   am   34    :      0  0  0  0  0  0  0  0  0  0
+    # ..         ...  ...  ...    ...       ... .. .. .. .. .. .. .. .. .. ..
+    # 117    control   pm   23    :      0  0  1  4  0  2  2  1  0  1
+    # 118  oakMargin   am   23    :      0  1  0  0  0  0  2  0  0  0
+    # 119  oakMargin   pm   23    :      0  0  1  1  3  0  1  0  1  0
+    # 120    control   pm   23    :      0  0  1  0  1  0  1  1  0  2
+    # 121  oakMargin   pm   23    :      0  0  0  0  2  0  1  1  1  0
+    # 
+    # [122 rows x 15 columns]
+
+    filename = './metrics/week_counts_df' + '-.csv'
+    df.to_csv(filename, header=True, index=True, mode='w')
+
+    cols_to_normalize = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']
+    df[cols_to_normalize] = df[cols_to_normalize].astype(int)
+    df[cols_to_normalize] = df[cols_to_normalize].div(df[cols_to_normalize].sum(axis=1), axis=0)
+    # (the cols of the df have been converted from counts to proportions)
+
+    #      transect time week        p0  ...        p6        p7        p8        p9
+    # 0     control   am   34  0.000000  ...  0.000000  0.000000  1.000000  0.000000
+    # 1     control   pm   34  0.000000  ...  0.000000  0.000000  0.333333  0.333333
+    # 2   oakMargin   am   34       NaN  ...       NaN       NaN       NaN       NaN
+    # 3   oakMargin   pm   34  1.000000  ...  0.000000  0.000000  0.000000  0.000000
+    # 4     control   am   32  0.250000  ...  0.250000  0.250000  0.000000  0.000000
+    # 5     control   pm   32  0.000000  ...  0.000000  0.500000  0.000000  0.333333
+    # 6   oakMargin   am   32  0.500000  ...  0.000000  0.000000  0.500000  0.000000
+
+    print(df)
+
+    #prob_df = probs.reset_index()
+    #prob_df.columns = ['count', 'probability']
+
+    #filename = './metrics/week_df' + '-.csv'
+    #prob_df.to_csv(filename, header=True, index=True, mode='w')
+
+    return(df)
+
 def df_to_corpus_text(df_compressed):
 
     #selected_columns = df.loc[:, ['transect', 'row', 'time', 'week', 'julian', 'Thomisidae (crab spider)', 'position']]
@@ -963,8 +1184,6 @@ def squash_and_translate(df):
     return(result)
 
 
-
-
 def julian_row_compare_alternate(df):
 
     ########################################################################
@@ -1224,26 +1443,33 @@ def julian_row_compare_alternate(df):
     return(sim_df)
 
 
-# *********************** bayes ***********************
-# *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
-# *********************** https://github.com/rasmusab/bayesianprobabilitiesworkshop/blob/master/Exercise%201.ipynb
-# *********************** https://www.sumsar.net/files/posts/2017-bayesian-tutorial-exercises/modeling_exercise1.html
-# ***********************       ***********************
-
-# Bayesian statistical models are used to predict the total number of tools in a society based on 
-# he log of population size and contact rates. For example, in the “Kline” dataset, researchers model 
-# the number of tools as a function of log(population) and whether the population had high or low contact 
-# with others. This approach allows for probabilistic  inference about the drivers of technological 
-# complexity in oceanic populations
-#
-# Example Bayesian Model Structure:
-# •   Response variable: Number of tools in a society
-# •   Predictors: Log of population size, contact rate (high vs. low)
-# •   Bayesian inference: Used to estimate the posterior distributions of 
-#     model parameters, providing uncertainty quantification and the ability 
-#     to incorporate prior knowledge
-
 def rasmus(df):
+
+    # *********************** bayes ***********************
+    # *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
+    # *********************** https://github.com/rasmusab/bayesianprobabilitiesworkshop/blob/master/Exercise%201.ipynb
+    # *********************** https://www.sumsar.net/files/posts/2017-bayesian-tutorial-exercises/modeling_exercise1.html
+    # ***********************       ***********************
+
+    # *********************** the Oceanic Tool Complexity data refresher ***********************
+    # Bayesian statistical models are used to predict the total number of tools in a society based on 
+    # he log of population size and contact rates. For example, in the “Kline” dataset, researchers model 
+    # the number of tools as a function of log(population) and whether the population had high or low contact 
+    # with others. This approach allows for probabilistic  inference about the drivers of technological 
+    # complexity in oceanic populations
+    #
+    # Example Bayesian Model Structure:
+    # •   Response variable: Number of tools in a society
+    # •   Predictors: Log of population size, contact rate (high vs. low)
+    # •   Bayesian inference: Used to estimate the posterior distributions of 
+    #     model parameters, providing uncertainty quantification and the ability 
+    #     to incorporate prior knowledge
+
+
+    # *********************** the Swedish Fish Company example ***********************
+    #
+    #                         this is called "approximate Baysian computation"
+    #
 
     # Import libraries
     import pandas as pd
@@ -1279,14 +1505,21 @@ def rasmus(df):
 
 
 
-    def gen_model(prob):
+    def generative_model(prob):
         return(np.random.binomial(16, prob))
+        # (This simulates the number of successes in 16 independent Bernoulli trials (e.g., coin flips), 
+        # where each trial has a probability `prob` of success.) )
+
 
     # Here you simulate data using the parameters from the prior and the 
     # generative model
     sim_data = list()
+
     for p in prior:
         sim_data.append(generative_model(p))
+
+    # Observed data
+    observed_data = 6
                         
     # Here you filter off all draws that do not match the data.
     posterior = prior[list(map(lambda x: x == observed_data, sim_data))]
@@ -1307,18 +1540,18 @@ def rasmus(df):
     return()
 
 
-# *********************** central limit theorem ***********************
-# *********************** https://www.youtube.com/watch?v=zeJD6dqJ5lo 
-# ***********************       ***********************
-
-# input daily spider count
-# separate into control and oakMargin = by transect
-# find the max count
-# create the frequency of each count
-# histogram (mean aand confidence interval)
-#
-
 def central_limit(both_transects_dataframe, daytime, file_label):
+
+    # *********************** central limit theorem ***********************
+    # *********************** https://www.youtube.com/watch?v=zeJD6dqJ5lo 
+    # ***********************       ***********************
+
+    # input daily spider count
+    # separate into control and oakMargin = by transect
+    # find the max count
+    # create the frequency of each count
+    # histogram (mean aand confidence interval)
+    #
 
     # Import libraries
     import pandas as pd
@@ -1368,10 +1601,17 @@ def central_limit(both_transects_dataframe, daytime, file_label):
     return()
 
 
-def chop(df, position_list):
+def chopPosition(df, position_list):
 
     # filtered_df = df[df['col'].isin(['A', 'B', 'C'])]
     filtered_df = df[df['position'].isin(position_list)]
 
+
+    return(filtered_df)
+
+
+def chopWeek(df, week_list):
+
+    filtered_df = df[df['week'].isin(week_list)]
 
     return(filtered_df)
