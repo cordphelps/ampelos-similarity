@@ -43,6 +43,11 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+
+
+
+
+
 week_df = spider_lib.weekly_spider_count(df=week_records_df)
 
 print("week total written")
@@ -94,14 +99,15 @@ sys.exit(1)
 #print(">>>>>>>>>>>>>>>> end week_records_df df >>>>>>>>>>>>>.")
 
 julian = '193'
+week='34'
 transect = 'oakMargin'
-time = 'pm'
+time = 'am'
 
-#filtered_df = week_records_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
+filtered_df = week_records_df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
 
-#print(filtered_df.to_string())
-#print("to_string done")
-#sys.exit()
+print(filtered_df)
+print("to_string done")
+sys.exit(1)
 
 #df = spider_lib.julian_row_compare_alternate(filtered_df)
 df = spider_lib.julian_row_compare_alternate(week_records_df)

@@ -1,0 +1,147 @@
+weekly aggregation notes + poisson overdispersion
+
+
+validity of aggregating daily counts into weekly counts
+
+
+
+https://epe.lac-bac.gc.ca/100/201/300/avian_conservation_ecology-ef/v01n01-v16n02/https@www.ace-eco.org/vol11/iss2/art8/default.htm
+
+https://stats.stackexchange.com/questions/199443/cumulative-number-of-events-weighted-by-temporal-aggregation
+
+https://pmc.ncbi.nlm.nih.gov/articles/PMC7460497/
+
+
+
+
+
+Aggregating daily ecological counts into weekly counts can be valid under certain conditions, but its appropriateness depends on the **research question, species characteristics, and data structure**. Here's a synthesis of insights from ecological and statistical literature:
+
+---
+
+### **Key Considerations for Validity**
+
+1. **Reduction of Noise and Overdispersion**  
+   Aggregating daily counts to weekly totals can:
+   - **Reduce zero-inflation** (common in rare species) and **overdispersion** (variance > mean)[4].  
+   - Improve model fit for common species by smoothing short-term variability while preserving long-term trends[4].  
+   - Example: Weekly totals of bird migration counts minimized bias and improved trend precision for common species[4].
+
+2. **Loss of Temporal Resolution**  
+   - **Rare events or fine-scale patterns** (e.g., daily migration pulses) may be obscured, leading to biased estimates for rare species[1][4].  
+   - **Temporal autocorrelation** (e.g., consecutive days of high counts) is lost, which can mask critical ecological processes[3][4].
+
+3. **Handling Data Irregularities**  
+   - **Day-of-week effects** (e.g., lower counts on weekends due to observer availability) must be controlled during aggregation to avoid bias[1].  
+   - Example: In epidemiological studies, failing to account for non-working days distorted monthly peak timing estimates[1].
+
+4. **Statistical Power vs. Precision**  
+   - For **long-term trend analysis**, weekly aggregation often increases precision by reducing stochastic noise[4].  
+   - For **short-term dynamics** (e.g., disease outbreaks), daily data are preferable to capture rapid changes[1].
+
+---
+
+### **When to Aggregate Daily to Weekly Counts**
+
+| Scenario                          | Recommendation                | Rationale                                                                 |
+|-----------------------------------|--------------------------------|---------------------------------------------------------------------------|
+| **Common species**                | Valid                         | Reduces overdispersion; improves trend precision[4].                    |
+| **Rare species**                  | Use daily data with NB models | Aggregation risks losing critical rare-event signals[3][4].             |
+| **Long-term trend analysis**      | Valid                         | Weekly totals smooth noise while preserving seasonal/annual patterns[4].|
+| **Short-term event detection**    | Avoid aggregation             | Daily resolution is essential[1].                                       |
+| **Presence of day-of-week effects** | Control in models             | Adjust for irregularities (e.g., observer schedules)[1][4].             |
+
+---
+
+### **Best Practices**
+1. **Model Validation**  
+   Compare models fit to daily vs. weekly data. If trends/conclusions align, aggregation is likely valid[4].  
+2. **Account for Effort**  
+   Normalize counts by sampling effort (e.g., adjust for missed days)[1][4].  
+3. **Use Flexible Distributions**  
+   For aggregated counts, employ models that handle overdispersion (e.g., negative binomial)[3][4].  
+
+---
+
+### **Example Workflow**
+```r
+# For common species: Aggregate daily to weekly counts
+weekly_counts <- daily_data %>%
+  group_by(week = floor_date(date, "week")) %>%
+  summarise(count = sum(count, na.rm = TRUE))
+
+# Model with negative binomial distribution
+library(MASS)
+glm.nb(count ~ year + season, data = weekly_counts)
+```
+
+---
+
+### **Conclusion**  
+Weekly aggregation is valid for **common species** and **long-term trend analysis** but risks information loss for **rare species** or **fine-scale dynamics**. Always validate against daily models and control for temporal irregularities.
+
+Sources
+[1] Effects of Data Aggregation on Time Series Analysis of Seasonal ... https://pmc.ncbi.nlm.nih.gov/articles/PMC7460497/
+[2] On the Choice of the Temporal Aggregation Level for Statistical ... https://journals.ametsoc.org/view/journals/clim/17/9/1520-0442_2004_017_1816_otcott_2.0.co_2.xml
+[3] r - Cumulative number of events weighted by temporal aggregation ... https://stats.stackexchange.com/questions/199443/cumulative-number-of-events-weighted-by-temporal-aggregation
+[4] Temporal aggregation of migration counts can improve accuracy ... https://epe.lac-bac.gc.ca/100/201/300/avian_conservation_ecology-ef/v01n01-v16n02/https@www.ace-eco.org/vol11/iss2/art8/default.htm
+[5] Global reports of well-being overestimate aggregated daily states of ... https://www.tandfonline.com/doi/abs/10.1080/17439760.2020.1725608
+[6] Unbiased temperature-related mortality estimates using weekly and ... https://www.sciencedirect.com/science/article/pii/S2542519624002122
+[7] The effect of temporal data aggregation to assess the impact of ... https://www.thelancet.com/journals/lanepe/article/PIIS2666-7762(23)00198-9/fulltext
+[8] Understanding time use: Daily or weekly data? - ScienceDirect.com https://www.sciencedirect.com/science/article/abs/pii/S0965856414001748
+[9] Combining aggregate and individual-level data to estimate ... https://pmc.ncbi.nlm.nih.gov/articles/PMC10395946/
+[10] The effect of temporal data aggregation to assess the impact of ... https://www.sciencedirect.com/science/article/pii/S2666776223001989
+[11] Evaluating Combinations of Temporally Aggregated Sentinel-1 ... https://www.mdpi.com/2072-4292/11/3/288
+[12] BAYESIAN SPATIAL-TEMPORAL MODELING OF ECOLOGICAL ... https://pmc.ncbi.nlm.nih.gov/articles/PMC4793368/
+[13] A practical guide to selecting models for exploration, inference, and ... https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecy.3336
+[14] Data assimilation experiments inform monitoring needs for near ... https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.4752
+[15] The sensitivity of food web topology to temporal data aggregation https://www.sciencedirect.com/science/article/abs/pii/S0304380009003238
+[16] Identifying Temporal Aggregation Effect on Crash-Frequency Modeling https://www.mdpi.com/2071-1050/13/11/6214
+[17] Applying time series aggregations - ServiceNow https://www.servicenow.com/docs/bundle/yokohama-now-intelligence/page/use/performance-analytics/concept/applying-time-series-aggregations.html
+[18] Stop aggregating away the signal in your data - Stack Overflow https://stackoverflow.blog/2022/03/03/stop-aggregating-away-the-signal-in-your-data/
+[19] The impact of temporal aggregation of land surface temperature ... https://www.sciencedirect.com/science/article/abs/pii/S0034425713000631
+[20] Assessing temporal biases across aggregated historical spatial data ... https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.3878
+
+
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+The Poisson distribution's equi-dispersion constraint refers to its inherent assumption that the mean (expected value) and variance of the data are equal. This property arises from the Poisson probability mass function, where both moments are defined by a single parameter $$\lambda$$ (i.e., $$E(Y) = \text{Var}(Y) = \lambda$$)[6][11]. While mathematically elegant, this constraint limits the Poisson model's applicability to real-world count data, which often exhibit **overdispersion** (variance > mean) or **underdispersion** (variance < mean)[5][7].
+
+### Implications of the Equi-Dispersion Constraint
+1. **Model Misspecification**:  
+   If data violates the equi-dispersion assumption (e.g., due to unobserved heterogeneity or clustering), Poisson-based models produce biased standard errors and unreliable inference. For example:
+   - Overdispersed data leads to underestimated standard errors, inflating Type I error rates[6][11].
+   - Underdispersed data may result in overly conservative tests[5].
+
+2. **Limited Flexibility**:  
+   The Poisson model cannot accommodate common features of real-world counts, such as:
+   - Excess zeros or heavy tails (overdispersion)[2][7].
+   - Strict regularity in event counts (underdispersion), as seen in clutch sizes of birds or manufacturing defect patterns[1][3].
+
+### Alternatives to Address Dispersion Issues
+When equi-dispersion fails, generalized models are preferred:
+- **COM-Poisson**: A flexible two-parameter distribution that generalizes Poisson, geometric, and Bernoulli distributions. It introduces a dispersion parameter $$\nu$$, where $$\nu > 1$$ indicates underdispersion and $$\nu < 1$$ indicates overdispersion[1][3][5][7].
+- **Generalized Poisson (GP)**: Extends the Poisson model with a dispersion parameter $$\delta$$, though it faces truncation issues for certain $$\delta$$ values[1][4][8].
+- **Negative Binomial**: Handles overdispersion via a second parameter but does not address underdispersion[10].
+
+For example, the COM-Poisson regression model avoids the equi-dispersion constraint by decoupling the mean and variance through its parameters $$\lambda$$ (location) and $$\nu$$ (dispersion), enabling accurate modeling of diverse count datasets[5][7][10].
+
+Sources
+[1] [PDF] The COM-Poisson model for count data - Georgetown University https://faculty.georgetown.edu/kfs7/MY%20PUBLICATIONS/COMPoissonModelForCountDataWithDiscussion.pdf
+[2] Can Generalized Poisson model replace any other count data ... https://www.sciencedirect.com/science/article/pii/S2213398421000828
+[3] [PDF] A generalized statistical control chart for over or underdispersed data https://faculty.georgetown.edu/kfs7/MY%20PUBLICATIONS/GeneralizedStatisticalControlChart.pdf
+[4] Modeling Underdispersed Count Data with Generalized Poisson ... https://journals.sagepub.com/doi/pdf/10.1177/1536867X1201200412
+[5] The COM-Poisson model for count data: A survey of methods and ... https://eprints.exchange.isb.edu/343/
+[6] The mean and variance of Poisson distribution are equal https://stats.stackexchange.com/questions/305522/the-mean-and-variance-of-poisson-distribution-are-equal
+[7] Conway–Maxwell–Poisson regression models for dispersed count ... https://wires.onlinelibrary.wiley.com/doi/10.1002/wics.1533
+[8] [PDF] On the Generalized Poisson Regression Model https://ww2.amstat.org/meetings/proceedings/2012/data/assets/pdf/304009_72282.pdf
+[9] [PDF] A new over-dispersed count model arXiv:2301.01480v1 [stat.ME] 4 ... https://arxiv.org/pdf/2301.01480.pdf
+[10] Exploring COM Poisson regression - Zajichek Stats https://www.zajichekstats.com/post/com-poisson-regression/
+[11] Poisson Regression - an overview | ScienceDirect Topics https://www.sciencedirect.com/topics/mathematics/poisson-regression
+
+
+

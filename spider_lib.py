@@ -429,7 +429,6 @@ def weekly_spider_count(df):
 
     #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     #print(df)
-    #print(">>>>>>>>>>>>>>>>>>>>>>>>>>.end delimeter>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
     #       transect time week delimeter p0 p1 p2 p3 p4 p5 p6 p7 p8 p9
     # 0      control   am   34    :      0  0  0  0  0  0  0  0  0  0
@@ -453,7 +452,7 @@ def weekly_spider_count(df):
     df[cols_to_normalize] = df[cols_to_normalize].astype(int)
     df[cols_to_normalize] = df[cols_to_normalize].div(df[cols_to_normalize].sum(axis=1), axis=0)
     # (the cols of the df have been converted from counts to proportions)
-
+    # print(df)
     #      transect time week        p0  ...        p6        p7        p8        p9
     # 0     control   am   34  0.000000  ...  0.000000  0.000000  1.000000  0.000000
     # 1     control   pm   34  0.000000  ...  0.000000  0.000000  0.333333  0.333333
@@ -463,7 +462,6 @@ def weekly_spider_count(df):
     # 5     control   pm   32  0.000000  ...  0.000000  0.500000  0.000000  0.333333
     # 6   oakMargin   am   32  0.500000  ...  0.000000  0.000000  0.500000  0.000000
 
-    print(df)
 
     #prob_df = probs.reset_index()
     #prob_df.columns = ['count', 'probability']
@@ -1503,6 +1501,14 @@ def rasmus(df):
     # do it a lot of times and this is the simulated data
     # "what is likely the rate of sign-up given that 6 of 16 signed-up"
 
+
+see .txt for poisson over-disperion and notice 
+rng = np.random.default_rng()
+samples = rng.negative_binomial(n=1, p=0.1, size=100000)
+
+Use `negative_binomial` in NumPy when modeling count data with overdispersion, 
+such as insurance claims, disease cases, or equipment failures.
+For new code, prefer `Generator.negative_binomial` over the legacy `random.negative_binomial`.
 
 
     def generative_model(prob):

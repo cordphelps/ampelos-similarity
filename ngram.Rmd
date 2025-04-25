@@ -34,7 +34,44 @@ library(dplyr)
 
 
 
-```{r makeTibbles, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+```{r makeWEEK, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+
+source.url <- c("./metrics/week_counts_df-.csv")
+
+# get a lot of insect observations
+week.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+pm.tibl <- week.tibl %>% 
+  dplyr::filter(time == 'pm') 
+
+# summary(pm.tibl)  # max = 15
+
+gg <- ggplot() +
+  
+    geom_point(data=pm.tibl, 
+                aes(y = p0, x = week, 
+                colour = 4, fill = "green")
+                ) +
+    stat_summary(fun = mean, geom="line", size=3) + 
+    stat_summary(fun.data = mean_se, geom = "errorbar") +
+
+    scale_y_continuous(limits=c(0, 15),
+                       breaks = seq(min(0), max(15), by = 1) ) +
+                       
+    theme_bw()  +
+    # turn off legend
+    theme(legend.position="none") 
+  
+    print(gg)
+
+
+
+```
+
+
+
+```{r makeNGRAM, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 
 source.url <- c("./metrics/transect-compare-.csv")
