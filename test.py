@@ -46,50 +46,8 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 
 
 
-
-
-time = 'pm'
-
-# get the relative frequencies by count
-
-hoser = spider_lib.central_limit(both_transects_dataframe=week_records_df, daytime=time, file_label='_1to10_')
-
-# ^^^^^^^^^^^^^ MCMC analysis in ngram.Rmd ^^^^^^^^^^^^^
-
-# erase any existing variance csv
-import os 
-filename = './metrics/count-variance.csv'
-if os.path.exists(filename):
-    os.remove(filename)
-# Create an empty DataFrame and csv
-df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'count', 'mean', 'variance'])
-df.to_csv(filename, index=False)
-
-# partition data by position 1-4 ; 5-7 ; 8-10
-
-group1_df = spider_lib.chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group1_df, daytime=time, file_label='_1to4_')
-
-group2_df = spider_lib.chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group2_df, daytime=time, file_label='_5to7_')
-
-group3_df = spider_lib.chopPosition(df=week_records_df, position_list=['8', '9', '10'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group3_df, daytime=time, file_label='_8to10_')
-
-# partition data by position 1-4 ; 5-7 ; 8-10
-
-group1_df = spider_lib.chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
-group1_df_week1 = spider_lib.chopWeek(df=group1_df, week_list=['23', '24', '25'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_23to25')
-
-group2_df = spider_lib.chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-group2_df_week2 = spider_lib.chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
-
-group3_df = spider_lib.chopPosition(df=week_records_df, position_list=['8', '9', '10'])
-group3_df_week3 = spider_lib.chopWeek(df=group3_df, week_list=['32', '33', '34'])
-hoser = spider_lib.central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_32to34')
-
+# get the binomial probabilities and their variace by position and time clusters
+null = spider_lib.analyze_position_time_clusters(df=week_records_df)
 print("csv written")
 sys.exit(1)
 

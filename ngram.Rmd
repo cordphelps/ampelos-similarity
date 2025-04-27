@@ -37,43 +37,83 @@ library(dplyr)
 ```{r makeVariance, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 
-source.url <- c("./metrics/count-variance.csv")
+plotVariance <- function(df1, df2, t) {
 
-variance.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
-
-oak.tibl <- variance.tibl %>% 
-  dplyr::filter(transect == 'oakMargin') 
-
-control.tibl <- variance.tibl %>% 
-  dplyr::filter(transect == 'control') 
-
-# summary(pm.tibl)  # max = 15
-
-gg <- ggplot() +
+  oak.tibl <- df1
+  control.tibl <- df2
+  time <- t
+	
+  gg <- ggplot() +
   
     geom_jitter(data=oak.tibl, 
-                aes(y = mean, x = variance),
-                color = "green"
+                aes(y = mean, x = variance, group="SNH"),
+                color = "mediumvioletred", fill = "purple1", shape = 21, size=5
                 ) +
   
     geom_jitter(data=control.tibl, 
-                aes(y = mean, x = variance),
-                color = "blue"
+                aes(y = mean, x = variance, group="control"), 
+                color = "mediumvioletred", fill = "plum1", shape = 21, size=5
                 ) +
   
-    geom_text(data=oak.tibl, aes(y = mean, x = variance, label = data_label), vjust = -1, size = 3) +
-    geom_text(data=control.tibl, aes(y = mean, x = variance, label = data_label), vjust = -1, size = 3) +
+    #geom_text(data=oak.tibl, aes(y = mean, x = variance, label = data_label), 
+    #          hjust=1, vjust = 0.5,  angle=90, size = 3) +
+    #geom_text(data=control.tibl, aes(y = mean, x = variance, label = data_label), 
+    #          hjust=1, vjust = 0.5, angle=90, size = 3) +
 
-    geom_segment(aes(x=0, y=0, xend=0.5, yend=0.5)) +
+    geom_segment(aes(x=0, y=0, xend=0.3, yend=0.3)) +
   
-    scale_y_continuous(limits=c(0, 0.5) ) +
-    scale_x_continuous(limits=c(0, 0.5) ) +
-                       
-    theme_bw()  +
+    scale_colour_manual(name="transect", guide = 'legend', values = c("SNH"="purple1", "control"="plum1")) +
+  
+    scale_y_continuous(limits=c(0, 0.3) ) +
+    scale_x_continuous(limits=c(0, 0.3) ) +
+  
+    theme_bw() +
+    theme(legend.position="right") +
+
     # turn off legend
-    theme(legend.position="none") 
+    # theme(legend.position="none") 
+
+    labs( title = paste("binomial probability of spiders occurring in a sample",
+                        "\nby vine position and week cluster, daytime= ", 
+                        time, 
+                        "\ntransect SNH is dark purple, control is light purple",
+                        sep=""),
+          subtitle = "checking for overdispersion; the diagonal line describes mean=variance",
+          y="mean", 
+          x="variance", 
+          caption = paste("(points are ggplot 'jittered')", sep="" ) 
+          ) 
   
     print(gg)
+
+}
+
+source.url <- c("./metrics/probability-variance.csv")
+
+
+variance.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+v.tibl <- variance.tibl %>% 
+  dplyr::filter(time == 'am') 
+  
+oak.tibl <- v.tibl %>% 
+  dplyr::filter(transect == 'oakMargin') 
+
+control.tibl <- v.tibl %>% 
+  dplyr::filter(transect == 'control') 
+
+plotVariance(oak.tibl, control.tibl, t='am')
+
+v.tible <- variance.tibl %>% 
+  dplyr::filter(time == 'pm') 
+  
+oak.tibl <- v.tibl %>% 
+  dplyr::filter(transect == 'oakMargin') 
+
+control.tibl <- v.tibl %>% 
+  dplyr::filter(transect == 'control') 
+
+plotVariance(oak.tibl, control.tibl, t='pm')
 
 
 

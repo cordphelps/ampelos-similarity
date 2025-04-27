@@ -1518,8 +1518,11 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
 
 
     def generative_model(success_probability):
-        #return(np.random.binomial(number_independent_trials, success_probability))   # 10 vineyard row positions
-        return(np.random.negative_binomial(number_independent_trials, success_probability))    
+
+        # see weekly aggregation notes.txt for discussion of poisson (counts) vs. binomial (probability of success)
+
+        return(np.random.binomial(number_independent_trials, success_probability))   # 10 vineyard row positions
+        #return(np.random.negative_binomial(number_independent_trials, success_probability))    
         # (This simulates the number of successes in 16 independent Bernoulli trials (e.g., coin flips), 
         # where each trial has a probability `prob` of success.) )
 
@@ -1574,6 +1577,78 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
     return([posterior.median(), posterior.quantile(.055), posterior.quantile(.945)])
 
 
+def analyze_position_time_clusters(df):
+
+    import pandas as pd
+
+    week_records_df = df
+
+    # erase any existing variance csv
+    import os 
+    filename = './metrics/probability-variance.csv'
+    if os.path.exists(filename):
+        os.remove(filename)
+    # Create an empty DataFrame and csv
+    df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'count', 'mean', 'variance'])
+    df.to_csv(filename, index=False)
+
+
+    unique_time = ['am', 'pm']
+
+    for time in unique_time:
+
+        filtered_df = pd.DataFrame()
+        #  !!!!!!!  'f' is curly brace support !!!!!!!
+        filtered_df = week_records_df.query( f"time == '{time}' ")
+        # 0    transect row time week julian Thomisidae (crab spider) position
+
+
+        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
+        group1_df_week1 = chopWeek(df=group1_df, week_list=['23', '24', '25'])
+        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_23to25')
+
+        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
+        group1_df_week1 = chopWeek(df=group1_df, week_list=['26', '27', '28', '29', '30', '31'])
+        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_26to31')
+
+        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
+        group1_df_week1 = chopWeek(df=group1_df, week_list=['32', '33', '34'])
+        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_32to34')
+
+        # ***************************************************************************************************************
+
+        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
+        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
+        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
+
+        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
+        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
+        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
+
+        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
+        group2_df_week2 = chopWeek(df=group1_df, week_list=['26', '27', '28', '29', '30', '31'])
+        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
+
+        # ***************************************************************************************************************
+
+        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
+        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
+        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_26to31')
+
+        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
+        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
+        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_26to31')
+
+        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
+        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
+        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_32to34')
+
+
+    return()
+
+
+
+
 def central_limit(both_transects_dataframe, daytime, file_label):
 
     # *********************** central limit theorem ***********************
@@ -1606,8 +1681,8 @@ def central_limit(both_transects_dataframe, daytime, file_label):
     filename = './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
     control_df.to_csv(filename, header=True, index=True, mode='w')
 
-    csv_count_variance(df=oakMargin_df, transect='oakMargin', time=daytime, label=file_label)
-    csv_count_variance(df=control_df, transect='control', time=daytime, label=file_label)
+    csv_probability_variance(df=oakMargin_df, transect='oakMargin', time=daytime, label=file_label)
+    csv_probability_variance(df=control_df, transect='control', time=daytime, label=file_label)
 
 
 
@@ -1662,7 +1737,7 @@ def chopWeek(df, week_list):
 
     return(filtered_df)
 
-def csv_count_variance(df, transect, time, label):
+def csv_probability_variance(df, transect, time, label):
 
     import pandas as pd
     import numpy as np
@@ -1674,10 +1749,10 @@ def csv_count_variance(df, transect, time, label):
     s = np.sum(count_list)
     # new record
     record = {'transect' : transect, 'time' : time, 'data_label' : label, 'count' : s, 'mean' : m, 'variance' : v}
-    count_variance_df = pd.DataFrame([record])
+    probability_variance_df = pd.DataFrame([record])
 
-    filename = './metrics/count-variance.csv'
-    count_variance_df.to_csv(filename, header=False, index=False, mode='a')
+    filename = './metrics/probability-variance.csv'
+    probability_variance_df.to_csv(filename, header=False, index=False, mode='a')
 
     print(record)
 
