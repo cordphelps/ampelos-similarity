@@ -1441,7 +1441,7 @@ def julian_row_compare_alternate(df):
     return(sim_df)
 
 
-def rasmus(df):
+def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
 
     # *********************** bayes ***********************
     # *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
@@ -1472,6 +1472,7 @@ def rasmus(df):
     # Import libraries
     import pandas as pd
     import numpy as np
+    import matplotlib.pyplot as plt
 
     # Number of random draws from the prior
     n_draws = 10000
@@ -1485,9 +1486,11 @@ def rasmus(df):
     # but it is always mathematically represented as a function. 
     #
 
-    prior = pd.Series(np.random.uniform(0, 1, size = n_draw))  
+    prior = pd.Series(np.random.uniform(0, 1, size = n_draws), name='values')  
+    #     "any success percentage between 0 and 1 is equally likely" 
 
-    prior.hist() # It's always good to eyeball the prior to make sure it looks ok.
+    #prior.hist() # It's always good to eyeball the prior to make sure it looks ok.
+    #plt.show()
 
     # Here you define the generative model 
     #
@@ -1502,19 +1505,28 @@ def rasmus(df):
     # "what is likely the rate of sign-up given that 6 of 16 signed-up"
 
 
-see .txt for poisson over-disperion and notice 
-rng = np.random.default_rng()
-samples = rng.negative_binomial(n=1, p=0.1, size=100000)
+    #see .txt for poisson over-disperion and notice 
+    #rng = np.random.default_rng()
+    #samples = rng.negative_binomial(n=1, p=0.1, size=100000)
 
-Use `negative_binomial` in NumPy when modeling count data with overdispersion, 
-such as insurance claims, disease cases, or equipment failures.
-For new code, prefer `Generator.negative_binomial` over the legacy `random.negative_binomial`.
+    #Use `negative_binomial` in NumPy when modeling count data with overdispersion, 
+    #    #such as insurance claims, disease cases, or equipment failures.
+    #For new code, prefer `Generator.negative_binomial` over the legacy `random.negative_binomial`.
+    # HOWEVER
+    # Low variance: All counts are close to the mean (e.g., 8, 10, 11, 9, 12).
+    # High variance: Counts are all over the place (e.g., 2, 4, 40, 1, 25).
 
 
-    def generative_model(prob):
-        return(np.random.binomial(16, prob))
+    def generative_model(success_probability):
+        #return(np.random.binomial(number_independent_trials, success_probability))   # 10 vineyard row positions
+        return(np.random.negative_binomial(number_independent_trials, success_probability))    
         # (This simulates the number of successes in 16 independent Bernoulli trials (e.g., coin flips), 
         # where each trial has a probability `prob` of success.) )
+
+        # NB allows for overdispersion (variance > mean), which can stretch its posterior 
+        # rightward (higher median) if the data is skewed or has high variance.
+        # NB Parameter p: Represents success probability per trial, 
+        # but its posterior median depends on both r (dispersion) and μ (mean).
 
 
     # Here you simulate data using the parameters from the prior and the 
@@ -1525,16 +1537,25 @@ For new code, prefer `Generator.negative_binomial` over the legacy `random.negat
         sim_data.append(generative_model(p))
 
     # Observed data
-    observed_data = 6
+    observed_data = number_of_successes # vine positions with spiders
                         
     # Here you filter off all draws that do not match the data.
     posterior = prior[list(map(lambda x: x == observed_data, sim_data))]
 
     posterior.hist() # Eyeball the posterior
+    plt.show()
 
+    filename = './metrics/negative-binomial-posterior-' + csv_ID + '.csv'
+    posterior.to_csv(filename, header=True, index=True, mode='w')
 
     # See that we got enought draws left after the filtering. 
     # There are no rules here, but you probably want to aim for >1000 draws.
+
+    # Posterior Distribution: After observing data, Bayesian inference updates 
+    # the prior belief to form the posterior distribution for a parameter.
+
+    # Quantile Interval: A range of parameter values that captures a specified 
+    # probability mass (e.g., 95%) from the posterior distribution.
 
     # Now you can summarize the posterior, where a common summary is to take the mean or the median posterior, 
     # and perhaps a 95% quantile interval.
@@ -1543,7 +1564,14 @@ For new code, prefer `Generator.negative_binomial` over the legacy `random.negat
     print('Number of draws left: %d, Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
           (len(posterior), posterior.median(), posterior.quantile(.025), posterior.quantile(.975)))
 
-    return()
+    print('posterior mean: %.3f, Posterior variance: %.3f' % 
+          (posterior.mean(), posterior.var()))
+
+    # the 89% central credible interval (equal-tailed interval) of the probability mass is bounded by the 5.5th percentile 
+    # and the 94.5th percentile of the posterior distribution.
+    # Lower quantile:  (1-0.89)/2 = 0.055
+    # Lower quantile:  (1-0.055) = 0.945
+    return([posterior.median(), posterior.quantile(.055), posterior.quantile(.945)])
 
 
 def central_limit(both_transects_dataframe, daytime, file_label):
@@ -1571,6 +1599,18 @@ def central_limit(both_transects_dataframe, daytime, file_label):
     control_df = control_df.rename(columns={'Thomisidae (crab spider)': 'count'})
     oakMargin_df = oakMargin_df.rename(columns={'Thomisidae (crab spider)': 'count'})
 
+
+    filename = './metrics/oakMargin_df-' + daytime + file_label + '-raw_count-.csv'
+    oakMargin_df.to_csv(filename, header=True, index=True, mode='w')
+
+    filename = './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
+    control_df.to_csv(filename, header=True, index=True, mode='w')
+
+    csv_count_variance(df=oakMargin_df, transect='oakMargin', time=daytime, label=file_label)
+    csv_count_variance(df=control_df, transect='control', time=daytime, label=file_label)
+
+
+
     # "from a pandas dataframe column of count data, create a dataframe of normalized probabilities of each count value"
 
     # df = pd.DataFrame({'count': [3, 2, 3, 1, 2, 3, 1]})
@@ -1590,7 +1630,7 @@ def central_limit(both_transects_dataframe, daytime, file_label):
     prob_oakMargin_df = probs.reset_index()
     prob_oakMargin_df.columns = ['count', 'probability']
 
-    filename = './metrics/prob_oakMargin_df-' + daytime + file_label + '-.csv'
+    filename = './metrics/oakMargin_df-' + daytime + file_label + '-prob-.csv'
     prob_oakMargin_df.to_csv(filename, header=True, index=True, mode='w')
 
 
@@ -1598,7 +1638,7 @@ def central_limit(both_transects_dataframe, daytime, file_label):
     prob_control_df = probs.reset_index()
     prob_control_df.columns = ['count', 'probability']
 
-    filename = './metrics/prob_control_df-' + daytime + file_label + '-.csv'
+    filename = './metrics/control_df-' + daytime + file_label + '-prob-.csv'
     prob_control_df.to_csv(filename, header=True, index=True, mode='w')
 
     # take samples from the distribution 
@@ -1621,3 +1661,24 @@ def chopWeek(df, week_list):
     filtered_df = df[df['week'].isin(week_list)]
 
     return(filtered_df)
+
+def csv_count_variance(df, transect, time, label):
+
+    import pandas as pd
+    import numpy as np
+
+    count_list = []
+    count_list = df['count'].astype(int).tolist()
+    m = np.mean(count_list)
+    v = np.var(count_list)
+    s = np.sum(count_list)
+    # new record
+    record = {'transect' : transect, 'time' : time, 'data_label' : label, 'count' : s, 'mean' : m, 'variance' : v}
+    count_variance_df = pd.DataFrame([record])
+
+    filename = './metrics/count-variance.csv'
+    count_variance_df.to_csv(filename, header=False, index=False, mode='a')
+
+    print(record)
+
+    return()

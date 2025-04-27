@@ -48,13 +48,6 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 
 
 
-week_df = spider_lib.weekly_spider_count(df=week_records_df)
-
-print("week total written")
-sys.exit(1)
-
-
-
 time = 'pm'
 
 # get the relative frequencies by count
@@ -62,6 +55,15 @@ time = 'pm'
 hoser = spider_lib.central_limit(both_transects_dataframe=week_records_df, daytime=time, file_label='_1to10_')
 
 # ^^^^^^^^^^^^^ MCMC analysis in ngram.Rmd ^^^^^^^^^^^^^
+
+# erase any existing variance csv
+import os 
+filename = './metrics/count-variance.csv'
+if os.path.exists(filename):
+    os.remove(filename)
+# Create an empty DataFrame and csv
+df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'count', 'mean', 'variance'])
+df.to_csv(filename, index=False)
 
 # partition data by position 1-4 ; 5-7 ; 8-10
 
@@ -88,11 +90,27 @@ group3_df = spider_lib.chopPosition(df=week_records_df, position_list=['8', '9',
 group3_df_week3 = spider_lib.chopWeek(df=group3_df, week_list=['32', '33', '34'])
 hoser = spider_lib.central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_32to34')
 
-
-
-
 print("csv written")
 sys.exit(1)
+
+
+
+posterior_result = spider_lib.negative_binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
+
+print('results:   Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
+          (posterior_result[0], posterior_result[1], posterior_result[2]))
+
+
+print("week total written")
+sys.exit(1)
+
+
+
+week_df = spider_lib.weekly_spider_count(df=week_records_df)
+
+print("week total written")
+sys.exit(1)
+
 
 #print(">>>>>>>>>>>>>>>> week_records_df df >>>>>>>>>>>>>.")
 #print(week_records_df)

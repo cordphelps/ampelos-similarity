@@ -34,6 +34,54 @@ library(dplyr)
 
 
 
+```{r makeVariance, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+
+source.url <- c("./metrics/count-variance.csv")
+
+variance.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+oak.tibl <- variance.tibl %>% 
+  dplyr::filter(transect == 'oakMargin') 
+
+control.tibl <- variance.tibl %>% 
+  dplyr::filter(transect == 'control') 
+
+# summary(pm.tibl)  # max = 15
+
+gg <- ggplot() +
+  
+    geom_jitter(data=oak.tibl, 
+                aes(y = mean, x = variance),
+                color = "green"
+                ) +
+  
+    geom_jitter(data=control.tibl, 
+                aes(y = mean, x = variance),
+                color = "blue"
+                ) +
+  
+    geom_text(data=oak.tibl, aes(y = mean, x = variance, label = data_label), vjust = -1, size = 3) +
+    geom_text(data=control.tibl, aes(y = mean, x = variance, label = data_label), vjust = -1, size = 3) +
+
+    geom_segment(aes(x=0, y=0, xend=0.5, yend=0.5)) +
+  
+    scale_y_continuous(limits=c(0, 0.5) ) +
+    scale_x_continuous(limits=c(0, 0.5) ) +
+                       
+    theme_bw()  +
+    # turn off legend
+    theme(legend.position="none") 
+  
+    print(gg)
+
+
+
+```
+
+
+
+
 ```{r makeWEEK, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 
