@@ -1221,6 +1221,7 @@ def julian_row_compare_alternate(df):
 
     n1_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts']) 
     n2_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts']) 
+    binomial_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'nonZero'])
 
     for julian in unique_julian:
 
@@ -1304,6 +1305,9 @@ def julian_row_compare_alternate(df):
                     else:
 
                         # (each row should have data from 10 different positions)
+                        # and count the number of non-zero for each day
+
+                        nonZero = 0
 
                         for i in range(10):
 
@@ -1314,6 +1318,8 @@ def julian_row_compare_alternate(df):
                             else:
 
                                 new_string_list[i] = 'T '  # spider count is non-zero for that position
+
+                                nonZero = nonZero + 1
 
 
                         new_string_text = new_string_list[0] + new_string_list[1] + new_string_list[2] + \
@@ -1331,37 +1337,59 @@ def julian_row_compare_alternate(df):
                         # new row as a df in dictionary format
                         n2_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
                             'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
+
+                        binomial_day_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
+                            'julian' : [julian], 'row' : [row], 'nonZero' : nonZero})
                         # 
                         #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
-                        #print(n2_df)
-                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>")
+                        #print(n2_df.to_string())
+                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>\n")
+
+                        #     transect time week julian row                counts
+                        # 0  oakMargin   pm   23    156  79  f f f f f f T f T f 
+
+                        #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
+                        #print(binomial_day_df.to_string())
+                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>\n")
+
+                        #     transect time week julian row  nonZero
+                        # 0  oakMargin   pm   23    156  79        2
+
 
                     n1_df = pd.concat([n1_df, n2_df], ignore_index=True)
 
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    # print(n1_df.to_string())
-    #
-    #       transect time week julian row                counts
-    # 0    oakMargin   pm   23    156  79  f f f f f f T f T f 
-    # 1    oakMargin   pm   23    156  81  f f f f T f f T f f 
-    #  2    oakMargin   pm   23    156  83  f f f f T f f f f f 
-    #  3      control   pm   23    156  48  f f T f f f f f f T 
-    #  4      control   pm   23    156  50  f f f f f f T T f f 
-    #  5      control   pm   23    156  52  f f f f T f f f f f 
-    #  6    oakMargin   pm   23    157  79  f f f f T f T f f f 
-    #  7    oakMargin   pm   23    157  81  f f f T T f f f T f 
-    #  8    oakMargin   pm   23    157  83  f f T f f f f f f f 
-    #  9    oakMargin   am   23    157  79  f T f f f f T f f f 
-    #  10   oakMargin   am   23    157  81  f f f f f f T f f f 
-    #  11   oakMargin   am   23    157  83  f f f f f f f f f f 
-    #  12     control   pm   23    157  48  f f T T f f T T f f 
-    #  13     control   pm   23    157  50  f f f T f f T f f f 
-    #  14     control   pm   23    157  52  f f f T f T f f f T 
-    #  15     control   am   23    157  48  f f T f f f f T f f 
-    #  16     control   am   23    157  50  f f f f f f f f f f 
-    #  17     control   am   23    157  52  f f f f f f f T f f 
-    #
-    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    binomial_df = pd.concat([binomial_df, binomial_day_df], ignore_index=True)
+
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    # print(n1_df.to_string())
+                    #
+                    #       transect time week julian row                counts
+                    # 0    oakMargin   pm   23    156  79  f f f f f f T f T f 
+                    # 1    oakMargin   pm   23    156  81  f f f f T f f T f f 
+                    #  2    oakMargin   pm   23    156  83  f f f f T f f f f f 
+                    #  3      control   pm   23    156  48  f f T f f f f f f T 
+                    #  4      control   pm   23    156  50  f f f f f f T T f f 
+                    #  5      control   pm   23    156  52  f f f f T f f f f f 
+                    #  6    oakMargin   pm   23    157  79  f f f f T f T f f f 
+                    #  7    oakMargin   pm   23    157  81  f f f T T f f f T f 
+                    #  8    oakMargin   pm   23    157  83  f f T f f f f f f f 
+                    #  9    oakMargin   am   23    157  79  f T f f f f T f f f 
+                    #  10   oakMargin   am   23    157  81  f f f f f f T f f f 
+                    #  11   oakMargin   am   23    157  83  f f f f f f f f f f 
+                    #  12     control   pm   23    157  48  f f T T f f T T f f 
+                    #  13     control   pm   23    157  50  f f f T f f T f f f 
+                    #  14     control   pm   23    157  52  f f f T f T f f f T 
+                    #  15     control   am   23    157  48  f f T f f f f T f f 
+                    #  16     control   am   23    157  50  f f f f f f f f f f 
+                    #  17     control   am   23    157  52  f f f f f f f T f f 
+                    #
+                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    filename = './metrics/row_binomial_success.csv'
+    # mode='w' indicates 'overwrite'
+    binomial_df.to_csv(filename, header=True, index=False, mode='a')
+
 
     #############################################################################################
     #
@@ -1388,9 +1416,16 @@ def julian_row_compare_alternate(df):
                         and time == '{time}' ")
                     # 0    transect row time week julian Thomisidae (crab spider) position
 
-                    print(">>>>>>> filtered df >>>>>>>>\n")
-                    print(filtered_df)
-                    print(">>>>>>> end filtered df >>>>>>>>\n")
+                    #print(">>>>>>> filtered df >>>>>>>>\n")
+                    #print(filtered_df)
+                    #print(">>>>>>> end filtered df >>>>>>>>\n")
+
+                    # >>>>>>> filtered df >>>>>>>>
+                    #    transect time week julian row                counts
+                    #360  control   pm   34    236  49  f f f f f f f f f f 
+                    #361  control   pm   34    236  51  f f f f f f f f T f 
+                    #362  control   pm   34    236  53  f f f f f f f f f T 
+                    #>>>>>>> end filtered df >>>>>>>>
 
 
                     if len(filtered_df) != 3:     # there should be 3 rows of data
@@ -1412,13 +1447,17 @@ def julian_row_compare_alternate(df):
                         t2_text = filtered_df.iloc[1, filtered_df.columns.get_loc('counts')] 
                         t3_text = filtered_df.iloc[2, filtered_df.columns.get_loc('counts')]
 
-                        print("triplet: ", t1_text, "     ", t2_text, "    ", t3_text)
+                        # print("triplet: ", t1_text, "     ", t2_text, "    ", t3_text)
+                        # triplet:  f f f f f f T f T f        f f f f T f f T f f       f f f f T f f f f f 
+
 
                         t1_t2 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t2_text, ngrams=4)
                         t1_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t3_text, ngrams=4)
                         t2_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t2_text, sentence2 = t3_text, ngrams=4)
 
-                        print("sims: ", t1_t2, "     ", t1_t3, "    ", t2_t3)
+                        # print("sims: ", t1_t2, "     ", t1_t3, "    ", t2_t3)
+                        # sims:  1.0       0.7037037037037037      0.7037037037037037
+
 
                         new_sim_df = pd.DataFrame({'transect': [transect], \
                             'julian' : [julian], 'time' : [time], 'week' : [week], \
@@ -1430,15 +1469,70 @@ def julian_row_compare_alternate(df):
 
                         sim_df = pd.concat([sim_df, new_sim_df], ignore_index=True)
 
-    filename = './metrics/row_similarity.csv'
-
+    filename = './metrics/row_NGRAM.csv'
     # mode='w' indicates 'overwrite'
     sim_df.to_csv(filename, header=True, index=False, mode='a')
 
+    return([binomial_df, sim_df])
+
+
+def week_binomial_success(df):
+
+    # for each weekly cluster, calculate "success" and "trials"
+
+    # input df:  transect time week julian row  nonZero
+    # already saved as filename = './metrics/week_cluster_binomial_success.csv'
+
+    import pandas as pd
+
+    # binomial_plus_df = pd.DataFrame(columns=['transect','time', 'week', 'nonZero', 'trials'])
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+        for transect in unique_transect:
+
+            for time in unique_time:
+
+                for week in unique_week:
+
+                    week_trials = 0
+                    week_nonZero = 0
+
+                    for julian in unique_julian:
+
+                        filtered_df = pd.DataFrame()
+
+                        #  !!!!!!!  'f' is curly brace support !!!!!!!
+                        filtered_df = df.query( f" transect == '{transect}' and julian == '{julian}' \
+                            and time == '{time}' ")
+
+                        # each julian represent 10 trials (=positions)
+                        week_trials = week_trials + 10
+
+                        # get the number of nonZero from the trial
+                        nZ = filtered_df.iloc[1, filtered_df.columns.get_loc('nonZero')]
+
+                        week_nonZero = week_nonZero + nZ
+
+                        
+
+                    new_week_df = pd.DataFrame({ 'transect': [transect], \
+                                'time' : [time], 'week' : [week], \
+                                'trials' : [week_trials], 'nonZero' : [week_nonZero] })
 
 
 
-    return(sim_df)
+
+
+
+
+
+
+
+    return()
 
 
 def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
@@ -1522,6 +1616,11 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
         # see weekly aggregation notes.txt for discussion of poisson (counts) vs. binomial (probability of success)
 
         return(np.random.binomial(number_independent_trials, success_probability))   # 10 vineyard row positions
+
+        # *Binomial**: Models the probability of $k$ successes in **known, fixed trials** (e.g., 10 coin flips, 
+        # 100 patients in a trial).  
+        # **Poisson**: Models counts with **no upper limit** (e.g., calls to a call center per hour). 
+
         #return(np.random.negative_binomial(number_independent_trials, success_probability))    
         # (This simulates the number of successes in 16 independent Bernoulli trials (e.g., coin flips), 
         # where each trial has a probability `prob` of success.) )
@@ -1548,7 +1647,7 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
     posterior.hist() # Eyeball the posterior
     plt.show()
 
-    filename = './metrics/negative-binomial-posterior-' + csv_ID + '.csv'
+    filename = './metrics/binomial-posterior-' + csv_ID + '.csv'
     posterior.to_csv(filename, header=True, index=True, mode='w')
 
     # See that we got enought draws left after the filtering. 

@@ -44,13 +44,20 @@ df = pd.DataFrame(bugs_list)
 week_records_df = spider_lib.rough_dataset_clean(df)
 
 
+########################################################################
+#
+# compare spider count text similarity by julian day for each row by transect and time
+# for each julian day, there are 3 rows that were sampled
+# 
+# return two dataframes :  
+#    (filename = './metrics/row_binomial_success.csv') transect time week julian row  nonZero
+#    (filename = './metrics/row_NGRAM.csv') transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
+#
 
-
-# get the binomial probabilities and their variace by position and time clusters
-null = spider_lib.analyze_position_time_clusters(df=week_records_df)
-print("csv written")
+df_list = spider_lib.julian_row_compare_alternate(week_records_df)
+df = spider_lib.week_binomial_success(df_list[1])
+print("compare_alternate")
 sys.exit(1)
-
 
 
 posterior_result = spider_lib.negative_binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
@@ -60,6 +67,17 @@ print('results:   Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f
 
 
 print("week total written")
+sys.exit(1)
+
+
+# get the binomial probabilities and their variace by position and time clusters
+# uses central_limit() *raw and normalized counts* + csv_probability_variance() 
+# plus files recording probability by vineyard position
+#           './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
+#           './metrics/control_df-' + daytime + file_label + '-prob-.csv'
+#
+null = spider_lib.analyze_position_time_clusters(df=week_records_df)
+print("csv written")
 sys.exit(1)
 
 
