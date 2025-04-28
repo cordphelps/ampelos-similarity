@@ -32,6 +32,52 @@ library(dplyr)
 
 ```
 
+```{r plotPosterior, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+#    library(bayestestR)
+# Example posterior draws from a normal distribution
+#    posterior <- rnorm(1000, mean = 5, sd = 3)
+# Calculate the 95% HDI (credible interval)
+#    hdi_interval <- hdi(posterior, credMass = 0.95)
+# Print the result
+#    print(hdi_interval)
+
+source.url <- c("./metrics/binomial-posterior-.csv")
+posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+
+column_list <- names(posterior.tibl)
+# column_list[1] is 'X' corresponding to the df index
+
+dist1 = posterior.tibl$oakMargin.pm.week.cluster.1
+dist2 = posterior.tibl$oakMargin.pm.week.cluster.2
+dist3 = posterior.tibl$oakMargin.pm.week.cluster.3
+
+dist4 = posterior.tibl$control.pm.week.cluster.1
+dist5 = posterior.tibl$control.pm.week.cluster.2
+dist6 = posterior.tibl$control.pm.week.cluster.3
+
+ggplot(posterior.tibl) +
+  
+  geom_density(aes(x = dist1), fill = "orange", alpha = 0.6) +
+  
+  geom_density(aes(x = dist2), fill = "purple1", alpha = 0.6) +
+  
+  geom_density(aes(x = dist3), fill = "plum1", alpha = 0.6) +
+  
+  geom_density(aes(x = dist4), fill = "green", alpha = 0.6) +
+  
+  geom_density(aes(x = dist5), fill = "seagreen", alpha = 0.6) +
+  
+  geom_density(aes(x = dist6), fill = "palegreen", alpha = 0.6) +
+  
+  
+  labs(title = "Density Plot of X", x = "Value", y = "Density")
+
+
+
+
+
+```
 
 
 ```{r makeVariance, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
