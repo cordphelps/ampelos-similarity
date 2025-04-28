@@ -1386,7 +1386,7 @@ def julian_row_compare_alternate(df):
                     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-    filename = './metrics/row_binomial_success.csv'
+    filename = './metrics/binomial_success_row.csv'
     # mode='w' indicates 'overwrite'
     binomial_df.to_csv(filename, header=True, index=False, mode='a')
 
@@ -1476,7 +1476,12 @@ def julian_row_compare_alternate(df):
     return([binomial_df, sim_df])
 
 
-def week_binomial_success(df):
+def binomial_success_week(df):
+
+    #print(">>>>>>>>>>>> new inbound_df >>>>>>>>>>>>>>>>")
+    #print(df.to_string())
+    #print(">>>>>>>>>>>> end inbound_df >>>>>>>>>>>>>>>>\n")
+
 
     # for each weekly cluster, calculate "success" and "trials"
 
@@ -1485,47 +1490,123 @@ def week_binomial_success(df):
 
     import pandas as pd
 
-    # binomial_plus_df = pd.DataFrame(columns=['transect','time', 'week', 'nonZero', 'trials'])
+    binomial_success_week_df = pd.DataFrame(columns=['transect','time', 'week', 'trials', 'nonZero'])
 
     unique_julian = df['julian'].unique()
     unique_time = df['time'].unique()
     unique_transect = df['transect'].unique()
     unique_week = df['week'].unique()
 
-        for transect in unique_transect:
+    for transect in unique_transect:
 
-            for time in unique_time:
+        for time in unique_time:
 
-                for week in unique_week:
+            for week in unique_week:
 
-                    week_trials = 0
-                    week_nonZero = 0
+                week_trials = 0
+                week_nonZero_success = 0
 
-                    for julian in unique_julian:
+                filtered_df = pd.DataFrame()
 
-                        filtered_df = pd.DataFrame()
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = df.query( f" transect == '{transect}' \
+                    and time == '{time}' and week == '{week}' ")
 
-                        #  !!!!!!!  'f' is curly brace support !!!!!!!
-                        filtered_df = df.query( f" transect == '{transect}' and julian == '{julian}' \
-                            and time == '{time}' ")
+                #print(">>>>>>>>>>>> new filtered_df >>>>>>>>>>>>>>>>")
+                #print(filtered_df.to_string())
+                #print(">>>>>>>>>>>> end filtered_df >>>>>>>>>>>>>>>>\n")
+                # >>>>>>>>>>>> new filtered_df >>>>>>>>>>>>>>>>
+                #     transect time week julian row nonZero
+                # 204  control   pm   29    202  48       1
+                # 205  control   pm   29    202  50       0
+                # 206  control   pm   29    202  52       2
+                # >>>>>>>>>>>> end filtered_df >>>>>>>>>>>>>>>>
+
+                if not filtered_df.empty: 
+
+                    unique_rows = filtered_df['row'].unique()
+
+                    for row in unique_rows:
 
                         # each julian represent 10 trials (=positions)
                         week_trials = week_trials + 10
 
                         # get the number of nonZero from the trial
-                        nZ = filtered_df.iloc[1, filtered_df.columns.get_loc('nonZero')]
+                        nZ = filtered_df.iloc[0, filtered_df.columns.get_loc('nonZero')]
 
-                        week_nonZero = week_nonZero + nZ
-
-                        
-
-                    new_week_df = pd.DataFrame({ 'transect': [transect], \
-                                'time' : [time], 'week' : [week], \
-                                'trials' : [week_trials], 'nonZero' : [week_nonZero] })
+                        week_nonZero_success = week_nonZero_success + nZ
 
 
 
 
+                new_week_df = pd.DataFrame({ 'transect': [transect], \
+                            'time' : [time], 'week' : [week], \
+                            'trials' : [week_trials], 'nonZero' : [week_nonZero_success] })
+
+
+                binomial_success_week_df = pd.concat([binomial_success_week_df, new_week_df], ignore_index=True)
+
+            #print(">>>>>>>>>>>> new binomial_success_week_df >>>>>>>>>>>>>>>>")
+            #print(binomial_success_week_df.to_string())
+            #print(">>>>>>>>>>>> end binomial_success_week_df >>>>>>>>>>>>>>>>\n")
+
+            #      transect time week trials nonZero
+            # 0   oakMargin   pm   23     30       6
+            # 1   oakMargin   pm   24     30      18
+            # 2   oakMargin   pm   25     30       6
+            # 3   oakMargin   pm   26     30       3
+            # 4   oakMargin   pm   27     30       3
+            # 5   oakMargin   pm   28     30       3
+
+
+    filename = './metrics/binomial_success_week.csv'
+    binomial_success_week_df.to_csv(filename, header=True, index=False, mode='w')
+
+
+    return(binomial_success_week_df)
+
+
+
+def binomial_confidence_interval(df, graphics, csv_ID):
+
+    # ************ input *******************
+    #      transect time week trials nonZero
+    # 0   oakMargin   pm   23     30       6
+    # 1   oakMargin   pm   24     30      18
+    # 2   oakMargin   pm   25     30       6
+    # 3   oakMargin   pm   26     30       3
+    # 4   oakMargin   pm   27     30       3
+    # 5   oakMargin   pm   28     30       3
+
+    # (and filename = './metrics/binomial_success_week.csv')
+
+    # for each transect / time / week_cluster
+    # calculate total trials and successes
+    # pipe to binomial() to calculate a confidence interval for the success probability mean
+    # use this to compare week_clusters by transect / time
+
+    if not graphics:
+        csv_ID = "hoser"
+
+    import pandas as pd
+
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+
+    unique_cluster = [ ['23', '24', '25'], ['26', '27', '28', '29', '30', '31'], ['32', '33', '34']  ]
+
+    for transect in unique_transect:
+
+        for time in unique_time:
+
+            for cluster in unique_cluster:
+
+                cluster_df = chopWeek(df=df, week_list=cluster)
+
+                print(">>>>>>>>>>>> new cluster_df >>>>>>>>>>>>>>>>")
+                print(cluster_df.to_string())
+                print(">>>>>>>>>>>> end cluster_df >>>>>>>>>>>>>>>>\n")
 
 
 
@@ -1535,7 +1616,7 @@ def week_binomial_success(df):
     return()
 
 
-def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
+def binomial(number_independent_trials, number_of_successes, graphics, csv_ID):
 
     # *********************** bayes ***********************
     # *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
@@ -1566,7 +1647,9 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
     # Import libraries
     import pandas as pd
     import numpy as np
-    import matplotlib.pyplot as plt
+
+    if graphics:
+        import matplotlib.pyplot as plt
 
     # Number of random draws from the prior
     n_draws = 10000
@@ -1583,8 +1666,9 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
     prior = pd.Series(np.random.uniform(0, 1, size = n_draws), name='values')  
     #     "any success percentage between 0 and 1 is equally likely" 
 
-    #prior.hist() # It's always good to eyeball the prior to make sure it looks ok.
-    #plt.show()
+    if graphics:
+        prior.hist() # It's always good to eyeball the prior to make sure it looks ok.
+        plt.show()
 
     # Here you define the generative model 
     #
@@ -1644,8 +1728,10 @@ def negative_binomial(number_independent_trials, number_of_successes, csv_ID):
     # Here you filter off all draws that do not match the data.
     posterior = prior[list(map(lambda x: x == observed_data, sim_data))]
 
-    posterior.hist() # Eyeball the posterior
-    plt.show()
+    if graphics:
+        posterior.hist() # Eyeball the posterior
+        plt.show()
+
 
     filename = './metrics/binomial-posterior-' + csv_ID + '.csv'
     posterior.to_csv(filename, header=True, index=True, mode='w')

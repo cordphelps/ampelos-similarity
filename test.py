@@ -55,12 +55,14 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 #
 
 df_list = spider_lib.julian_row_compare_alternate(week_records_df)
-df = spider_lib.week_binomial_success(df_list[1])
+df = spider_lib.binomial_success_week(df_list[0])
+df = spider_lib.binomial_confidence_interval(df, graphics="False", csv_ID='hoser')
 print("compare_alternate")
 sys.exit(1)
 
 
-posterior_result = spider_lib.negative_binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
+
+posterior_result = spider_lib.binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
 
 print('results:   Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
           (posterior_result[0], posterior_result[1], posterior_result[2]))
