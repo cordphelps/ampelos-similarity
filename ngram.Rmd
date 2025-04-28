@@ -36,6 +36,18 @@ library(dplyr)
 
 ```{r makeVariance, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
+# It is critical that we don’t confuse the standard deviation and the standard error. The standard deviation is a property of the population. It tells us how much spread there is among individual observations we could make. By contrast, the standard error tells us how precisely we have determined a parameter estimate.
+# The standard error is approximately given by the sample standard deviation divided by the square root of the sample size, and confidence intervals are calculated by multiplying the standard error with small, constant values.
+#The correct way to assess whether there are differences in mean rating is to calculate confidence intervals for the differences. If those confidence intervals exclude zero, then we know the difference is significant at the respective confidence level. 
+# Frequentists assess uncertainty with confidence intervals, whereas Bayesians calculate posterior distributions and credible intervals. The Bayesian posterior distribution tells us how likely specific parameter estimates are given the input data. The credible interval indicates a range of values in which the parameter value is expected with a given probability, as calculated from the posterior distribution. For example, a 95% credible interval corresponds to the center 95% of the posterior distribution. The true parameter value has a 95% chance of lying in the 95% credible interval.
+# To summarize, a Bayesian credible interval makes a statement about the true parameter value and a frequentist confidence interval makes a statement about the null hypothesis. 
+# The central goal of Bayesian estimation is to obtain the posterior distribution. Therefore, Bayesians commonly visualize the entire distribution rather than simplifying it into a credible interval.
+#
+# Figures with integrated titles, subtitles, and data source statements are appropriate, however, if they are meant to be used as stand-alone infographics or to be posted on social media or on a web page without accompanying caption text.
+#
+# https://clauswilke.com/dataviz/visualizing-uncertainty.html 
+#
+#
 
 plotVariance <- function(df1, df2, t) {
 

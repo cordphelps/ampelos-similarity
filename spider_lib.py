@@ -1186,12 +1186,16 @@ def julian_row_compare_alternate(df):
 
     ########################################################################
     #
+    # get binomial position counts by row calculate NGRAM similarity
+    # 
+    #
     # compare spider count text similarity by julian day for each row by transect and time
     # for each julian day, there are 3 rows that were sampled
     # 
-    # return a dataframe 
+    # save files and return two dataframes 
     #
-    #      transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
+    #      binomial-counts-as-string:  transect time week julian row  counts
+    #      NGRAM similarity:           transect julian time week t1_text  t2_text t3_text  t1_t2 t1_t3 t2_t3 
     #
     ########################################################################
 
@@ -1361,7 +1365,7 @@ def julian_row_compare_alternate(df):
                     binomial_df = pd.concat([binomial_df, binomial_day_df], ignore_index=True)
 
                     # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    # print(n1_df.to_string())
+                    # print(binomial_df.to_string())
                     #
                     #       transect time week julian row                counts
                     # 0    oakMargin   pm   23    156  79  f f f f f f T f T f 
@@ -1465,9 +1469,15 @@ def julian_row_compare_alternate(df):
                             't1_t2' : [t1_t2], 't1_t3' : [t1_t3], 't2_t3' : [t2_t3]})
   
                         #print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
-                        #print(new_sim_df)
+                        #print(new_sim_df.to_string())
+                        #print(">>>>>>>>>>>>>>> end short similarity_df >>>>>>>>>>>>>>>\n")
+
+                        #   transect julian time week             t1_text               t2_text               t3_text     t1_t2     t1_t3     t2_t3
+                        #0  control    236   pm   34  f f f f f f f f f f   f f f f f f f f T f   f f f f f f f f f T   0.703704  0.703704  0.703704
 
                         sim_df = pd.concat([sim_df, new_sim_df], ignore_index=True)
+
+
 
     filename = './metrics/row_NGRAM.csv'
     # mode='w' indicates 'overwrite'
@@ -1567,7 +1577,7 @@ def binomial_success_week(df):
 
 
 
-def binomial_confidence_interval(df, graphics, csv_ID):
+def binomial_credible_interval(df, graphics, csv_ID):
 
     # ************ input *******************
     #      transect time week trials nonZero
@@ -1582,13 +1592,17 @@ def binomial_confidence_interval(df, graphics, csv_ID):
 
     # for each transect / time / week_cluster
     # calculate total trials and successes
-    # pipe to binomial() to calculate a confidence interval for the success probability mean
+    # pipe to binomial() to calculate a credible interval for the success probability mean
     # use this to compare week_clusters by transect / time
 
     if not graphics:
         csv_ID = "hoser"
 
     import pandas as pd
+
+    # Create an empty DataFrame and csv
+    distribution_df = pd.DataFrame() # columns for each Series will be added
+    big_df = pd.DataFrame()
 
     unique_time = df['time'].unique()
     unique_transect = df['transect'].unique()
@@ -1602,21 +1616,68 @@ def binomial_confidence_interval(df, graphics, csv_ID):
 
             for cluster in unique_cluster:
 
+                if cluster == ['23', '24', '25']:
+                    cluster_label = "week-cluster-1"
+                elif cluster == ['26', '27', '28', '29', '30', '31']:
+                    cluster_label = "week-cluster-2"
+                else:
+                    cluster_label = "week-cluster-3"
+
+
                 cluster_df = chopWeek(df=df, week_list=cluster)
 
-                print(">>>>>>>>>>>> new cluster_df >>>>>>>>>>>>>>>>")
-                print(cluster_df.to_string())
-                print(">>>>>>>>>>>> end cluster_df >>>>>>>>>>>>>>>>\n")
+                filtered_df = pd.DataFrame()
 
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = cluster_df.query( f" transect == '{transect}' and time == '{time}' ")
 
+                #print(">>>>>>>>>>>> new week cluster_df >>>>>>>>>>>>>>>>")
+                #print(filtered_df.to_string())
+                #print(">>>>>>>>>>>> end week cluster_df >>>>>>>>>>>>>>>>\n")
+                #
+                #    transect time week trials nonZero
+                # 22  control   pm   23     30       6
+                # 23  control   pm   24     30      18
+                # 24  control   pm   25     30      12
 
+                # get the number of nonZero from the trial
+                nZ = filtered_df['nonZero'].sum()
+                trials = filtered_df['trials'].sum()
 
+                #print("trials ", trials, " nonZero: ", nZ, "\n")
+
+                posterior_dist = binomial(number_independent_trials=trials, number_of_successes=nZ, graphics=False)
+
+                #print("posterior is a ", type(posterior_dist), " dist name: ", posterior_dist.name, "\n")
+                # posterior is a  <class 'pandas.core.series.Series'>  dist name:  values
+
+                # Example Series
+                #s = pd.Series([10, 20, 30], name='age')
+                # Existing DataFrame
+                #df = pd.DataFrame({'name': ['Alice', 'Bob', 'Charlie']})
+                # Add the Series as a new column
+                #df['age'] = s
+
+                newID = transect + ":" + time + ":" + cluster_label
+
+                distribution_df[newID] = posterior_dist.tolist()  # Must match DataFrame length
+
+                #print("writing ",  cluster_label)
+
+                # Pandas will align by index and fill missing values with `NaN`:
+                big_df = pd.concat([big_df, distribution_df], axis=1)
+
+                # clear the df
+                distribution_df = pd.DataFrame()
+
+            filename = './metrics/binomial-posterior-' + '.csv'
+            big_df.to_csv(filename, header=True, index=True, mode='w')
 
 
     return()
 
 
-def binomial(number_independent_trials, number_of_successes, graphics, csv_ID):
+def binomial(number_independent_trials, number_of_successes, graphics):
 
     # *********************** bayes ***********************
     # *********************** https://www.youtube.com/watch?v=3OJEae7Qb_o&t=1288s
@@ -1733,9 +1794,6 @@ def binomial(number_independent_trials, number_of_successes, graphics, csv_ID):
         plt.show()
 
 
-    filename = './metrics/binomial-posterior-' + csv_ID + '.csv'
-    posterior.to_csv(filename, header=True, index=True, mode='w')
-
     # See that we got enought draws left after the filtering. 
     # There are no rules here, but you probably want to aim for >1000 draws.
 
@@ -1749,17 +1807,18 @@ def binomial(number_independent_trials, number_of_successes, graphics, csv_ID):
     # and perhaps a 95% quantile interval.
 
 
-    print('Number of draws left: %d, Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
-          (len(posterior), posterior.median(), posterior.quantile(.025), posterior.quantile(.975)))
+    #print('Number of draws left: %d, Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
+    #     (len(posterior), posterior.median(), posterior.quantile(.025), posterior.quantile(.975)))
 
-    print('posterior mean: %.3f, Posterior variance: %.3f' % 
-          (posterior.mean(), posterior.var()))
+    #print('posterior mean: %.3f, Posterior variance: %.3f' % 
+    #      (posterior.mean(), posterior.var()))
 
     # the 89% central credible interval (equal-tailed interval) of the probability mass is bounded by the 5.5th percentile 
     # and the 94.5th percentile of the posterior distribution.
     # Lower quantile:  (1-0.89)/2 = 0.055
     # Lower quantile:  (1-0.055) = 0.945
-    return([posterior.median(), posterior.quantile(.055), posterior.quantile(.945)])
+    #return([posterior.median(), posterior.quantile(.055), posterior.quantile(.945)])
+    return(posterior)
 
 
 def analyze_position_time_clusters(df):
@@ -1811,7 +1870,7 @@ def analyze_position_time_clusters(df):
         hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
 
         group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-        group2_df_week2 = chopWeek(df=group1_df, week_list=['26', '27', '28', '29', '30', '31'])
+        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
         hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
 
         # ***************************************************************************************************************

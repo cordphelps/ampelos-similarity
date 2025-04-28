@@ -44,23 +44,41 @@ df = pd.DataFrame(bugs_list)
 week_records_df = spider_lib.rough_dataset_clean(df)
 
 
-########################################################################
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
-# compare spider count text similarity by julian day for each row by transect and time
-# for each julian day, there are 3 rows that were sampled
-# 
+# get posterior distributions by cluster to eventually compare the credible intervals (in R)
+#
+# get binomial position counts by row calculate NGRAM similarity
 # return two dataframes :  
 #    (filename = './metrics/row_binomial_success.csv') transect time week julian row  nonZero
 #    (filename = './metrics/row_NGRAM.csv') transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
-#
-
 df_list = spider_lib.julian_row_compare_alternate(week_records_df)
+
+# for each weekly cluster, calculate "success" and "trials"
 df = spider_lib.binomial_success_week(df_list[0])
-df = spider_lib.binomial_confidence_interval(df, graphics="False", csv_ID='hoser')
+
+# for each transect / time / week_cluster
+# calculate total trials and successes
+# pipe to binomial() to save the posterior distribution to csv
+#     - use R to create distribution graphics
+#     - package coda: HPD/HDI interval: Narrowest interval containing the specified 
+#       probability mass (better for skewed posteriors)
+#     - calculate a credible interval for the success probability mean
+# 
+df = spider_lib.binomial_credible_interval(df, graphics="False", csv_ID='hoser')
+# now compare credible intervals in R
+
+#
 print("compare_alternate")
 sys.exit(1)
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 posterior_result = spider_lib.binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
 
@@ -70,9 +88,14 @@ print('results:   Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f
 
 print("week total written")
 sys.exit(1)
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-# get the binomial probabilities and their variace by position and time clusters
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# get the binomial probabilities and their variance by position and time clusters
 # uses central_limit() *raw and normalized counts* + csv_probability_variance() 
 # plus files recording probability by vineyard position
 #           './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
@@ -82,7 +105,12 @@ null = spider_lib.analyze_position_time_clusters(df=week_records_df)
 print("csv written")
 sys.exit(1)
 
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 week_df = spider_lib.weekly_spider_count(df=week_records_df)
 
