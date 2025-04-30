@@ -1,7 +1,5 @@
 
 
-# looking at geombox plot, maybe the amont of wind, one transect to another , has a sppressive effect on the 
-# appearance or migration of the spiders.
 
 
 
@@ -46,6 +44,24 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+# get the binomial probabilities and their variance by position and time clusters
+# uses central_limit() *raw and normalized counts* + csv_probability_variance() 
+# plus files recording probability by vineyard position
+#           './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
+#           './metrics/control_df-' + daytime + file_label + '-prob-.csv'
+#
+null = spider_lib.analyze_position_time_clusters(df=week_records_df)
+print("csv written")
+sys.exit(1)
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # get posterior distributions by cluster to eventually compare the credible intervals (in R)
 #
@@ -77,36 +93,7 @@ sys.exit(1)
 
 
 
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-posterior_result = spider_lib.binomial(number_independent_trials=10, number_of_successes=3, csv_ID='hoser')
-
-print('results:   Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
-          (posterior_result[0], posterior_result[1], posterior_result[2]))
-
-
-print("week total written")
-sys.exit(1)
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-# get the binomial probabilities and their variance by position and time clusters
-# uses central_limit() *raw and normalized counts* + csv_probability_variance() 
-# plus files recording probability by vineyard position
-#           './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
-#           './metrics/control_df-' + daytime + file_label + '-prob-.csv'
-#
-null = spider_lib.analyze_position_time_clusters(df=week_records_df)
-print("csv written")
-sys.exit(1)
-
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

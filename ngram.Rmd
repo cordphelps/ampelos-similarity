@@ -304,30 +304,32 @@ plotVariance <- function(df1, df2, t) {
   oak.tibl <- df1
   control.tibl <- df2
   time <- t
+  
+  new_df <- data.frame(
+  A = oak.tibl$variance,
+  B = control.tibl$variance )
+  
+  new_df$diff <- new_df$A - new_df$B
+  
+  print(new_df)
+  
 	
   gg <- ggplot() +
   
     geom_jitter(data=oak.tibl, 
                 aes(y = mean, x = variance, group="SNH"),
-                color = "mediumvioletred", fill = "purple1", shape = 21, size=5
-                ) +
+                color = "mediumvioletred", fill = "purple1", shape = 21, size=5) +
   
     geom_jitter(data=control.tibl, 
                 aes(y = mean, x = variance, group="control"), 
-                color = "mediumvioletred", fill = "plum1", shape = 21, size=5
-                ) +
-  
-    #geom_text(data=oak.tibl, aes(y = mean, x = variance, label = data_label), 
-    #          hjust=1, vjust = 0.5,  angle=90, size = 3) +
-    #geom_text(data=control.tibl, aes(y = mean, x = variance, label = data_label), 
-    #          hjust=1, vjust = 0.5, angle=90, size = 3) +
+                color = "mediumvioletred", fill = "plum1", shape = 21, size=5) +
 
-    geom_segment(aes(x=0, y=0, xend=0.3, yend=0.3)) +
+    geom_segment(aes(x=0, y=0, xend=0.6, yend=0.6)) +
   
     scale_colour_manual(name="transect", guide = 'legend', values = c("SNH"="purple1", "control"="plum1")) +
   
-    scale_y_continuous(limits=c(0, 0.3) ) +
-    scale_x_continuous(limits=c(0, 0.3) ) +
+    scale_y_continuous(limits=c(0, 0.6) ) +
+    scale_x_continuous(limits=c(0, 0.6) ) +
   
     theme_bw() +
     theme(legend.position="right") +
@@ -335,23 +337,16 @@ plotVariance <- function(df1, df2, t) {
     # turn off legend
     # theme(legend.position="none") 
 
-    labs( title = paste("binomial probability of spiders occurring in a sample",
-                        "\nby vine position and week cluster, daytime= ", 
-                        time, 
-                        "\ntransect SNH is dark purple, control is light purple",
-                        sep=""),
-          subtitle = "checking for overdispersion; the diagonal line describes mean=variance",
-          y="mean", 
-          x="variance", 
-          caption = paste("(points are ggplot 'jittered')", sep="" ) 
+    labs( caption = paste("binomial probability of spiders occurring in a sample",
+                        " by vine position and week cluster: daytime= ", 
+                        time, "\nchecking for overdispersion; the diagonal line describes mean=variance", "\ntransect SNH is dark purple, control is light purple", sep="")
           ) 
   
     print(gg)
 
 }
 
-source.url <- c("./metrics/probability-variance.csv")
-
+source.url <- c("./metrics/cluster-probability-variance.csv")
 
 variance.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 

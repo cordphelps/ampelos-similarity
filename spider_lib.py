@@ -1807,163 +1807,151 @@ def binomial(number_independent_trials, number_of_successes, graphics):
     # and perhaps a 95% quantile interval.
 
 
-    #print('Number of draws left: %d, Posterior median: %.3f, Posterior quantile interval: %.3f-%.3f' % 
-    #     (len(posterior), posterior.median(), posterior.quantile(.025), posterior.quantile(.975)))
-
-    #print('posterior mean: %.3f, Posterior variance: %.3f' % 
-    #      (posterior.mean(), posterior.var()))
-
-    # the 89% central credible interval (equal-tailed interval) of the probability mass is bounded by the 5.5th percentile 
-    # and the 94.5th percentile of the posterior distribution.
-    # Lower quantile:  (1-0.89)/2 = 0.055
-    # Lower quantile:  (1-0.055) = 0.945
-    #return([posterior.median(), posterior.quantile(.055), posterior.quantile(.945)])
     return(posterior)
+
+
 
 
 def analyze_position_time_clusters(df):
 
-    import pandas as pd
+    import sys 
 
-    week_records_df = df
+    #=====================================================================================
+    #
+    # for each (previously identified) position cluster and each week cluster and daytime
+    # filter the input to analyze the cluster counts 
+    # write files to record the raw counts and probability
+    # ()
 
-    # erase any existing variance csv
-    import os 
-    filename = './metrics/probability-variance.csv'
+
+
+    # input: week_records
+    # 
+    #print(">>>>>>>>>>>> new binomial_success_week_df >>>>>>>>>>>>>>>>")
+    #print(df.to_string())
+    #sys.exit(1)
+    #print(">>>>>>>>>>>> end analyze_position_time_clusters >>>>>>>>>>>>>>>>\n")
+    # 0      transect row time week julian Thomisidae (crab spider) position
+    # 1     oakMargin  79   pm   23    156                        0        1
+    # 2     oakMargin  79   pm   23    156                        0        2
+    # .....           
+    # 9     oakMargin  79   pm   23    156                        1        9
+    # 10    oakMargin  79   pm   23    156                        0       10
+    # 11    oakMargin  81   pm   23    156                        0        1
+    # .....
+    # 17    oakMargin  81   pm   23    156                        0        7
+    # 18    oakMargin  81   pm   23    156                        1        8
+    # 19    oakMargin  81   pm   23    156                        0        9
+    # 20    oakMargin  81   pm   23    156                        0       10
+    # ..... 
+    # 29    oakMargin  83   pm   23    156                        0        9
+    # 30    oakMargin  83   pm   23    156                        0       10
+
+
+
+    #=====================================================================================
+
+        # erase any existing variance csv
+    import os
+    filename = './metrics/cluster-probability-variance.csv'
     if os.path.exists(filename):
         os.remove(filename)
-    # Create an empty DataFrame and csv
-    df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'count', 'mean', 'variance'])
-    df.to_csv(filename, index=False)
 
 
-    unique_time = ['am', 'pm']
-
-    for time in unique_time:
-
-        filtered_df = pd.DataFrame()
-        #  !!!!!!!  'f' is curly brace support !!!!!!!
-        filtered_df = week_records_df.query( f"time == '{time}' ")
-        # 0    transect row time week julian Thomisidae (crab spider) position
-
-
-        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
-        group1_df_week1 = chopWeek(df=group1_df, week_list=['23', '24', '25'])
-        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_23to25')
-
-        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
-        group1_df_week1 = chopWeek(df=group1_df, week_list=['26', '27', '28', '29', '30', '31'])
-        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_26to31')
-
-        group1_df = chopPosition(df=week_records_df, position_list=['1', '2', '3', '4'])
-        group1_df_week1 = chopWeek(df=group1_df, week_list=['32', '33', '34'])
-        hoser = central_limit(both_transects_dataframe=group1_df_week1, daytime=time, file_label='_1to4_32to34')
-
-        # ***************************************************************************************************************
-
-        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
-        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
-
-        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
-        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
-
-        group2_df = chopPosition(df=week_records_df, position_list=['5', '6', '7'])
-        group2_df_week2 = chopWeek(df=group2_df, week_list=['26', '27', '28', '29', '30', '31'])
-        hoser = central_limit(both_transects_dataframe=group2_df_week2, daytime=time, file_label='_5to7_26to31')
-
-        # ***************************************************************************************************************
-
-        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
-        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
-        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_26to31')
-
-        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
-        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
-        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_26to31')
-
-        group3_df = chopPosition(df=week_records_df, position_list=['8', '9', '10'])
-        group3_df_week3 = chopWeek(df=group3_df, week_list=['32', '33', '34'])
-        hoser = central_limit(both_transects_dataframe=group3_df_week3, daytime=time, file_label='_8to10_32to34')
-
-
-    return()
-
-
-
-
-def central_limit(both_transects_dataframe, daytime, file_label):
-
-    # *********************** central limit theorem ***********************
-    # *********************** https://www.youtube.com/watch?v=zeJD6dqJ5lo 
-    # ***********************       ***********************
-
-    # input daily spider count
-    # separate into control and oakMargin = by transect
-    # find the max count
-    # create the frequency of each count
-    # histogram (mean aand confidence interval)
-    #
-
-    # Import libraries
     import pandas as pd
     import numpy as np
 
-    df = both_transects_dataframe
-
-    control_df = df[df['transect'] == 'control']
-    oakMargin_df = df[df['transect'] == 'oakMargin']
-
-    control_df = control_df.rename(columns={'Thomisidae (crab spider)': 'count'})
-    oakMargin_df = oakMargin_df.rename(columns={'Thomisidae (crab spider)': 'count'})
+    week_records_df = df
 
 
-    filename = './metrics/oakMargin_df-' + daytime + file_label + '-raw_count-.csv'
-    oakMargin_df.to_csv(filename, header=True, index=True, mode='w')
+    # Create an empty DataFrame 
+    # df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'count', 'mean', 'variance'])
 
-    filename = './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
-    control_df.to_csv(filename, header=True, index=True, mode='w')
+    unique_transect = ['oakMargin', 'control']
+    unique_time = ['am', 'pm']
+    unique_week_list = [ ['23', '24', '25'], ['26', '27', '28', '29', '30', '31'], ['32', '33', '34'] ]
+    unique_position_list = [ ['1', '2', '3', '4'], ['5', '6', '7'], ['8', '9', '10'] ]
 
-    csv_probability_variance(df=oakMargin_df, transect='oakMargin', time=daytime, label=file_label)
-    csv_probability_variance(df=control_df, transect='control', time=daytime, label=file_label)
-
-
-
-    # "from a pandas dataframe column of count data, create a dataframe of normalized probabilities of each count value"
-
-    # df = pd.DataFrame({'count': [3, 2, 3, 1, 2, 3, 1]})
-    #### Step 1: Calculate Normalized Probabilities
-    # probs = df['count'].value_counts(normalize=True)
-    # This returns a Series where the index is the unique count value and the value is its probability.
-    #### Step 2: Convert to DataFrame (optional)
-    # prob_df = probs.reset_index()
-    # prob_df.columns = ['count', 'probability']
-    #### Output
-    #   count  probability
-    # 0      3     0.428571
-    # 1      2     0.285714
-    # 2      1     0.285714
-
-    probs = oakMargin_df['count'].value_counts(normalize=True)
-    prob_oakMargin_df = probs.reset_index()
-    prob_oakMargin_df.columns = ['count', 'probability']
-
-    filename = './metrics/oakMargin_df-' + daytime + file_label + '-prob-.csv'
-    prob_oakMargin_df.to_csv(filename, header=True, index=True, mode='w')
+    pv_df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
 
 
-    probs = control_df['count'].value_counts(normalize=True)
-    prob_control_df = probs.reset_index()
-    prob_control_df.columns = ['count', 'probability']
+    for week_list in unique_week_list:
 
-    filename = './metrics/control_df-' + daytime + file_label + '-prob-.csv'
-    prob_control_df.to_csv(filename, header=True, index=True, mode='w')
+        if week_list == ['23', '24', '25']:
+            week_label = 'w1'
+        elif week_list == ['26', '27', '28', '29', '30', '31']:
+            week_label = 'w2'
+        else:
+            week_label = 'w3'
 
-    # take samples from the distribution 
-    # record the sum (size = 10) of the sample on a plot
+
+
+        for position_list in unique_position_list:
+
+            if position_list == ['1', '2', '3', '4']:
+                pos_label = 'p1'
+            elif position_list == ['5', '6', '7']:
+                pos_label = 'p2'
+            else:
+                pos_label = 'p3'
+
+
+
+            position_df = chopPosition(df=week_records_df, position_list=position_list)
+            pos_week_df = chopWeek(df=position_df, week_list=week_list)
+            pos_week_df = pos_week_df.rename(columns={'Thomisidae (crab spider)': 'count'})
+
+
+            for transect in unique_transect: 
+
+                for time in unique_time:
+
+                    df = pos_week_df.query( f" transect == '{transect}' and time == '{time}' ")
+                    record_df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
+                    
+                    count_list = []
+                    count_list = df['count'].astype(int).tolist()
+                    t = len(count_list)
+                    m = np.mean(count_list)
+                    v = np.var(count_list)
+                    s = np.sum(count_list)
+
+                    label = "-" + week_label + "-" + pos_label + "-"
+                    # new record
+                    #new_row = pd.DataFrame([[transect, time, label, t, s, m, v]], columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
+
+                    pv_df.loc[len(pv_df)] = [transect, time, label, t, s, m, v]
+
+
+
+    print(pv_df.to_string())
+    #print("end pv_df")
+    #sys.exit(1)
+    #
+    #      transect time data_label  trials  count      mean  variance
+    # 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
+    # 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
+    # 2     control   am    -w1-p1-      96     24  0.250000  0.229167
+    # 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
+    # 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
+    # 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
+    # 6     control   am    -w1-p2-      72     11  0.152778  0.157215
+    # 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
+    # 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
+    # 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
+    # 10    control   am    -w1-p3-      72     27  0.375000  0.595486
+    # 11    control   pm    -w1-p3-      81     53  0.654321  0.818778
+    # 12  oakMargin   am    -w2-p1-     204     16  0.078431  0.101692
+
+
+    filename = './metrics/cluster-probability-variance.csv'
+    pv_df.to_csv(filename, header=True, index=False, mode='a')
+
+    # print("new stuff done")
 
     return()
+
+
 
 
 def chopPosition(df, position_list):
@@ -1981,23 +1969,4 @@ def chopWeek(df, week_list):
 
     return(filtered_df)
 
-def csv_probability_variance(df, transect, time, label):
 
-    import pandas as pd
-    import numpy as np
-
-    count_list = []
-    count_list = df['count'].astype(int).tolist()
-    m = np.mean(count_list)
-    v = np.var(count_list)
-    s = np.sum(count_list)
-    # new record
-    record = {'transect' : transect, 'time' : time, 'data_label' : label, 'count' : s, 'mean' : m, 'variance' : v}
-    probability_variance_df = pd.DataFrame([record])
-
-    filename = './metrics/probability-variance.csv'
-    probability_variance_df.to_csv(filename, header=False, index=False, mode='a')
-
-    print(record)
-
-    return()
