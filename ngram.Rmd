@@ -42,39 +42,149 @@ library(dplyr)
 # Print the result
 #    print(hdi_interval)
 
+# `geom_density()` estimates the probability density function (PDF) of a continuous variable, using kernel density estimation (KDE)
+# Y-Axis: Density, Not Frequency
+# The y-axis shows density (not direct counts or probability).
+# The area under the entire curve sums to 1.
+# The height at any given x-value represents the relative likelihood of finding a data point near that value.
+# Peaks in the density curve indicate values where observations are more concentrated.
+
+# finding the credible interval
+# For MCMC or simulation outputs, use the `coda` package for highest posterior density (HPD) intervals: hpd_interval <- HPDinterval(as.mcmc(samples), prob=0.95)
+# Key Considerations: use HPD for skewed/multi-modal posteriors
+
+# bayestestR
+# Overlap Coefficient Measures the proportion of shared density between distributions (0 = no overlap, 1 = identical).
+# Overlap < 0.05: Strong divergence
+# Overlap > 0.35: Substantial similarity
+# overlap_score <- overlap(posterior_A, posterior_B)
+
+
+library(coda)
+library(bayestestR)
+
 source.url <- c("./metrics/binomial-posterior-.csv")
 posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
 column_list <- names(posterior.tibl)
+
 # column_list[1] is 'X' corresponding to the df index
+#for (i in 2:length(column_list)) {
+#  print( paste("i: ", i, " label: ", column_list[i], sep=""))
+#}
+# [1] "i: 2 label: oakMargin.pm.week.cluster.1"
+# [[1] "i: 3 label: oakMargin.pm.week.cluster.2"
+# [[1] "i: 4 label: oakMargin.pm.week.cluster.3"
+# [[1] "i: 5 label: oakMargin.am.week.cluster.1"
+# [[1] "i: 6 label: oakMargin.am.week.cluster.2"
+# [[1] "i: 7 label: oakMargin.am.week.cluster.3"
+# [[1] "i: 8 label: control.pm.week.cluster.1"
+# [[1] "i: 9 label: control.pm.week.cluster.2"
+# [[1] "i: 10 label: control.pm.week.cluster.3"
+# [[1] "i: 11 label: control.am.week.cluster.1"
+# [[1] "i: 12 label: control.am.week.cluster.2"
+# [[1] "i: 13 label: control.am.week.cluster.3"
 
 dist1 = posterior.tibl$oakMargin.pm.week.cluster.1
+
+#print(paste("mean: ", mean(dist1, na.rm = TRUE), sep=""))
+
 dist2 = posterior.tibl$oakMargin.pm.week.cluster.2
 dist3 = posterior.tibl$oakMargin.pm.week.cluster.3
 
 dist4 = posterior.tibl$control.pm.week.cluster.1
+#print(paste("mean: ", mean(dist4, na.rm = TRUE), sep=""))
+#print(coda::HPDinterval(as.mcmc(dist4), prob=0.95) )
+
 dist5 = posterior.tibl$control.pm.week.cluster.2
 dist6 = posterior.tibl$control.pm.week.cluster.3
 
+#print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
+
+#print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
+#print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
+
 ggplot(posterior.tibl) +
   
-  geom_density(aes(x = dist1), fill = "orange", alpha = 0.6) +
+  geom_density(aes(x = dist1), fill = "purple3", alpha = 0.6) +
   
-  geom_density(aes(x = dist2), fill = "purple1", alpha = 0.6) +
+  geom_density(aes(x = dist2), fill = "purple", alpha = 0.6) +
   
-  geom_density(aes(x = dist3), fill = "plum1", alpha = 0.6) +
+  geom_density(aes(x = dist3), fill = "slateblue4", alpha = 0.6) +
   
-  geom_density(aes(x = dist4), fill = "green", alpha = 0.6) +
+  geom_density(aes(x = dist4), fill = "orchid3", alpha = 0.6) +
   
-  geom_density(aes(x = dist5), fill = "seagreen", alpha = 0.6) +
+  geom_density(aes(x = dist5), fill = "violet", alpha = 0.6) +
   
-  geom_density(aes(x = dist6), fill = "palegreen", alpha = 0.6) +
+  geom_density(aes(x = dist6), fill = "plum1", alpha = 0.6) +
   
   
-  labs(title = "Density Plot of X", x = "Value", y = "Density")
+  labs(x = "simulated probability of occurance", 
+       y = "relative liklihood (density)")
+
+dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
+#print(dist1.stats[1] ) # lower credible interval
+#print(dist1.stats[2] ) # upper credible interval
+#print(dist1.stats)
+
+dist4.stats <- coda::HPDinterval(as.mcmc(dist4), prob=0.95)
+#print(dist4.stats[1] ) # lower credible interval
+#print(dist4.stats[2] ) # upper credible interval
+#print(dist4.stats)
+
+dist2.stats <- coda::HPDinterval(as.mcmc(dist2), prob=0.95)
+dist5.stats <- coda::HPDinterval(as.mcmc(dist5), prob=0.95)
+
+ggplot(posterior.tibl) +
+  
+  geom_density(aes(x = dist1), fill = "purple3", alpha = 0.6) +
+  
+  geom_density(aes(x = dist4), fill = "violet", alpha = 0.6) +
+  
+  labs(x = "simulated probability of occurance", 
+       y = "relative liklihood (density)")
 
 
+ggplot() +
 
+  geom_pointrange(aes(y = factor(column_list[8]), x = mean(dist4, na.rm = TRUE), xmin = dist4.stats[1], xmax = dist4.stats[2], color = "orange")) +
+
+  geom_pointrange(aes(y = factor(column_list[2]), x = mean(dist1, na.rm = TRUE), xmin = dist1.stats[1], xmax = dist1.stats[2], color = "green"))
+
+
+gg.ci.week1 <- ggplot(posterior.tibl) +
+  
+  geom_density(aes(x = dist2), fill = "purple3", alpha = 0.6) +
+  
+  geom_density(aes(x = dist5), fill = "violet", alpha = 0.6) +
+  
+  labs(x = "simulated probability of occurance", 
+       y = "relative liklihood (density)")
+
+print(gg.ci.week1)
+
+jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
+
+gg.ci.week2 <- ggplot() +
+
+  geom_pointrange(aes(y = factor('a'),
+                        # factor(column_list[9]), 
+                      x = mean(dist5, na.rm = TRUE), 
+                      xmin = dist5.stats[1], 
+                      xmax = dist5.stats[2]), 
+                  position = jitter_pos, size = 1.2,
+                  color = "violet") +
+
+  geom_pointrange(aes(y = factor('a'),
+                           # factor(column_list[3]
+                      x = mean(dist2, na.rm = TRUE),
+                      xmin = dist2.stats[1], 
+                      xmax = dist2.stats[2]),
+                  size = 1.2,
+                  color = "purple3"
+                  )
+
+print(gg.ci.week2)
 
 
 ```
