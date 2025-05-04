@@ -1820,8 +1820,8 @@ def analyze_position_time_clusters(df):
     #
     # for each (previously identified) position cluster and each week cluster and daytime
     # filter the input to analyze the cluster counts 
-    # write files to record the raw counts and probability
-    # ()
+    # write file to record trials count mean  variance
+    # filename = './metrics/cluster-probability-variance.csv'
 
 
 
@@ -1874,7 +1874,6 @@ def analyze_position_time_clusters(df):
 
     pv_df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
 
-
     for week_list in unique_week_list:
 
         if week_list == ['23', '24', '25']:
@@ -1907,7 +1906,6 @@ def analyze_position_time_clusters(df):
                 for time in unique_time:
 
                     df = pos_week_df.query( f" transect == '{transect}' and time == '{time}' ")
-                    record_df = pd.DataFrame(columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
                     
                     count_list = []
                     count_list = df['count'].astype(int).tolist()
@@ -1917,37 +1915,55 @@ def analyze_position_time_clusters(df):
                     s = np.sum(count_list)
 
                     label = "-" + week_label + "-" + pos_label + "-"
-                    # new record
-                    #new_row = pd.DataFrame([[transect, time, label, t, s, m, v]], columns=['transect', 'time', 'data_label', 'trials', 'count', 'mean', 'variance'])
-
+                    
+                    # append a new row
                     pv_df.loc[len(pv_df)] = [transect, time, label, t, s, m, v]
 
-
-
-    print(pv_df.to_string())
-    #print("end pv_df")
-    #sys.exit(1)
-    #
-    #      transect time data_label  trials  count      mean  variance
-    # 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
-    # 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
-    # 2     control   am    -w1-p1-      96     24  0.250000  0.229167
-    # 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
-    # 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
-    # 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
-    # 6     control   am    -w1-p2-      72     11  0.152778  0.157215
-    # 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
-    # 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
-    # 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
-    # 10    control   am    -w1-p3-      72     27  0.375000  0.595486
-    # 11    control   pm    -w1-p3-      81     53  0.654321  0.818778
-    # 12  oakMargin   am    -w2-p1-     204     16  0.078431  0.101692
-
+                    #print("%%%%%%%%%%%% inside %%%%%%%%%%%%")
+                    #print(pv_df.to_string())
+                    #print("%%%%%%%%%%%% inside done %%%%%%%%%%%%")
 
     filename = './metrics/cluster-probability-variance.csv'
     pv_df.to_csv(filename, header=True, index=False, mode='a')
+    print(pv_df.to_string())
 
-    # print("new stuff done")
+            #      transect time data_label  trials  count      mean  variance
+            # 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
+            # 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
+            # 2     control   am    -w1-p1-      96     24  0.250000  0.229167
+            # 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
+            # 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
+            # 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
+            # 6     control   am    -w1-p2-      72     11  0.152778  0.157215
+            # 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
+            # 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
+            # 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
+            # 10    control   am    -w1-p3-      72     27  0.375000  0.595486
+            # 11    control   pm    -w1-p3-      81     53  0.654321  0.818778
+            # 12  oakMargin   am    -w2-p1-     204     16  0.078431  0.101692
+            # 13  oakMargin   pm    -w2-p1-     192     21  0.109375  0.107829
+            # 14    control   am    -w2-p1-     204     19  0.093137  0.084463
+            # 15    control   pm    -w2-p1-     192     18  0.093750  0.105794
+            # 16  oakMargin   am    -w2-p2-     153     16  0.104575  0.132855
+            # 17  oakMargin   pm    -w2-p2-     144     23  0.159722  0.148100
+            # 18    control   am    -w2-p2-     153     15  0.098039  0.088428
+            # 19    control   pm    -w2-p2-     144     20  0.138889  0.133488
+            # 20  oakMargin   am    -w2-p3-     153     20  0.130719  0.152847
+            # 21  oakMargin   pm    -w2-p3-     144     22  0.152778  0.157215
+            # 22    control   am    -w2-p3-     153     23  0.150327  0.219232
+            # 23    control   pm    -w2-p3-     144     26  0.180556  0.189622
+            # 24  oakMargin   am    -w3-p1-      72      1  0.013889  0.013696
+            # 25  oakMargin   pm    -w3-p1-      72      4  0.055556  0.052469
+            # 26    control   am    -w3-p1-      72      2  0.027778  0.027006
+            # 27    control   pm    -w3-p1-      72      2  0.027778  0.027006
+            # 28  oakMargin   am    -w3-p2-      54      0  0.000000  0.000000
+            # 29  oakMargin   pm    -w3-p2-      54      5  0.092593  0.084019
+            # 30    control   am    -w3-p2-      54      1  0.018519  0.018176
+            # 31    control   pm    -w3-p2-      54      0  0.000000  0.000000
+            # 32  oakMargin   am    -w3-p3-      54      1  0.018519  0.018176
+            # 33  oakMargin   pm    -w3-p3-      54      1  0.018519  0.018176
+            # 34    control   am    -w3-p3-      54      2  0.037037  0.035665
+            # 35    control   pm    -w3-p3-      54      7  0.129630  0.112826
 
     return()
 

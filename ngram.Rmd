@@ -306,10 +306,10 @@ plotVariance <- function(df1, df2, t) {
   time <- t
   
   new_df <- data.frame(
-  A = oak.tibl$variance,
-  B = control.tibl$variance )
+  oak.variance = oak.tibl$variance,
+  control.variance = control.tibl$variance )
   
-  new_df$diff <- new_df$A - new_df$B
+  new_df$diff <- new_df$oak.variance - new_df$control.variance
   
   print(new_df)
   
@@ -324,12 +324,12 @@ plotVariance <- function(df1, df2, t) {
                 aes(y = mean, x = variance, group="control"), 
                 color = "mediumvioletred", fill = "plum1", shape = 21, size=5) +
 
-    geom_segment(aes(x=0, y=0, xend=0.6, yend=0.6)) +
+    geom_segment(aes(x=0, y=0, xend=0.9, yend=0.9)) +
   
     scale_colour_manual(name="transect", guide = 'legend', values = c("SNH"="purple1", "control"="plum1")) +
   
-    scale_y_continuous(limits=c(0, 0.6) ) +
-    scale_x_continuous(limits=c(0, 0.6) ) +
+    scale_y_continuous(limits=c(0, 0.9), breaks=seq(0, 0.9, 0.1) ) +
+    scale_x_continuous(limits=c(0, 0.9), breaks=seq(0, 0.9, 0.1) ) +
   
     theme_bw() +
     theme(legend.position="right") +
@@ -342,7 +342,7 @@ plotVariance <- function(df1, df2, t) {
                         time, "\nchecking for overdispersion; the diagonal line describes mean=variance", "\ntransect SNH is dark purple, control is light purple", sep="")
           ) 
   
-    print(gg)
+    return(gg)
 
 }
 
@@ -350,27 +350,31 @@ source.url <- c("./metrics/cluster-probability-variance.csv")
 
 variance.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
-v.tibl <- variance.tibl %>% 
+v.am.tibl <- variance.tibl %>% 
   dplyr::filter(time == 'am') 
   
-oak.tibl <- v.tibl %>% 
+oak.am.tibl <- v.am.tibl %>% 
   dplyr::filter(transect == 'oakMargin') 
 
-control.tibl <- v.tibl %>% 
+control.am.tibl <- v.am.tibl %>% 
   dplyr::filter(transect == 'control') 
 
-plotVariance(oak.tibl, control.tibl, t='am')
+gg0 <- plotVariance(oak.am.tibl, control.am.tibl, t='am')
 
-v.tible <- variance.tibl %>% 
+print(gg0)
+
+v.pm.tibl <- variance.tibl %>% 
   dplyr::filter(time == 'pm') 
   
-oak.tibl <- v.tibl %>% 
+oak.pm.tibl <- v.pm.tibl %>% 
   dplyr::filter(transect == 'oakMargin') 
 
-control.tibl <- v.tibl %>% 
+control.pm.tibl <- v.pm.tibl %>% 
   dplyr::filter(transect == 'control') 
 
-plotVariance(oak.tibl, control.tibl, t='pm')
+gg1 <- plotVariance(oak.pm.tibl, control.pm.tibl, t='pm')
+
+print(gg1)
 
 
 
