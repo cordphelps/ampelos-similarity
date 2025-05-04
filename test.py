@@ -46,14 +46,31 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 # get the binomial probabilities and their variance by position and time clusters
-# uses central_limit() *raw and normalized counts* + csv_probability_variance() 
-# plus files recording probability by vineyard position
-#           './metrics/control_df-' + daytime + file_label + '-raw_count-.csv'
-#           './metrics/control_df-' + daytime + file_label + '-prob-.csv'
+# variance graphics in R
+
 #
 null = spider_lib.analyze_position_time_clusters(df=week_records_df)
+
+#
+# # write file to record trials count mean  variance
+#  filename = './metrics/cluster-probability-variance.csv' :
+
+# 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
+# 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
+# 2     control   am    -w1-p1-      96     24  0.250000  0.229167
+# 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
+# 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
+# 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
+# 6     control   am    -w1-p2-      72     11  0.152778  0.157215
+# 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
+# 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
+# 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
+# 10    control   am    -w1-p3-      72     27  0.375000  0.595486
+
 print("csv written")
 sys.exit(1)
+#print("end pv_df")
+#sys.exit(1)
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

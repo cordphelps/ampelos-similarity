@@ -34,117 +34,7 @@ library(dplyr)
 
 
 
-```{r arrangePosteriorAM, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
-
-
-source.url <- c("./metrics/binomial-posterior-.csv")
-posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
-
-column_list <- names(posterior.tibl)
-
-# column_list[1] is 'X' corresponding to the df index
-#for (i in 2:length(column_list)) {
-#  print( paste("i: ", i, " label: ", column_list[i], sep=""))
-#}
-# [1] "i: 2 label: oakMargin.pm.week.cluster.1"
-# [[1] "i: 3 label: oakMargin.pm.week.cluster.2"
-# [[1] "i: 4 label: oakMargin.pm.week.cluster.3"
-# [[1] "i: 5 label: oakMargin.am.week.cluster.1"
-# [[1] "i: 6 label: oakMargin.am.week.cluster.2"
-# [[1] "i: 7 label: oakMargin.am.week.cluster.3"
-# [[1] "i: 8 label: control.pm.week.cluster.1"
-# [[1] "i: 9 label: control.pm.week.cluster.2"
-# [[1] "i: 10 label: control.pm.week.cluster.3"
-# [[1] "i: 11 label: control.am.week.cluster.1"
-# [[1] "i: 12 label: control.am.week.cluster.2"
-# [[1] "i: 13 label: control.am.week.cluster.3"
-
-daytime <- "am"
-
-dist1 = posterior.tibl$oakMargin.am.week.cluster.1
-dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
-#print(dist1.stats[1] ) # lower credible interval
-#print(dist1.stats[2] ) # upper credible interval
-#print(dist1.stats)
-dist2 = posterior.tibl$oakMargin.am.week.cluster.2
-dist2.stats <- coda::HPDinterval(as.mcmc(dist2), prob=0.95)
-#
-dist3 = posterior.tibl$oakMargin.am.week.cluster.3
-dist3.stats <- coda::HPDinterval(as.mcmc(dist3), prob=0.95)
-#
-dist4 = posterior.tibl$control.am.week.cluster.1
-dist4.stats <- coda::HPDinterval(as.mcmc(dist4), prob=0.95)
-#
-dist5 = posterior.tibl$control.am.week.cluster.2
-dist5.stats <- coda::HPDinterval(as.mcmc(dist5), prob=0.95)
-#
-dist6 = posterior.tibl$control.am.week.cluster.3
-dist6.stats <- coda::HPDinterval(as.mcmc(dist6), prob=0.95)
-#
-
-
-
-
-```
-
-
-
-```{r arrangePosteriorPM, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
-
-
-source.url <- c("./metrics/binomial-posterior-.csv")
-posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
-
-column_list <- names(posterior.tibl)
-
-# column_list[1] is 'X' corresponding to the df index
-#for (i in 2:length(column_list)) {
-#  print( paste("i: ", i, " label: ", column_list[i], sep=""))
-#}
-# [1] "i: 2 label: oakMargin.pm.week.cluster.1"
-# [[1] "i: 3 label: oakMargin.pm.week.cluster.2"
-# [[1] "i: 4 label: oakMargin.pm.week.cluster.3"
-# [[1] "i: 5 label: oakMargin.am.week.cluster.1"
-# [[1] "i: 6 label: oakMargin.am.week.cluster.2"
-# [[1] "i: 7 label: oakMargin.am.week.cluster.3"
-# [[1] "i: 8 label: control.pm.week.cluster.1"
-# [[1] "i: 9 label: control.pm.week.cluster.2"
-# [[1] "i: 10 label: control.pm.week.cluster.3"
-# [[1] "i: 11 label: control.am.week.cluster.1"
-# [[1] "i: 12 label: control.am.week.cluster.2"
-# [[1] "i: 13 label: control.am.week.cluster.3"
-
-daytime <- "pm"
-
-dist1 = posterior.tibl$oakMargin.pm.week.cluster.1
-dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
-#print(dist1.stats[1] ) # lower credible interval
-#print(dist1.stats[2] ) # upper credible interval
-#print(dist1.stats)
-dist2 = posterior.tibl$oakMargin.pm.week.cluster.2
-dist2.stats <- coda::HPDinterval(as.mcmc(dist2), prob=0.95)
-#
-dist3 = posterior.tibl$oakMargin.pm.week.cluster.3
-dist3.stats <- coda::HPDinterval(as.mcmc(dist3), prob=0.95)
-#
-dist4 = posterior.tibl$control.pm.week.cluster.1
-dist4.stats <- coda::HPDinterval(as.mcmc(dist4), prob=0.95)
-#
-dist5 = posterior.tibl$control.pm.week.cluster.2
-dist5.stats <- coda::HPDinterval(as.mcmc(dist5), prob=0.95)
-#
-dist6 = posterior.tibl$control.pm.week.cluster.3
-dist6.stats <- coda::HPDinterval(as.mcmc(dist6), prob=0.95)
-#
-
-
-
-
-```
-
-
-
-```{r plotPosterior, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+```{r evaluatePosterior, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 #    library(bayestestR)
 # Example posterior draws from a normal distribution
@@ -172,113 +62,179 @@ dist6.stats <- coda::HPDinterval(as.mcmc(dist6), prob=0.95)
 # overlap_score <- overlap(posterior_A, posterior_B)
 
 
-library(coda)
-library(bayestestR)
+source.url <- c("./metrics/binomial-posterior-.csv")
+# written by the python function binomial_credible_interval(df, graphics, csv_ID)
 
-#print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
-#print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
-#print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
+posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
-plum_gradient <- c("plum3", "plum2", "plum1")
-purple_gradient <- c("mediumpurple4", "mediumpurple3", "mediumpurple1")
-# ggplot2 Quick Reference: colour (and fill)
-#https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+column_list <- names(posterior.tibl)
 
-
-color_list <- list("purple3", "purple",  "mediumpurple1", "mediumorchid", "violet", "plum1")
-
-
-ggplot(posterior.tibl) +
-  
-  geom_density(aes(x = dist1), fill = color_list[1], alpha = 0.6) +
-  
-  geom_density(aes(x = dist2), fill = color_list[2], alpha = 0.6) +
-  
-  geom_density(aes(x = dist3), fill = color_list[3], alpha = 0.6) +
-  
-  geom_density(aes(x = dist4), fill = color_list[4], alpha = 0.6) +
-  
-  geom_density(aes(x = dist5), fill = color_list[5], alpha = 0.6) +
-  
-  geom_density(aes(x = dist6), fill = color_list[6], alpha = 0.6) +
-  
-  theme_bw() +
-  
-  labs(x = "animal presence probability for the simulated posterior", 
-       y = "relative liklihood (density)",
-       caption = paste("SNH / control pairs for 3 clusters of weeks\n", 
-                       "daytime: ", daytime, sep="" ))
+    # column_list[1] is 'X' corresponding to the df index
+    #for (i in 2:length(column_list)) {
+    #  print( paste("i: ", i, " label: ", column_list[i], sep=""))
+    #}
+    # [1] "i: 2 label: oakMargin.pm.week.cluster.1"
+    # [[1] "i: 3 label: oakMargin.pm.week.cluster.2"
+    # [[1] "i: 4 label: oakMargin.pm.week.cluster.3"
+    # [[1] "i: 5 label: oakMargin.am.week.cluster.1"
+    # [[1] "i: 6 label: oakMargin.am.week.cluster.2"
+    # [[1] "i: 7 label: oakMargin.am.week.cluster.3"
+    # [[1] "i: 8 label: control.pm.week.cluster.1"
+    # [[1] "i: 9 label: control.pm.week.cluster.2"
+    # [[1] "i: 10 label: control.pm.week.cluster.3"
+    # [[1] "i: 11 label: control.am.week.cluster.1"
+    # [[1] "i: 12 label: control.am.week.cluster.2"
+    # [[1] "i: 13 label: control.am.week.cluster.3"
 
 
+for (daytime in list("am", "pm")) {
 
-
-
-jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
-
-gg.ci.week2 <- ggplot() +
-
-  geom_pointrange(aes(y = factor('week cluster 1'),
-                        # factor(column_list[9]), 
-                      x = mean(dist1, na.rm = TRUE), 
-                      xmin = dist1.stats[1], 
-                      xmax = dist1.stats[2]), 
-                  position = jitter_pos, size = 1.2,
-                  color = color_list[1]) +
-
-  geom_pointrange(aes(y = factor('week cluster 1'),
-                           # factor(column_list[3]
-                      x = mean(dist4, na.rm = TRUE),
-                      xmin = dist4.stats[1], 
-                      xmax = dist4.stats[2]),
-                  size = 1.2,
-                  color = color_list[4]
-                  ) +
-
-  geom_pointrange(aes(y = factor('week cluster 2'),
-                        # factor(column_list[9]), 
-                      x = mean(dist2, na.rm = TRUE), 
-                      xmin = dist2.stats[1], 
-                      xmax = dist2.stats[2]), 
-                  position = jitter_pos, size = 1.2,
-                  color = color_list[2]) +
-
-  geom_pointrange(aes(y = factor('week cluster 2'),
-                           # factor(column_list[3]
-                      x = mean(dist5, na.rm = TRUE),
-                      xmin = dist5.stats[1], 
-                      xmax = dist5.stats[2]),
-                  size = 1.2,
-                  color = color_list[5]
-                  ) +
-
-  geom_pointrange(aes(y = factor('week cluster 3'),
-                        # factor(column_list[9]), 
-                      x = mean(dist3, na.rm = TRUE), 
-                      xmin = dist3.stats[1], 
-                      xmax = dist3.stats[2]), 
-                  position = jitter_pos, size = 1.2,
-                  color = color_list[3]) +
-
-  geom_pointrange(aes(y = factor('week cluster 3'),
-                           # factor(column_list[3]
-                      x = mean(dist6, na.rm = TRUE),
-                      xmin = dist6.stats[1], 
-                      xmax = dist6.stats[2]),
-                  size = 1.2,
-                  color = color_list[6]
-                  ) +
+    if (daytime == 'am') {
+      
+      dist1 = posterior.tibl$oakMargin.am.week.cluster.1
+      dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
+      #print(dist1.stats[1] ) # lower credible interval
+      #print(dist1.stats[2] ) # upper credible interval
+      #print(dist1.stats)
+      dist2 = posterior.tibl$oakMargin.am.week.cluster.2
+      dist2.stats <- coda::HPDinterval(as.mcmc(dist2), prob=0.95)
+      #
+      dist3 = posterior.tibl$oakMargin.am.week.cluster.3
+      dist3.stats <- coda::HPDinterval(as.mcmc(dist3), prob=0.95)
+      #
+      dist4 = posterior.tibl$control.am.week.cluster.1
+      dist4.stats <- coda::HPDinterval(as.mcmc(dist4), prob=0.95)
+      #
+      dist5 = posterior.tibl$control.am.week.cluster.2
+      dist5.stats <- coda::HPDinterval(as.mcmc(dist5), prob=0.95)
+      #
+      dist6 = posterior.tibl$control.am.week.cluster.3
+      dist6.stats <- coda::HPDinterval(as.mcmc(dist6), prob=0.95)
+      
+    } else {
+      
+      dist1 = posterior.tibl$oakMargin.pm.week.cluster.1
+      dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
+      #
+      dist2 = posterior.tibl$oakMargin.pm.week.cluster.2
+      dist2.stats <- coda::HPDinterval(as.mcmc(dist2), prob=0.95)
+      #
+      dist3 = posterior.tibl$oakMargin.pm.week.cluster.3
+      dist3.stats <- coda::HPDinterval(as.mcmc(dist3), prob=0.95)
+      #
+      dist4 = posterior.tibl$control.pm.week.cluster.1
+      dist4.stats <- coda::HPDinterval(as.mcmc(dist4), prob=0.95)
+      #
+      dist5 = posterior.tibl$control.pm.week.cluster.2
+      dist5.stats <- coda::HPDinterval(as.mcmc(dist5), prob=0.95)
+      #
+      dist6 = posterior.tibl$control.pm.week.cluster.3
+      dist6.stats <- coda::HPDinterval(as.mcmc(dist6), prob=0.95)
+        
+    }
     
-    theme_bw() +
-
-    labs( 
-          y="SNH / control pair", 
-          x="animal presence probability for the simulated posterior", 
-          caption = paste("posterior median and 95% credible interval\n", 
-                          "daytime: ", daytime, sep="" ) 
-          ) 
-  
-  
-print(gg.ci.week2)
+    library(coda)
+    library(bayestestR)
+    
+      #print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
+      #print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
+      #print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
+    
+    
+    color_list <- list("purple4", "purple3", "mediumpurple2", "darkorange4", "darkorange3", "darkorange2")
+    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+    
+    gg.dist <- ggplot(posterior.tibl) +
+      
+      geom_density(aes(x = dist1), fill = color_list[1], alpha = 0.6) +
+      
+      geom_density(aes(x = dist2), fill = color_list[2], alpha = 0.6) +
+      
+      geom_density(aes(x = dist3), fill = color_list[3], alpha = 0.6) +
+      
+      geom_density(aes(x = dist4), fill = color_list[4], alpha = 0.6) +
+      
+      geom_density(aes(x = dist5), fill = color_list[5], alpha = 0.6) +
+      
+      geom_density(aes(x = dist6), fill = color_list[6], alpha = 0.6) +
+      
+      theme_bw() +
+      
+      labs(x = "animal presence probability for the simulated posterior", 
+           y = "relative liklihood (density)",
+           caption = paste("SNH / control pairs for 3 clusters of weeks\n", 
+                           "daytime: ", daytime, sep="" ))
+    
+    print(gg.dist)
+    
+    jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
+    
+    gg.ci <- ggplot() +
+    
+      geom_pointrange(aes(y = factor('week cluster 1'),
+                            # factor(column_list[9]), 
+                          x = mean(dist1, na.rm = TRUE), 
+                          xmin = dist1.stats[1], 
+                          xmax = dist1.stats[2]), 
+                      position = jitter_pos, size = 1.2,
+                      color = color_list[1]) +
+    
+      geom_pointrange(aes(y = factor('week cluster 1'),
+                               # factor(column_list[3]
+                          x = mean(dist4, na.rm = TRUE),
+                          xmin = dist4.stats[1], 
+                          xmax = dist4.stats[2]),
+                      size = 1.2,
+                      color = color_list[4]
+                      ) +
+    
+      geom_pointrange(aes(y = factor('week cluster 2'),
+                            # factor(column_list[9]), 
+                          x = mean(dist2, na.rm = TRUE), 
+                          xmin = dist2.stats[1], 
+                          xmax = dist2.stats[2]), 
+                      position = jitter_pos, size = 1.2,
+                      color = color_list[2]) +
+    
+      geom_pointrange(aes(y = factor('week cluster 2'),
+                               # factor(column_list[3]
+                          x = mean(dist5, na.rm = TRUE),
+                          xmin = dist5.stats[1], 
+                          xmax = dist5.stats[2]),
+                      size = 1.2,
+                      color = color_list[5]
+                      ) +
+    
+      geom_pointrange(aes(y = factor('week cluster 3'),
+                            # factor(column_list[9]), 
+                          x = mean(dist3, na.rm = TRUE), 
+                          xmin = dist3.stats[1], 
+                          xmax = dist3.stats[2]), 
+                      position = jitter_pos, size = 1.2,
+                      color = color_list[3]) +
+    
+      geom_pointrange(aes(y = factor('week cluster 3'),
+                               # factor(column_list[3]
+                          x = mean(dist6, na.rm = TRUE),
+                          xmin = dist6.stats[1], 
+                          xmax = dist6.stats[2]),
+                      size = 1.2,
+                      color = color_list[6]
+                      ) +
+        
+      theme_bw() +
+    
+      labs( 
+            y="SNH / control pair", 
+            x="animal presence probability for the simulated posterior", 
+            caption = paste("posterior median and 95% credible interval\n", 
+                            "daytime: ", daytime, sep="" ) 
+            ) 
+      
+      
+      print(gg.ci)
+    
+}
 
 
 ```
@@ -305,13 +261,6 @@ plotVariance <- function(df1, df2, t) {
   control.tibl <- df2
   time <- t
   
-  new_df <- data.frame(
-  oak.variance = oak.tibl$variance,
-  control.variance = control.tibl$variance )
-  
-  new_df$diff <- new_df$oak.variance - new_df$control.variance
-  
-  print(new_df)
   
 	
   gg <- ggplot() +

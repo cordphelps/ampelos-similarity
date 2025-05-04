@@ -1579,6 +1579,8 @@ def binomial_success_week(df):
 
 def binomial_credible_interval(df, graphics, csv_ID):
 
+    # graphical analysis by the R chunk evaluatePosterior
+
     # ************ input *******************
     #      transect time week trials nonZero
     # 0   oakMargin   pm   23     30       6
