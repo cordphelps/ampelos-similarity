@@ -796,391 +796,6 @@ def TWT_row_similarity(records_list, transect, week, time):
 
     # ------------------------------------------------------------------------------
 
-def julian_row_compare(df):
-
-    ########################################################################
-    #
-    # compare spider count text similarity by julian day for each row by transect and time
-    # for each julian day, there are 3 rows that were sampled
-    # 
-    # return a dataframe 
-    #
-    #      transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
-    #
-    ########################################################################
-
-    import pandas as pd
-    import sys
-    
-    unique_weeks = df['week'].unique()
-    unique_time = df['time'].unique()
-
-    # prep a list of lists to load a dataframe for return
-    list_holding_tank = []
-
-
-    unique_julian = df['julian'].unique()
-    unique_time = df['time'].unique()
-    unique_transect = df['transect'].unique()
-    unique_week = df['week'].unique()
-
-    #print(unique_time)
-    #print(unique_transect)
-    #print(unique_week)
-
-    #['156', '157', '158', '162', '163', '164', '170', '171', '172', '177', '178', 
-    # '179', '183', '184', '191', '192', '193', '201', '202', '203', '204', '205', 
-    # '206', '212', '213', '214', '218', '219', '220', '234', '235', '236']
-    #['pm', 'am']
-    #['oakMargin', 'control']
-    #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
-
-    incoming_df = df
-    
-    for julian in unique_julian:
-
-        for transect in unique_transect:
-
-            for time in unique_time:
-
-                filtered_df = pd.DataFrame()
-
-                #  !!!!!!!  'f' is curly brace support !!!!!!!
-                filtered_df = incoming_df.query( f" transect == '{transect}' and julian == '{julian}' and time == '{time}' ")
-                # 0    transect row time week julian Thomisidae (crab spider) position
-
-                unique_rows = filtered_df['row'].unique()
-
-                if  unique_rows.size == 0:
-                    break
-
-                #print(filtered_df)
-                # 0    transect row time week julian Thomisidae (crab spider) position
-                # 3661  control  49   pm   34    236                        0        1
-                # 3662  control  49   pm   34    236                        0        2
-                # 3663  control  49   pm   34    236                        0        3
-                # 3664  control  49   pm   34    236                        0        4
-                # 3665  control  49   pm   34    236                        0        5
-                # 3666  control  49   pm   34    236                        0        6
-                # 3667  control  49   pm   34    236                        0        7
-                # 3668  control  49   pm   34    236                        0        8
-                # 3669  control  49   pm   34    236                        0        9
-                # 3670  control  49   pm   34    236                        0       10
-                # 3671  control  51   pm   34    236                        0        1
-                # 3672  control  51   pm   34    236                        0        2
-                # 3673  control  51   pm   34    236                        0        3
-                # 3674  control  51   pm   34    236                        0        4
-                # 3675  control  51   pm   34    236                        0        5
-                # 3676  control  51   pm   34    236                        0        6
-                # 3677  control  51   pm   34    236                        0        7
-                # 3678  control  51   pm   34    236                        0        8
-                # 3679  control  51   pm   34    236                        1        9
-                # 3680  control  51   pm   34    236                        0       10
-                # 3681  control  53   pm   34    236                        0        1
-                # 3682  control  53   pm   34    236                        0        2
-                # 3683  control  53   pm   34    236                        0        3
-                # 3684  control  53   pm   34    236                        0        4
-                # 3685  control  53   pm   34    236                        0        5
-                # 3686  control  53   pm   34    236                        0        6
-                # 3687  control  53   pm   34    236                        0        7
-                # 3688  control  53   pm   34    236                        0        8
-                # 3689  control  53   pm   34    236                        0        9
-                # 3690  control  53   pm   34    236                        1       10
-
-
-                spider_list = []
-                i=0
-
-                for row in unique_rows:
-
-                    # build a sentence in the language of spider counts that will ultimatedly be
-                    # used to compare to other sentances
-                    spider_list = []
-
-                    temp_df = filtered_df.query( f" row == '{row}' ")
-
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    #print(temp_df.to_string())
-                    #print("to_string done")
-                    #sys.exit()
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    
-                    # 0     transect row time week julian Thomisidae (crab spider) position
-                    # 121  oakMargin  79   pm   23    157                        0        1
-                    # 122  oakMargin  79   pm   23    157                        0        2
-                    # 123  oakMargin  79   pm   23    157                        0        3
-                    # 124  oakMargin  79   pm   23    157                        0        4
-                    # 125  oakMargin  79   pm   23    157                        2        5
-                    # 126  oakMargin  79   pm   23    157                        0        6
-                    # 127  oakMargin  79   pm   23    157                        1        7
-                    # 128  oakMargin  79   pm   23    157                        0        8
-                    # 129  oakMargin  79   pm   23    157                        0        9
-                    # 130  oakMargin  79   pm   23    157                        0       10
-
-                    spider_list.insert(0, temp_df.loc[:,'Thomisidae (crab spider)'].values.flatten().tolist() ) # (all rows)
-
-                    #print("spider_list: ", spider_list)
-                    # spider_list:  [['1', '0', '0', '1', '0', '0', '0', '1', '0', '0']]
-                    result = " ".join(spider_list[0])  # Use space as a delimiter
-                    i=i+1
-                    print("i: ", i, "  result: ", result, "  type: ", type(result))
-                    # result:  1 0 0 1 0 0 0 1 0 0   type:  <class 'str'>
-
-
-                    # insert context (what julian, time, week, and transect is that day is from)
-                    # (when you insert an element, all existing elements after the specified index are shifted 
-                    #  one position to the right)
-
-                    # insert context (what julian, time, week, and transect is that day from)
-                    # (when you insert an element, all existing elements after the specified index are shifted 
-                    #  one position to the right)
-
-                    # and, "access a cell value using only the row number and column label"
-                    # # Row number (e.g., 1) and column label (e.g., "Age")
-                    # value = df.iloc[row_number, df.columns.get_loc(column_label)]
-
-                    daily_spider_list = ["", "", "", "", "", ""]
-                    
-                    daily_spider_list[0] = transect 
-                    daily_spider_list[1] = row 
-                    daily_spider_list[2] = time  
-                    daily_spider_list[3] = temp_df.iloc[1, temp_df.columns.get_loc('week')]
-                    daily_spider_list[4] = julian 
-                    daily_spider_list[5] = result
-
-                    #print(daily_spider_list)
-                    # ['oakMargin', '81', 'pm', '34', '235', '0 0 0 0 0 0 0 0 0 0']
-
-                    # append new_list to the end of parent_list
-                    # parent_list.append(new_list)
-                    list_holding_tank.append(daily_spider_list) 
-              
-
-    # print(list_holding_tank)
-    # [['oakMargin', '79', 'pm', '23', '156', '0 0 0 0 0 0 1 0 1 0'], 
-    #  ['oakMargin', '81', 'pm', '23', '156', '0 0 0 0 1 0 0 1 0 0'], 
-    #
-
-    # build a dataframe
-    import pandas as pd
-    df = pd.DataFrame(list_holding_tank, columns=['transect','row', 'time', 'week', 'julian', 'counts'])
-
-
-    # print(df)
-    #        transect row time week julian               counts
-    # 0     oakMargin  79   pm   23    156  0 0 0 0 0 0 1 0 1 0
-    # 1     oakMargin  81   pm   23    156  0 0 0 0 1 0 0 1 0 0
-    # 2     oakMargin  83   pm   23    156  0 0 0 0 1 0 0 0 0 0
-    # 3       control  48   pm   23    156  0 0 1 0 0 0 0 0 0 2
-    # 4       control  50   pm   23    156  0 0 0 0 0 0 1 1 0 0
-    #  ..         ...  ..  ...  ...    ...                  ...
-    # 361     control  51   pm   34    236  0 0 0 0 0 0 0 0 1 0
-    # 362     control  53   pm   34    236  0 0 0 0 0 0 0 0 0 1
-    # 363     control  49   am   34    236  0 0 0 0 0 0 0 0 0 0
-    # 364     control  51   am   34    236  0 0 0 0 0 0 0 0 0 0
-    # 365     control  53   am   34    236  0 0 0 0 0 0 0 0 0 0
-    # 
-    # [366 rows x 6 columns]
-
-
-    # # Insert a delimeter (index 5) to support string truncation 
-    df.insert(5, 'delimeter', ':')
-
-    # squash to count text and construct words
-    df = squash_and_translate(df)
-
-
-    return(df)
-
-
-def squash_and_translate(df):
-
-    #print("input")
-    #print(df)
-    #print("end input")
-
-
-    ###############################################################################
-    #
-    #
-    # create 4 encoded words for return as a text separated by space
-    #
-    # returning the context string and a 'sentence' formed by 4 encoded words
-    #
-    #----------------------------------------------------------------------------
-    #
-    # input df
-    #   
-    #        transect row time week julian  delimeter                 counts
-    # 0     oakMargin  79   pm   23    156          :    0 0 0 0 0 0 1 0 1 0
-    # 1     oakMargin  81   pm   23    156          :    0 0 0 0 1 0 0 1 0 0
-    # 2     oakMargin  83   pm   23    156          :    0 0 0 0 1 0 0 0 0 0
-    # 3       control  48   pm   23    156          :    0 0 1 0 0 0 0 0 0 2
-    # 4       control  50   pm   23    156          :    0 0 0 0 0 0 1 1 0 0
-    #  ..         ...  ..  ...  ...    ...                  ...
-    # 361     control  51   pm   34    236          :    0 0 0 0 0 0 0 0 1 0
-    # 362     control  53   pm   34    236          :    0 0 0 0 0 0 0 0 0 1
-    # 363     control  49   am   34    236          :    0 0 0 0 0 0 0 0 0 0
-    # 364     control  51   am   34    236          :    0 0 0 0 0 0 0 0 0 0
-    # 365     control  53   am   34    236          :    0 0 0 0 0 0 0 0 0 0
-    # 
-    # [366 rows x 6 columns]
-    #
-    # output df
-    #
-    #       transect time  ...    squashed                                        transformed
-    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
-    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
-    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
-    # 
-    # [3 rows x 17 columns]
-    #
-    ###############################################################################
-
-    import sys
-    import pandas as pd 
-
-    compressed_df = df
-
-    print(df.to_string())
-    print("to_string done")
-    sys.exit()
-
-    part1_df = compressed_df.iloc[:, :6]
-    #print(part1_df)
-    #       transect row time week julian delimeter
-    # 0    oakMargin  79   pm   23    156         :
-    # 1    oakMargin  81   pm   23    156         :
-    # 2    oakMargin  83   pm   23    156         :
-    # 3      control  48   pm   23    156         :
-    # 4      control  50   pm   23    156         :
-    # ..         ...  ..  ...  ...    ...       ...
-    # 361    control  51   pm   34    236         :
-    # 362    control  53   pm   34    236         :
-    # 363    control  49   am   34    236         :
-    # 364    control  51   am   34    236         :
-    # 365    control  53   am   34    236         :
-    # 
-    # [366 rows x 6 columns]
-
-    
-
-    part2_df = compressed_df.iloc[:, 6:]
-    #print(part2_df.to_string())
-    #                   counts
-    # 0    0 0 0 0 0 0 1 0 1 0
-    # 1    0 0 0 0 1 0 0 1 0 0
-    # 2    0 0 0 0 1 0 0 0 0 0
-    # 3    0 0 1 0 0 0 0 0 0 2
-    # 4    0 0 0 0 0 0 1 1 0 0
-    # ..                   ...
-    # 361  0 0 0 0 0 0 0 0 1 0
-    # 362  0 0 0 0 0 0 0 0 0 1
-    # 363  0 0 0 0 0 0 0 0 0 0
-    # 364  0 0 0 0 0 0 0 0 0 0
-    # 365  0 0 0 0 0 0 0 0 0 0
-    # 
-    # [366 rows x 1 columns]
-
-    #print("to_string done")
-    #sys.exit()
-
-    # remove the whitespace from the section of 10 "integers" 
-    # Remove all spaces from the 'City' column
-    part2_df['squashed'] = part2_df['counts'].str.replace(" ", "", regex=False)
-
-    #                   counts    squashed
-    # 0    0 0 0 0 0 0 1 0 1 0  0000001010
-    # 1    0 0 0 0 1 0 0 1 0 0  0000100100
-    # 2    0 0 0 0 1 0 0 0 0 0  0000100000
-    # 3    0 0 1 0 0 0 0 0 0 2  0010000002
-    # 4    0 0 0 0 0 0 1 1 0 0  0000001100
-    # ..                   ...         ...
-    # 361  0 0 0 0 0 0 0 0 1 0  0000000010
-    # 362  0 0 0 0 0 0 0 0 0 1  0000000001
-    # 363  0 0 0 0 0 0 0 0 0 0  0000000000
-    # 364  0 0 0 0 0 0 0 0 0 0  0000000000
-    # 365  0 0 0 0 0 0 0 0 0 0  0000000000
-    # 
-    # [366 rows x 2 columns]
-
-    # make some bogus words for use in sentence comparison
-
-    
-    sentence_list = []
-    i=-1
-
-    for contents in part2_df['squashed']:
-
-        i=i+1
-
-        print("part1: ", "contents: ", contents, " i= ", i, " part1: ", part1_df.iloc[i])
-
-        w0 = 'TRUE'
-        w1 = 'TRUE'
-        w2 = 'TRUE'
-        w3 = 'TRUE'
-        w4 = 'TRUE'
-        w5 = 'TRUE'
-        w6 = 'TRUE'
-        w7 = 'TRUE'
-        w8 = 'TRUE'
-        w9 = 'TRUE'
-
-        if contents[0] == "0":
-            w0 = "false"
-        if contents[1] == "0":
-            w1 = "false"
-        if contents[2] == "0":
-            w2 = "false"
-        if contents[3] == "0":
-            w3 = "false"
-        if contents[4] == "0":
-            w4 = "false"
-        if contents[5] == "0":
-            w5 = "false"
-        if contents[6] == "0":
-            w6 = "false"
-        if contents[7] == "0":
-            w7 = "false"
-        if contents[8] == "0":
-            w8 = "false"
-        if contents[9] == "0":
-            w9 = "false"
-
-        new_sentence = w0 + " " + w1 + " " + w2 + " " + w3 + " " + w4 + " " + w5 + " " + w6 + " " + w7 + " " + w8 + " " + w9
-
-        sentence_list.append(new_sentence)
-
-        
-    print("adding new column: ", sentence_list)
-    part2_df['transformed'] = sentence_list
-
-    print(">>>>>>>>>>>>> transformed>>>>>>>>>>>>>>")
-    print(part2_df)
-    print(">>>>>>>>>>>>> end transformed>>>>>>>>>>>>>>") 
-
-    #     p0 p1 p2 p3  ... p8 p9    squashed                                        transformed
-    # 115  1  3  1  2  ...  2  3  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
-    # 119  0  0  1  1  ...  1  0  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
-    # 121  0  0  0  0  ...  1  0  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
-    # 
-    # [3 rows x 12 columns]
-
-    # join the dataframes side-by-side
-    result = pd.concat([part1_df, part2_df], axis=1)
-
-    print(result)
-    #       transect time  ...    squashed                                        transformed
-    # 115  oakMargin   pm  ...  1312001223      TRUETRUETRUE TRUEfalsefalse TRUETRUETRUE TRUE
-    # 119  oakMargin   pm  ...  0011301010   falsefalseTRUE TRUETRUEfalse TRUEfalseTRUE false
-    # 121  oakMargin   pm  ...  0000201110  falsefalsefalse falseTRUEfalse TRUETRUETRUE false
-    # 
-    # [3 rows x 17 columns]
-
-
-    return(result)
-
 
 def julian_row_compare_alternate(df):
 
@@ -1195,7 +810,7 @@ def julian_row_compare_alternate(df):
     # save files and return two dataframes 
     #
     #      binomial-counts-as-string:  transect time week julian row  counts
-    #      NGRAM similarity:           transect julian time week t1_text  t2_text t3_text  t1_t2 t1_t3 t2_t3 
+    #      NGRAM similarity:           transect julian time week row_a_text  row_b_text row_c_text  row1_row2 row1_row3 row2_row3 
     #
     ########################################################################
 
@@ -1206,7 +821,7 @@ def julian_row_compare_alternate(df):
     list_holding_tank = []
 
     sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
-        't1_text', 't2_text', 't3_text', 't1_t2', 't1_t3', 't2_t3'])
+        'row_a_text', 'row_b_text', 'row_c_text', 'row1_row2', 'row1_row3', 'row2_row3'])
 
 
     unique_julian = df['julian'].unique()
@@ -1405,7 +1020,7 @@ def julian_row_compare_alternate(df):
     import thad_o_mizer
 
     sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
-        't1_text', 't2_text', 't3_text', 't1_t2', 't1_t3', 't2_t3']) 
+        'row_a_text', 'row_b_text', 'row_c_text', 'row1_row2', 'row1_row3', 'row2_row3']) 
 
     for julian in unique_julian:
 
@@ -1447,39 +1062,39 @@ def julian_row_compare_alternate(df):
                         # get the T/f text strings associated with each vineyard row and compute the
                         # NGRAM similarity 
 
-                        t1_text = filtered_df.iloc[0, filtered_df.columns.get_loc('counts')] 
-                        t2_text = filtered_df.iloc[1, filtered_df.columns.get_loc('counts')] 
-                        t3_text = filtered_df.iloc[2, filtered_df.columns.get_loc('counts')]
+                        row_a_text = filtered_df.iloc[0, filtered_df.columns.get_loc('counts')] 
+                        row_b_text = filtered_df.iloc[1, filtered_df.columns.get_loc('counts')] 
+                        row_c_text = filtered_df.iloc[2, filtered_df.columns.get_loc('counts')]
 
-                        # print("triplet: ", t1_text, "     ", t2_text, "    ", t3_text)
+                        # print("triplet: ", row_a_text, "     ", row_b_text, "    ", row_c_text)
                         # triplet:  f f f f f f T f T f        f f f f T f f T f f       f f f f T f f f f f 
 
 
-                        t1_t2 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t2_text, ngrams=4)
-                        t1_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t1_text, sentence2 = t3_text, ngrams=4)
-                        t2_t3 = thad_o_mizer.compute_ngram_quick(sentence1 = t2_text, sentence2 = t3_text, ngrams=4)
+                        row1_row2 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_b_text, ngrams=4)
+                        row1_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_c_text, ngrams=4)
+                        row2_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_b_text, sentence2 = row_c_text, ngrams=4)
 
-                        # print("sims: ", t1_t2, "     ", t1_t3, "    ", t2_t3)
+                        # print("sims: ", row1_row2, "     ", row1_row3, "    ", row2_row3)
                         # sims:  1.0       0.7037037037037037      0.7037037037037037
 
 
                         new_sim_df = pd.DataFrame({'transect': [transect], \
                             'julian' : [julian], 'time' : [time], 'week' : [week], \
-                            't1_text' : [t1_text], 't2_text' : [t2_text], 't3_text' : [t3_text], \
-                            't1_t2' : [t1_t2], 't1_t3' : [t1_t3], 't2_t3' : [t2_t3]})
+                            'row_a_text' : [row_a_text], 'row_b_text' : [row_b_text], 'row_c_text' : [row_c_text], \
+                            'row1_row2' : [row1_row2], 'row1_row3' : [row1_row3], 'row2_row3' : [row2_row3]})
   
                         #print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
                         #print(new_sim_df.to_string())
                         #print(">>>>>>>>>>>>>>> end short similarity_df >>>>>>>>>>>>>>>\n")
 
-                        #   transect julian time week             t1_text               t2_text               t3_text     t1_t2     t1_t3     t2_t3
+                        #   transect julian time week             row_a_text               row_b_text               row_c_text     row1_row2     row1_row3     row2_row3
                         #0  control    236   pm   34  f f f f f f f f f f   f f f f f f f f T f   f f f f f f f f f T   0.703704  0.703704  0.703704
 
                         sim_df = pd.concat([sim_df, new_sim_df], ignore_index=True)
 
 
 
-    filename = './metrics/row_NGRAM.csv'
+    filename = './metrics/NGRAM_row.csv'
     # mode='w' indicates 'overwrite'
     sim_df.to_csv(filename, header=True, index=False, mode='a')
 
@@ -1579,7 +1194,20 @@ def binomial_success_week(df):
 
 def binomial_credible_interval(df, graphics, csv_ID):
 
+    # ========================================================================
+    #
+    # for each week cluster, by transect and time, calculate the 'trials' (=observations) 
+    # and nonZero counts (=successes) from the weekly count data, 
+    # use these to calculate a binomial posterior
+    #
+    # write the posterior distribution to 
+    # filename = './metrics/binomial-posterior-' + '.csv'
+    # 
     # graphical analysis by the R chunk evaluatePosterior
+    #
+    # ========================================================================
+
+
 
     # ************ input *******************
     #      transect time week trials nonZero
@@ -1596,6 +1224,11 @@ def binomial_credible_interval(df, graphics, csv_ID):
     # calculate total trials and successes
     # pipe to binomial() to calculate a credible interval for the success probability mean
     # use this to compare week_clusters by transect / time
+
+
+    # ************ output *******************
+    
+
 
     if not graphics:
         csv_ID = "hoser"
@@ -1675,6 +1308,8 @@ def binomial_credible_interval(df, graphics, csv_ID):
             filename = './metrics/binomial-posterior-' + '.csv'
             big_df.to_csv(filename, header=True, index=True, mode='w')
 
+            # 
+            
 
     return()
 
@@ -1824,9 +1459,8 @@ def analyze_position_time_clusters(df):
     # filter the input to analyze the cluster counts 
     # write file to record trials count mean  variance
     # filename = './metrics/cluster-probability-variance.csv'
-
-
-
+    # graphical presentation in R via chunk 'makeVariance'
+    #
     # input: week_records
     # 
     #print(">>>>>>>>>>>> new binomial_success_week_df >>>>>>>>>>>>>>>>")
@@ -1848,12 +1482,12 @@ def analyze_position_time_clusters(df):
     # ..... 
     # 29    oakMargin  83   pm   23    156                        0        9
     # 30    oakMargin  83   pm   23    156                        0       10
-
-
-
+    #
+    #
+    #
     #=====================================================================================
 
-        # erase any existing variance csv
+    # erase any existing variance csv
     import os
     filename = './metrics/cluster-probability-variance.csv'
     if os.path.exists(filename):
@@ -1927,45 +1561,45 @@ def analyze_position_time_clusters(df):
 
     filename = './metrics/cluster-probability-variance.csv'
     pv_df.to_csv(filename, header=True, index=False, mode='a')
-    print(pv_df.to_string())
+    #print(pv_df.to_string())
 
-            #      transect time data_label  trials  count      mean  variance
-            # 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
-            # 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
-            # 2     control   am    -w1-p1-      96     24  0.250000  0.229167
-            # 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
-            # 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
-            # 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
-            # 6     control   am    -w1-p2-      72     11  0.152778  0.157215
-            # 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
-            # 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
-            # 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
-            # 10    control   am    -w1-p3-      72     27  0.375000  0.595486
-            # 11    control   pm    -w1-p3-      81     53  0.654321  0.818778
-            # 12  oakMargin   am    -w2-p1-     204     16  0.078431  0.101692
-            # 13  oakMargin   pm    -w2-p1-     192     21  0.109375  0.107829
-            # 14    control   am    -w2-p1-     204     19  0.093137  0.084463
-            # 15    control   pm    -w2-p1-     192     18  0.093750  0.105794
-            # 16  oakMargin   am    -w2-p2-     153     16  0.104575  0.132855
-            # 17  oakMargin   pm    -w2-p2-     144     23  0.159722  0.148100
-            # 18    control   am    -w2-p2-     153     15  0.098039  0.088428
-            # 19    control   pm    -w2-p2-     144     20  0.138889  0.133488
-            # 20  oakMargin   am    -w2-p3-     153     20  0.130719  0.152847
-            # 21  oakMargin   pm    -w2-p3-     144     22  0.152778  0.157215
-            # 22    control   am    -w2-p3-     153     23  0.150327  0.219232
-            # 23    control   pm    -w2-p3-     144     26  0.180556  0.189622
-            # 24  oakMargin   am    -w3-p1-      72      1  0.013889  0.013696
-            # 25  oakMargin   pm    -w3-p1-      72      4  0.055556  0.052469
-            # 26    control   am    -w3-p1-      72      2  0.027778  0.027006
-            # 27    control   pm    -w3-p1-      72      2  0.027778  0.027006
-            # 28  oakMargin   am    -w3-p2-      54      0  0.000000  0.000000
-            # 29  oakMargin   pm    -w3-p2-      54      5  0.092593  0.084019
-            # 30    control   am    -w3-p2-      54      1  0.018519  0.018176
-            # 31    control   pm    -w3-p2-      54      0  0.000000  0.000000
-            # 32  oakMargin   am    -w3-p3-      54      1  0.018519  0.018176
-            # 33  oakMargin   pm    -w3-p3-      54      1  0.018519  0.018176
-            # 34    control   am    -w3-p3-      54      2  0.037037  0.035665
-            # 35    control   pm    -w3-p3-      54      7  0.129630  0.112826
+    #      transect time data_label  trials  count      mean  variance
+    # 0   oakMargin   am    -w1-p1-      96     25  0.260417  0.255100
+    # 1   oakMargin   pm    -w1-p1-     108     48  0.444444  0.617284
+    # 2     control   am    -w1-p1-      96     24  0.250000  0.229167
+    # 3     control   pm    -w1-p1-     108     45  0.416667  0.631944
+    # 4   oakMargin   am    -w1-p2-      72     33  0.458333  0.553819
+    # 5   oakMargin   pm    -w1-p2-      81     32  0.395062  0.436519
+    # 6     control   am    -w1-p2-      72     11  0.152778  0.157215
+    # 7     control   pm    -w1-p2-      81     55  0.679012  0.835239
+    # 8   oakMargin   am    -w1-p3-      72     20  0.277778  0.339506
+    # 9   oakMargin   pm    -w1-p3-      81     42  0.518519  0.817558
+    # 10    control   am    -w1-p3-      72     27  0.375000  0.595486
+    # 11    control   pm    -w1-p3-      81     53  0.654321  0.818778
+    # 12  oakMargin   am    -w2-p1-     204     16  0.078431  0.101692
+    # 13  oakMargin   pm    -w2-p1-     192     21  0.109375  0.107829
+    # 14    control   am    -w2-p1-     204     19  0.093137  0.084463
+    # 15    control   pm    -w2-p1-     192     18  0.093750  0.105794
+    # 16  oakMargin   am    -w2-p2-     153     16  0.104575  0.132855
+    # 17  oakMargin   pm    -w2-p2-     144     23  0.159722  0.148100
+    # 18    control   am    -w2-p2-     153     15  0.098039  0.088428
+    # 19    control   pm    -w2-p2-     144     20  0.138889  0.133488
+    # 20  oakMargin   am    -w2-p3-     153     20  0.130719  0.152847
+    # 21  oakMargin   pm    -w2-p3-     144     22  0.152778  0.157215
+    # 22    control   am    -w2-p3-     153     23  0.150327  0.219232
+    # 23    control   pm    -w2-p3-     144     26  0.180556  0.189622
+    # 24  oakMargin   am    -w3-p1-      72      1  0.013889  0.013696
+    # 25  oakMargin   pm    -w3-p1-      72      4  0.055556  0.052469
+    # 26    control   am    -w3-p1-      72      2  0.027778  0.027006
+    # 27    control   pm    -w3-p1-      72      2  0.027778  0.027006
+    # 28  oakMargin   am    -w3-p2-      54      0  0.000000  0.000000
+    # 29  oakMargin   pm    -w3-p2-      54      5  0.092593  0.084019
+    # 30    control   am    -w3-p2-      54      1  0.018519  0.018176
+    # 31    control   pm    -w3-p2-      54      0  0.000000  0.000000
+    # 32  oakMargin   am    -w3-p3-      54      1  0.018519  0.018176
+    # 33  oakMargin   pm    -w3-p3-      54      1  0.018519  0.018176
+    # 34    control   am    -w3-p3-      54      2  0.037037  0.035665
+    # 35    control   pm    -w3-p3-      54      7  0.129630  0.112826
 
     return()
 

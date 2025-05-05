@@ -42,13 +42,93 @@ df = pd.DataFrame(bugs_list)
 week_records_df = spider_lib.rough_dataset_clean(df)
 
 
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# get NGRAMS to compare row triplets in transect/daytime pairs
+# write
 
-# get the binomial probabilities and their variance by position and time clusters
-# variance graphics in R
+df_list = list() 
+
+df_list = spider_lib.julian_row_compare_alternate(week_records_df)
+
+# list() of 2 dataframes written to 
+#  filename = './metrics/binomial_success_row.csv'
+#  filename = './metrics/NGRAM_row.csv'
+
+# print(df_list[0])
+# print("that was 0 \n")
+#       transect time week julian row nonZero
+# 0    oakMargin   pm   23    156  79       2
+# 1    oakMargin   pm   23    156  81       2
+# 2    oakMargin   pm   23    156  83       1
+# 3      control   pm   23    156  48       2
+# 4      control   pm   23    156  50       2
+# ..         ...  ...  ...    ...  ..     ...
+# 361    control   pm   34    236  51       1
+# 362    control   pm   34    236  53       1
+# 363    control   am   34    236  49       0
+# 364    control   am   34    236  51       0
+# 365    control   am   34    236  53       0
+# 
+# [366 rows x 6 columns]
+
+#print(df_list[1])
+#print("that was 1 \n")
+#       transect julian time week  ...           row_c_text row1_row2 row1_row3  row2_row3
+# 0    oakMargin    156   pm   23  ...  f f f f T f f f f f   1.000000  0.703704  0.703704
+# 1      control    156   pm   23  ...  f f f f T f f f f f   0.703704  0.703704  0.840000
+# 2    oakMargin    157   pm   23  ...  f f T f f f f f f f   0.840000  0.703704  0.586207
+# 3    oakMargin    157   am   23  ...  f f f f f f f f f f   0.703704  0.483871  0.703704
+# 4      control    157   pm   23  ...  f f f T f T f f f T   0.703704  0.586207  0.703704
+# ..         ...    ...  ...  ...  ...                   ...       ...       ...       ...
+# 115    control    235   am   34  ...  f f f f f f f f f f   1.000000  1.000000  1.000000
+# 116  oakMargin    236   pm   34  ...  f f f f f f f f f f   1.000000  1.000000  1.000000
+# 117  oakMargin    236   am   34  ...  f f f f f f f f f f   1.000000  1.000000  1.000000
+# 118    control    236   pm   34  ...  f f f f f f f f f T   0.703704  0.703704  0.703704
+# 119    control    236   am   34  ...  f f f f f f f f f f   1.000000  1.000000  1.000000
+# 
+# [120 rows x 10 columns]
+
+
+
+sys.exit(1)
+
+
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#
+# get posterior distributions by cluster to eventually compare the credible intervals (in R)
+#
+# get binomial position counts by row calculate NGRAM similarity
+# return two dataframes and write
+#
+#           filename = './metrics/binomial_success_row.csv' transect time week julian row  nonZero
+#           filename = './metrics/NGRAM_row.csv' transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
+#
+df_list = spider_lib.julian_row_compare_alternate(week_records_df)
+
+
+# for each weekly cluster, calculate "success" and "trials"
+df = spider_lib.binomial_success_week(df_list[0])
+
+
+# for each transect / time / week_cluster
+# calculate total trials and successes
+# pipe to binomial() and save the posterior distribution to csv
+#     - use R to create distribution graphics
+#     - package coda: HPD/HDI interval: Narrowest interval containing the specified 
+#       probability mass (better for skewed posteriors)
+#     - calculate a credible interval for the success probability mean
+# 
+df = spider_lib.binomial_credible_interval(df, graphics="False", csv_ID='hoser')
+# now compare credible intervals in R
 
 #
+print("compare_alternate done")
+
+
+
+# get the binomial probabilities and their variance by position and time clusters
+# variance graphics in R chunk 'makeVariance'
+
 null = spider_lib.analyze_position_time_clusters(df=week_records_df)
 
 #
@@ -69,46 +149,10 @@ null = spider_lib.analyze_position_time_clusters(df=week_records_df)
 
 print("csv written")
 sys.exit(1)
-#print("end pv_df")
-#sys.exit(1)
-
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 
 
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# get posterior distributions by cluster to eventually compare the credible intervals (in R)
-#
-# get binomial position counts by row calculate NGRAM similarity
-# return two dataframes :  
-#    (filename = './metrics/row_binomial_success.csv') transect time week julian row  nonZero
-#    (filename = './metrics/row_NGRAM.csv') transect, week, julian, time, row1_to_row2, row1_to_row3, row2_to_row3
-df_list = spider_lib.julian_row_compare_alternate(week_records_df)
-
-# for each weekly cluster, calculate "success" and "trials"
-df = spider_lib.binomial_success_week(df_list[0])
-
-# for each transect / time / week_cluster
-# calculate total trials and successes
-# pipe to binomial() to save the posterior distribution to csv
-#     - use R to create distribution graphics
-#     - package coda: HPD/HDI interval: Narrowest interval containing the specified 
-#       probability mass (better for skewed posteriors)
-#     - calculate a credible interval for the success probability mean
-# 
-df = spider_lib.binomial_credible_interval(df, graphics="False", csv_ID='hoser')
-# now compare credible intervals in R
-
-#
-print("compare_alternate")
-sys.exit(1)
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
 
 
 
@@ -137,5 +181,4 @@ print(filtered_df)
 print("to_string done")
 sys.exit(1)
 
-#df = spider_lib.julian_row_compare_alternate(filtered_df)
-df = spider_lib.julian_row_compare_alternate(week_records_df)
+
