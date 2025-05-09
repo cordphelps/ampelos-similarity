@@ -809,8 +809,10 @@ def julian_row_compare_alternate(df):
     # 
     # save files and return two dataframes 
     #
-    #      binomial-counts-as-string:  transect time week julian row  counts
-    #      NGRAM similarity:           transect julian time week row_a_text  row_b_text row_c_text  row1_row2 row1_row3 row2_row3 
+    #      binomial-counts-as-string:  
+    #            transect time week julian row  counts
+    #      NGRAM same transect row similarity:           
+    #            transect julian time week row_a_text  row_b_text row_c_text  row1_row2 row1_row3 row2_row3 
     #
     ########################################################################
 

@@ -46,128 +46,108 @@ library(dplyr)
 
 source.url <- c("./metrics/NGRAM_row.csv")
 # written by the python function spider_lib.julian_row_compare_alternate(week_records_df)
+#  transect julian time week row_a_text row_b_text row_c_text row1_row2 row1_row3 row2_row3
+#0  control    236   pm   34  f f f f f f f f f f   f f f f f f f f T f   f f f f f f f f f T   0.703704  0.703704  0.703704
 
-#    library(bayestestR)
-# Example posterior draws from a normal distribution
-#    posterior <- rnorm(1000, mean = 5, sd = 3)
-# Calculate the 95% HDI (credible interval)
-#    hdi_interval <- hdi(posterior, credMass = 0.95)
-# Print the result
-#    print(hdi_interval)
 
-# `geom_density()` estimates the probability density function (PDF) of a continuous variable, using kernel density estimation (KDE)
-# Y-Axis: Density, Not Frequency
-# The y-axis shows density (not direct counts or probability).
-# The area under the entire curve sums to 1.
-# The height at any given x-value represents the relative likelihood of finding a data point near that value.
-# Peaks in the density curve indicate values where observations are more concentrated.
+  # ------------------------------------------------------------------------
+  plotHistBox <- function(tr, time, long.df, short.df) {
+    
+    NGRAM.median <- median(short.df$value)
+    NGRAM.not.equal.one.variance <- var(subset(short.df, !(value %in% c(1)))$value)
+    
+    #print(paste("NGRAM.not.equal.one median= ", NGRAM.median, " mean: ", mean(short.df$value), sep=""))
+    #print(paste("    NGRAM.not.equal.one variance= ", NGRAM.not.equal.one.variance, sep=""))
+    
+    NGRAM.median <- round(NGRAM.median, digits = 2)
+    
+    NGRAM.mean <- mean(short.df$value)
+    NGRAM.mean <- round(NGRAM.mean, digits = 2)
+    
+    stats.df <- short.df %>%
+      summarize(
+        ymin = round(min(value[value >= quantile(value, 0.25) - 1.5 * IQR(value)]), digits=2),
+        lower = round(quantile(value, 0.25), digits=2),
+        middle = round(median(value), digits=2),
+        upper = round(quantile(value, 0.75), digits=2),
+        ymax = round(max(value[value <= quantile(value, 0.75) + 1.5 * IQR(value)]), digits=2)
+      )
+  
+    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+    
+    gg.dist <- ggplot() +
+      
+      # color="#FF00FF",
+    geom_histogram(data=long.df, aes(x=value),  binwidth = 0.01 ) + 
+    
+      # , size=2, fill="green4", color="limegreen"
+    geom_boxplot(data=short.df, aes(x = value, y = 20), width=1.5) +
+    
+    scale_x_continuous(limits=c(0, 1.1), breaks=seq(0, 1.1, 0.1) ) +
+    
+    theme_bw() +
+    
+    labs(y = "row pairs assessed (count)", 
+         x = "NGRAM computed value\nsame transect, same day row-to-row comparison\n(boxplot excludes NGRAM=1)",
+         caption = paste("daily rows presence pattern compared\n", 
+                         "transect: ", tr, " daytime: ", daytime, 
+                         "\nboxplot median: ", NGRAM.median,
+                         "\nboxplot mean: ", NGRAM.mean, sep="" ))
+    
+    print(gg.dist)
+    
+    return(stats.df)
+  }
+# ------------------------------------------------------------------------
 
-# finding the credible interval
-# For MCMC or simulation outputs, use the `coda` package for highest posterior density (HPD) intervals: hpd_interval <- HPDinterval(as.mcmc(samples), prob=0.95)
-# Key Considerations: use HPD for skewed/multi-modal posteriors
-
-# bayestestR
-# Overlap Coefficient Measures the proportion of shared density between distributions (0 = no overlap, 1 = identical).
-# Overlap < 0.05: Strong divergence
-# Overlap > 0.35: Substantial similarity
-# overlap_score <- overlap(posterior_A, posterior_B)
 
 library(dplyr)
 
 NGRAM.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 
-SNH.tibl <- NGRAM.tibl %>% 
-  dplyr::filter(transect == 'oakMargin') %>% 
-  dplyr::filter(time == 'am') 
+library(coda)
 
-library(tidyr)
+NGRAM.tibl <- NGRAM.tibl %>%
+  filter(week %in% c('23', '24', '25', '26', '27', '28', '29', '30', '31'))
 
-temp.tibl <- pivot_longer(
-  SNH.tibl,
-  cols = c(row1_row2, row1_row3, row2_row3),
-  names_to = "column",
-  values_to = "value"
-)
-
-temp.tibl$normalized_value <- temp.tibl$value / sum(temp.tibl$value, na.rm = TRUE)
-
-temp.tibl$y <- 0
-temp.tibl$ymin <- 0
-temp.tibl$ymax <- 0
-
-for (daytime in list("am", "pm")) {
-
-    if (daytime == 'am') {
+for (xsect in list("oakMargin", "control")) {
+  
+  for (daytime in list("am", "pm")) {
+  
+    t.tibl <- NGRAM.tibl %>% 
+      dplyr::filter(transect == xsect) %>% 
+      dplyr::filter(time == daytime) 
+    
+    library(tidyr)
+    
+    stacked.tibl <- pivot_longer(
+      t.tibl,
+      cols = c(row1_row2, row1_row3, row2_row3),
+      names_to = "column",
+      values_to = "value"
+      )
+    
+    not.one.tibl <- stacked.tibl %>%
+      dplyr::filter(value != 1)
       
-      dist1 = temp.tibl$normalized_value
-      dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
-      #print(dist1.stats[1] ) # lower credible interval
-      #print(dist1.stats[2] ) # upper credible interval
-      #print(dist1.stats)
-
-      
-    } else {
-      
-      dist1 = temp.tibl$value
-      dist1.stats <- coda::HPDinterval(as.mcmc(dist1), prob=0.95)
-      #print(dist1.stats[1] ) # lower credible interval
-      #print(dist1.stats[2] ) # upper credible interval
-      #print(dist1.stats)
-      
-      
-    }
+    
+    t.NGRAM <- length(stacked.tibl$value)
+    values.not.equal.one <- length(subset(stacked.tibl, !(value %in% c(1)))$value)
+    values.equal.one <- t.NGRAM - NGRAM.not.equal.one
+    
+    print(paste("total count= ", t.NGRAM, sep=""))
+    print(paste("values.not.equal.one= ", values.not.equal.one, sep=""))
+    
+    stats.df <- plotHistBox(tr = xsect, time = daytime, long.df = stacked.tibl, short.df = not.one.tibl)
+    
+    print(paste("stats: ", stats.df, "\n", sep=""))
+  }
+  
+}
   
     
-    library(coda)
-    library(bayestestR)
     
-      #print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
-      #print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
-      #print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
-    
-    
-    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
-    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
-    
-    gg.dist <- ggplot(temp.tibl) +
-      
-      geom_dotplot(aes(value), stackdir="up", binwidth = 0.01) +
-      
-      
-      theme_bw() +
-      
-      labs(x = "NGRAM value", 
-           y = "relative liklihood (density)",
-           caption = paste("SNH / control pairs for 3 clusters of weeks\n", 
-                           "daytime: ", daytime, sep="" ))
-    
-    print(gg.dist)
-    
-    jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
-    
-    gg.ci <- ggplot(temp.tibl) +
-    
-      geom_pointrange(aes(y = y, ymin = ymin, ymax = ymax, 
-                          x = mean(value, na.rm = TRUE), 
-                          xmin = dist1.stats[1], 
-                          xmax = dist1.stats[2]), 
-                      position = jitter_pos, size = 1.2,
-                      color = color_list[1]) +
-    
-      
-    
-        
-      theme_bw() +
-    
-      labs( 
-            y="SNH / control pair", 
-            x="NGRAMr" 
-            ) 
-      
-      
-      print(gg.ci)
-    
-}
 
 
 ```
