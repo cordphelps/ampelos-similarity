@@ -250,3 +250,183 @@
 217,oakMargin,am,29,203,87,f f f f f f f f f f 
 ,transect,time,week,julian,row,counts
 218,control,pm,29,203,52,f f T f f f f f f T 
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2161,control,48,pm,29,203,0,1
+2162,control,48,pm,29,203,0,2
+2163,control,48,pm,29,203,0,3
+2164,control,48,pm,29,203,0,4
+2165,control,48,pm,29,203,0,5
+2166,control,48,pm,29,203,0,6
+2167,control,48,pm,29,203,0,7
+2168,control,48,pm,29,203,0,8
+2169,control,48,pm,29,203,0,9
+2170,control,48,pm,29,203,0,10
+2171,control,48,pm,29,203,0,1
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2172,control,50,pm,29,203,0,2
+2173,control,50,pm,29,203,0,3
+2174,control,50,pm,29,203,0,4
+2175,control,50,pm,29,203,0,5
+2176,control,50,pm,29,203,0,6
+2177,control,50,pm,29,203,0,7
+2178,control,50,pm,29,203,0,8
+2179,control,50,pm,29,203,0,9
+2180,control,50,pm,29,203,0,10
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+213,oakMargin,am,29,203,82,f f f f f f f f f f 
+214,oakMargin,am,29,203,84,f f f f f f T f f T 
+215,oakMargin,am,29,203,87,f f f f f f f f f f 
+216,oakMargin,am,29,203,87,f f f f f f f f f f 
+217,oakMargin,am,29,203,87,f f f f f f f f f f 
+,transect,time,week,julian,row,counts
+218,control,pm,29,203,52,f f T f f f f f f T 
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2161,control,48,pm,29,203,0,1
+2162,control,48,pm,29,203,0,2
+2163,control,48,pm,29,203,0,3
+2164,control,48,pm,29,203,0,4
+2165,control,48,pm,29,203,0,5
+2166,control,48,pm,29,203,0,6
+2167,control,48,pm,29,203,0,7
+2168,control,48,pm,29,203,0,8
+2169,control,48,pm,29,203,0,9
+2170,control,48,pm,29,203,0,10
+2171,control,48,pm,29,203,0,1
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2172,control,50,pm,29,203,0,2
+2173,control,50,pm,29,203,0,3
+2174,control,50,pm,29,203,0,4
+2175,control,50,pm,29,203,0,5
+2176,control,50,pm,29,203,0,6
+2177,control,50,pm,29,203,0,7
+2178,control,50,pm,29,203,0,8
+2179,control,50,pm,29,203,0,9
+2180,control,50,pm,29,203,0,10
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+213,oakMargin,am,29,203,82,f f f f f f f f f f 
+214,oakMargin,am,29,203,84,f f f f f f T f f T 
+215,oakMargin,am,29,203,87,f f f f f f f f f f 
+216,oakMargin,am,29,203,87,f f f f f f f f f f 
+217,oakMargin,am,29,203,87,f f f f f f f f f f 
+,transect,time,week,julian,row,counts
+218,control,pm,29,203,52,f f T f f f f f f T 
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2161,control,48,pm,29,203,0,1
+2162,control,48,pm,29,203,0,2
+2163,control,48,pm,29,203,0,3
+2164,control,48,pm,29,203,0,4
+2165,control,48,pm,29,203,0,5
+2166,control,48,pm,29,203,0,6
+2167,control,48,pm,29,203,0,7
+2168,control,48,pm,29,203,0,8
+2169,control,48,pm,29,203,0,9
+2170,control,48,pm,29,203,0,10
+2171,control,48,pm,29,203,0,1
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2172,control,50,pm,29,203,0,2
+2173,control,50,pm,29,203,0,3
+2174,control,50,pm,29,203,0,4
+2175,control,50,pm,29,203,0,5
+2176,control,50,pm,29,203,0,6
+2177,control,50,pm,29,203,0,7
+2178,control,50,pm,29,203,0,8
+2179,control,50,pm,29,203,0,9
+2180,control,50,pm,29,203,0,10
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+213,oakMargin,am,29,203,82,f f f f f f f f f f 
+214,oakMargin,am,29,203,84,f f f f f f T f f T 
+215,oakMargin,am,29,203,87,f f f f f f f f f f 
+216,oakMargin,am,29,203,87,f f f f f f f f f f 
+217,oakMargin,am,29,203,87,f f f f f f f f f f 
+,transect,time,week,julian,row,counts
+218,control,pm,29,203,52,f f T f f f f f f T 
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2161,control,48,pm,29,203,0,1
+2162,control,48,pm,29,203,0,2
+2163,control,48,pm,29,203,0,3
+2164,control,48,pm,29,203,0,4
+2165,control,48,pm,29,203,0,5
+2166,control,48,pm,29,203,0,6
+2167,control,48,pm,29,203,0,7
+2168,control,48,pm,29,203,0,8
+2169,control,48,pm,29,203,0,9
+2170,control,48,pm,29,203,0,10
+2171,control,48,pm,29,203,0,1
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2172,control,50,pm,29,203,0,2
+2173,control,50,pm,29,203,0,3
+2174,control,50,pm,29,203,0,4
+2175,control,50,pm,29,203,0,5
+2176,control,50,pm,29,203,0,6
+2177,control,50,pm,29,203,0,7
+2178,control,50,pm,29,203,0,8
+2179,control,50,pm,29,203,0,9
+2180,control,50,pm,29,203,0,10
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+213,oakMargin,am,29,203,82,f f f f f f f f f f 
+214,oakMargin,am,29,203,84,f f f f f f T f f T 
+215,oakMargin,am,29,203,87,f f f f f f f f f f 
+216,oakMargin,am,29,203,87,f f f f f f f f f f 
+217,oakMargin,am,29,203,87,f f f f f f f f f f 
+,transect,time,week,julian,row,counts
+218,control,pm,29,203,52,f f T f f f f f f T 
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2161,control,48,pm,29,203,0,1
+2162,control,48,pm,29,203,0,2
+2163,control,48,pm,29,203,0,3
+2164,control,48,pm,29,203,0,4
+2165,control,48,pm,29,203,0,5
+2166,control,48,pm,29,203,0,6
+2167,control,48,pm,29,203,0,7
+2168,control,48,pm,29,203,0,8
+2169,control,48,pm,29,203,0,9
+2170,control,48,pm,29,203,0,10
+2171,control,48,pm,29,203,0,1
+,transect,row,time,week,julian,Thomisidae (crab spider),position
+2172,control,50,pm,29,203,0,2
+2173,control,50,pm,29,203,0,3
+2174,control,50,pm,29,203,0,4
+2175,control,50,pm,29,203,0,5
+2176,control,50,pm,29,203,0,6
+2177,control,50,pm,29,203,0,7
+2178,control,50,pm,29,203,0,8
+2179,control,50,pm,29,203,0,9
+2180,control,50,pm,29,203,0,10
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+,transect,time,week,julian,row,counts
+213,oakMargin,am,29,203,82,f f f f f f f f f f 
+214,oakMargin,am,29,203,84,f f f f f f T f f T 
+215,oakMargin,am,29,203,87,f f f f f f f f f f 
+216,oakMargin,am,29,203,87,f f f f f f f f f f 
+217,oakMargin,am,29,203,87,f f f f f f f f f f 
+,transect,time,week,julian,row,counts
+218,control,pm,29,203,52,f f T f f f f f f T 

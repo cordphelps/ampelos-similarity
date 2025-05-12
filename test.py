@@ -47,6 +47,11 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 
 df_list = list() 
 
+
+spider_lib.julian_row_compare_transect()
+exit(1)
+
+
 df_list = spider_lib.julian_row_compare_alternate(week_records_df)
 
 # list() of 2 dataframes written to 
