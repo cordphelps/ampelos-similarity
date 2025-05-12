@@ -1146,7 +1146,6 @@ def julian_row_compare_transect():
     import pandas as pd
     import sys
 
-    n1_df = pd.DataFrame(columns=['transect','time', 'week', 'julian', 'row', 'counts']) 
 
     filename = './metrics/binomial_position_success.csv'
     incoming_df = pd.read_csv(filename)
@@ -1171,24 +1170,8 @@ def julian_row_compare_transect():
     # 341    control   am    34     234   53  f f f f f f f f f f 
 
 
-    
-
     # prep a list of lists to load a dataframe for return
     list_holding_tank = []
-
-    extended_df = pd.DataFrame(columns=['julian', 'time', 'week', 'transectA', 'transectB', \
-
-        'row_Aa_text', 'row_Ba_text', 'row_aa_NGRAM', \
-        'row_Aa_text', 'row_Bb_text', 'row_ab_NGRAM', \
-        'row_Aa_text', 'row_Bc_text', 'row_ac_NGRAM', \
-
-        'row_Ab_text', 'row_Ba_text', 'row_ba_NGRAM', \
-        'row_Ab_text', 'row_Bb_text', 'row_bb_NGRAM', \
-        'row_Ab_text', 'row_Bc_text', 'row_bc_NGRAM', \
-
-        'row_Ac_text', 'row_Ba_text', 'row_ca_NGRAM', \
-        'row_Ac_text', 'row_Bb_text', 'row_cb_NGRAM', \
-        'row_Ac_text', 'row_Bc_text', 'row_cc_NGRAM' ])
 
     #print(incoming_df.to_string())
     unique_julian = incoming_df['julian'].unique()
@@ -1205,9 +1188,19 @@ def julian_row_compare_transect():
     #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
 
 
-    for julian in unique_julian:
+    for time in unique_time:
 
-        for time in unique_time:
+        both_transects_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
+                                 'ng6', 'ng7', 'ng8', 'ng9' ])
+        all9_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
+                                 'ng6', 'ng7', 'ng8', 'ng9' ]) 
+
+        import os 
+        filename = './metrics/NGRAM_transect_' + time + '.csv'
+        if os.path.exists(filename):
+            os.remove(filename)
+
+        for julian in unique_julian: 
 
             #filtered_df = pd.DataFrame()
 
@@ -1234,65 +1227,74 @@ def julian_row_compare_transect():
             # 5    control   pm   23    156  52  f f f f T f f f f f 
             # end incoming
 
-            if filtered_df.empty:   # this is the case where there was only a 'pm' sample
-
-                print("zero: " + " ")
-                break
-
             # in most cases, there will now be 6 rows, 2 transects
 
-            for transect in unique_transect:
-
-                # print("transect: ", transect)
-
-                if transect == 'oakMargin': 
-
-                    filtered_trA = filtered_df.query( f" transect == '{transect}' ")
-                    # print(filtered_trA.to_string())
-                    # print("A")
-                    #
-                    # transect:  oakMargin
-                    #     transect time week julian row                counts
-                    # 0  oakMargin   pm   23    156  79  f f f f f f T f T f 
-                    # 1  oakMargin   pm   23    156  81  f f f f T f f T f f 
-                    # 2  oakMargin   pm   23    156  83  f f f f T f f f f f 
-                    # A
-
-                    # This retrieves the value from the second row (index 1) in column ‘b’.
-                    # df.loc[1, 'b'] 
-
-                    julian_ng = filtered_trA.loc[0, 'julian']
-                    time_ng = filtered_trA.loc[0, 'time']
-
-                    tr1_ng = filtered_trA.loc[0, 'transect']
-
-                    s0A_ng = filtered_trA.loc[0, 'counts']
-                    s1A_ng = filtered_trA.loc[1, 'counts']
-                    s2A_ng = filtered_trA.loc[2, 'counts']
-
-                else:
-
-                    filtered_trB = filtered_df.query( f" transect == '{transect}' ")
-                    print(filtered_trB.to_string())
-                    print("B")
-                    #
-                    # transect:  control
-                    #   transect time week julian row                counts
-                    # 3  control   pm   23    156  48  f f T f f f f f f T 
-                    # 4  control   pm   23    156  50  f f f f f f T T f f 
-                    # 5  control   pm   23    156  52  f f f f T f f f f f 
-                    # B
-
-                    tr2_ng = filtered_trB.loc[3, 'transect']
-                    s0B_ng = filtered_trB.loc[3, 'counts']
-                    s1B_ng = filtered_trB.loc[4, 'counts']
-                    s2B_ng = filtered_trB.loc[5, 'counts']
-
-
+            filtered_trA = filtered_df.query( f" transect == 'oakMargin' ")
+            filtered_trB = filtered_df.query( f" transect == 'control' ")
 
             # verify that they each have 3 rows of data
+            if len(filtered_trA) != 3 or len(filtered_trB) != 3:
 
-            if len(filtered_trA == 3) and len(filtered_trB == 3):
+                print("weird: " + " ")
+                print(len(filtered_trA))
+                print(filtered_trA.to_string())
+                print(len(filtered_trB))
+                print(filtered_trB.to_string())
+
+            else: 
+
+                # print(filtered_trA.to_string())
+                # print("A")
+                #
+                # transect:  oakMargin
+                #     transect time week julian row                counts
+                # 0  oakMargin   pm   23    156  79  f f f f f f T f T f 
+                # 1  oakMargin   pm   23    156  81  f f f f T f f T f f 
+                # 2  oakMargin   pm   23    156  83  f f f f T f f f f f 
+                # A
+
+                # This retrieves the value from the second row (index 1) in column ‘b’.
+                # df.loc[1, 'b'] 
+                #
+                # Summary:
+                # `.ilocrow, col` uses integer positions only.
+                # `.locrow_label, col_label` uses labels.
+                # `.atrow_label, col_label` is efficient for single values.
+                # 
+                # or, if you want to use positions:
+                #
+                # col_idx = filtered_trA.columns.get_loc('julian')
+                # julian_ng = filtered_trA.iloc[0, col_idx]
+
+
+                col_idx = filtered_trA.columns.get_loc('julian')
+                julian_ng = filtered_trA.iloc[0, col_idx]
+
+                time_ng = filtered_trA.iloc[0, filtered_trA.columns.get_loc('time')]
+
+                week_ng = filtered_trA.iloc[0, filtered_trA.columns.get_loc('week')]
+
+                s0A_ng = filtered_trA.iloc[0, filtered_trA.columns.get_loc('counts')]
+                s1A_ng = filtered_trA.iloc[1, filtered_trA.columns.get_loc('counts')]
+                s2A_ng = filtered_trA.iloc[2, filtered_trA.columns.get_loc('counts')]
+
+
+                # print(filtered_trB.to_string())
+                # print("B")
+                #
+                # transect:  control
+                #   transect time week julian row                counts
+                # 3  control   pm   23    156  48  f f T f f f f f f T 
+                # 4  control   pm   23    156  50  f f f f f f T T f f 
+                # 5  control   pm   23    156  52  f f f f T f f f f f 
+                # B
+
+                tr2_ng = filtered_trB.iloc[0, filtered_trB.columns.get_loc('transect')]
+
+                s0B_ng = filtered_trB.iloc[0, filtered_trB.columns.get_loc('counts')]
+                s1B_ng = filtered_trB.iloc[1, filtered_trB.columns.get_loc('counts')]
+                s2B_ng = filtered_trB.iloc[2, filtered_trB.columns.get_loc('counts')]
+
 
                 # print(filtered_trA.to_string())
                 # print(filtered_trB.to_string())
@@ -1308,285 +1310,52 @@ def julian_row_compare_transect():
                 # 5  control   pm   23    156  52  f f f f T f f f f f 
                 # short
 
+                # NGRAM compare the 1st row of transectA to the first, second, and third row of transectB
+                # compare the second row of transectA to the first, second, and third row of transectB
+                # compare the third row of transectA to the first, second, and third row of transectB
+
                 import thad_o_mizer
 
                 ng1 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s0B_ng, ngrams=4)
-                ng2 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s1B_ng, ngrams=4)
-                ng3 = thad_o_mizer.compute_ngram_quick(sentence1 = s2B_ng, sentence2 = s2B_ng, ngrams=4)
+                ng2 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s1B_ng, ngrams=4)
+                ng3 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s2B_ng, ngrams=4)
+
+                ng4 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s0B_ng, ngrams=4)
+                ng5 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s1B_ng, ngrams=4)
+                ng6 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s2B_ng, ngrams=4)
+
+                ng7 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s0B_ng, ngrams=4)
+                ng8 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s1B_ng, ngrams=4)
+                ng9 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s2B_ng, ngrams=4)
 
                 print(ng1)
                 print(ng2)
                 print(ng3)
+                print(ng4)
+                print(ng5)
+                print(ng6)
+                print(ng7)
+                print(ng8)
+                print(ng9)
 
+                all9_df = pd.DataFrame({'julian': [julian_ng], 'time' : [time_ng], 'week' : [week_ng], \
+                            'ng1' : [ng1], 'ng2' : [ng2], 'ng3' : [ng3], \
+                            'ng4' : [ng4], 'ng5' : [ng5], 'ng6' : [ng6], \
+                            'ng7' : [ng7], 'ng8' : [ng8], 'ng9' : [ng9] }) 
 
+                both_transects_df = pd.concat([both_transects_df, all9_df], ignore_index=True)
 
-
-                exit(1)
-
-            elif len(filtered_trA == 0) and len(filtered_trB == 0):
-
-                print("zeros: " + " ")
-
-            else:
-                print("weird: " + " ")
-                print(filtered_trA.to_string())
-                print(filtered_trA.to_string())
-                exit(1)
-
-            # This retrieves the value from the second row (index 1) in column ‘b’.
-            # df.loc[1, 'b']
-
-
-
-
-
-
-
-
-
-                unique_rows = filtered_df['row'].unique()
-
-                if  unique_rows.size == 0:
-                    break
-
-                # print(filtered_df)
-                # 0    transect row time week julian Thomisidae (crab spider) position
-                # 3661  control  49   pm   34    236                        0        1
-                # 3662  control  49   pm   34    236                        0        2
-                # 3663  control  49   pm   34    236                        0        3
-                # 3664  control  49   pm   34    236                        0        4
-                # 3665  control  49   pm   34    236                        0        5
-                # 3666  control  49   pm   34    236                        0        6
-                # 3667  control  49   pm   34    236                        0        7
-                # 3668  control  49   pm   34    236                        0        8
-                # 3669  control  49   pm   34    236                        0        9
-                # 3670  control  49   pm   34    236                        0       10
-                # 3671  control  51   pm   34    236                        0        1
-                # 3672  control  51   pm   34    236                        0        2
-                # 3673  control  51   pm   34    236                        0        3
-                # 3674  control  51   pm   34    236                        0        4
-                # 3675  control  51   pm   34    236                        0        5
-                # 3676  control  51   pm   34    236                        0        6
-                # 3677  control  51   pm   34    236                        0        7
-                # 3678  control  51   pm   34    236                        0        8
-                # 3679  control  51   pm   34    236                        1        9
-                # 3680  control  51   pm   34    236                        0       10
-                # 3681  control  53   pm   34    236                        0        1
-                # 3682  control  53   pm   34    236                        0        2
-                # 3683  control  53   pm   34    236                        0        3
-                # 3684  control  53   pm   34    236                        0        4
-                # 3685  control  53   pm   34    236                        0        5
-                # 3686  control  53   pm   34    236                        0        6
-                # 3687  control  53   pm   34    236                        0        7
-                # 3688  control  53   pm   34    236                        0        8
-                # 3689  control  53   pm   34    236                        0        9
-                # 3690  control  53   pm   34    236                        1       10
-
-
-                spider_list = [] 
-
-                new_string_list = ['p0', 'p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9']
-
-
-                for row in unique_rows:                  
-
-                    # build a sentence in the language of spider counts that will ultimatedly be
-                    # used to compare to other sentances
-
-                    temp_df = filtered_df.query( f" row == '{row}' ")
-
-                    week = temp_df.iloc[1, temp_df.columns.get_loc('week')]
-
-                    if len(temp_df) != 10:
-
-                        #print("weirdness: ") # julian 203, control, pm, week 29, row 48 
-                        #print(temp_df)
-
-                        filename = './metrics/discrepancy_log.csv'
-
-                        # mode='w' indicates 'overwrite'
-                        temp_df.to_csv(filename, header=True, index=True, mode='a')
-
-                        print("*********  discrepancy written to ", filename) # julian 203, control, pm, week 29, row 48 
-                        
-                    else:
-
-                        # (each row should have data from 10 different positions)
-                        # and count the number of non-zero for each day
-
-                        nonZero = 0
-
-                        for i in range(10):
-
-                            if temp_df.iloc[i, temp_df.columns.get_loc('Thomisidae (crab spider)')] == '0':
-
-                                new_string_list[i] = 'f '  # spider count is zero for that position
-
-                            else:
-
-                                new_string_list[i] = 'T '  # spider count is non-zero for that position
-
-                                nonZero = nonZero + 1
-
-
-                        new_string_text = new_string_list[0] + new_string_list[1] + new_string_list[2] + \
-                         new_string_list[3] + new_string_list[4] + new_string_list[5] + \
-                         new_string_list[6] + new_string_list[7] + new_string_list[8] + new_string_list[9]
-
-                        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                        # print(temp_df.to_string())
-                        #print("new_string: ", new_string_text)
-                        #print("to_string done")
-                        #sys.exit()
-                        # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                        
                 
-                        # new row as a df in dictionary format
-                        n2_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
-                            'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
 
-                        binomial_day_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
-                            'julian' : [julian], 'row' : [row], 'nonZero' : nonZero})
-                        # 
-                        #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
-                        #print(n2_df.to_string())
-                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>\n")
-
-                        #     transect time week julian row                counts
-                        # 0  oakMargin   pm   23    156  79  f f f f f f T f T f 
-
-                        #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
-                        #print(binomial_day_df.to_string())
-                        #print(">>>>>>>>>>>> end new string >>>>>>>>>>>>>>>>\n")
-
-                        #     transect time week julian row  nonZero
-                        # 0  oakMargin   pm   23    156  79        2
+        filename = './metrics/NGRAM_transect_' + time + '.csv'
+        # mode='w' indicates 'overwrite'
+        both_transects_df.to_csv(filename, header=True, index=False, mode='w')
 
 
-                    n1_df = pd.concat([n1_df, n2_df], ignore_index=True)
-
-                    binomial_df = pd.concat([binomial_df, binomial_day_df], ignore_index=True)
-
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                    # print(binomial_df.to_string())
-                    #
-                    #       transect time week julian row                counts
-                    # 0    oakMargin   pm   23    156  79  f f f f f f T f T f 
-                    # 1    oakMargin   pm   23    156  81  f f f f T f f T f f 
-                    #  2    oakMargin   pm   23    156  83  f f f f T f f f f f 
-                    #  3      control   pm   23    156  48  f f T f f f f f f T 
-                    #  4      control   pm   23    156  50  f f f f f f T T f f 
-                    #  5      control   pm   23    156  52  f f f f T f f f f f 
-                    #  6    oakMargin   pm   23    157  79  f f f f T f T f f f 
-                    #  7    oakMargin   pm   23    157  81  f f f T T f f f T f 
-                    #  8    oakMargin   pm   23    157  83  f f T f f f f f f f 
-                    #  9    oakMargin   am   23    157  79  f T f f f f T f f f 
-                    #  10   oakMargin   am   23    157  81  f f f f f f T f f f 
-                    #  11   oakMargin   am   23    157  83  f f f f f f f f f f 
-                    #  12     control   pm   23    157  48  f f T T f f T T f f 
-                    #  13     control   pm   23    157  50  f f f T f f T f f f 
-                    #  14     control   pm   23    157  52  f f f T f T f f f T 
-                    #  15     control   am   23    157  48  f f T f f f f T f f 
-                    #  16     control   am   23    157  50  f f f f f f f f f f 
-                    #  17     control   am   23    157  52  f f f f f f f T f f 
-                    #
-                    # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> end unique_rows >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    exit(1)
 
 
-    filename = './metrics/binomial_success_row.csv'
-    # mode='w' indicates 'overwrite'
-    binomial_df.to_csv(filename, header=True, index=False, mode='a')
-
-
-    #############################################################################################
-    #
-    # find all rows sampled in the same transect/time/julian (normally 3) and compute NGRAM cosine 
-    # similarity between them
-    #
-    #############################################################################################
-
-    import thad_o_mizer
-
-    sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
-        'row_a_text', 'row_b_text', 'row_c_text', 'row1_row2', 'row1_row3', 'row2_row3']) 
-
-    for julian in unique_julian:
-
-            for transect in unique_transect:
-
-                for time in unique_time:
-
-                    filtered_df = pd.DataFrame()
-
-                    #  !!!!!!!  'f' is curly brace support !!!!!!!
-                    filtered_df = n1_df.query( f" transect == '{transect}' and julian == '{julian}' \
-                        and time == '{time}' ")
-                    # 0    transect row time week julian Thomisidae (crab spider) position
-
-                    #print(">>>>>>> filtered df >>>>>>>>\n")
-                    #print(filtered_df)
-                    #print(">>>>>>> end filtered df >>>>>>>>\n")
-
-                    # >>>>>>> filtered df >>>>>>>>
-                    #    transect time week julian row                counts
-                    #360  control   pm   34    236  49  f f f f f f f f f f 
-                    #361  control   pm   34    236  51  f f f f f f f f T f 
-                    #362  control   pm   34    236  53  f f f f f f f f f T 
-                    #>>>>>>> end filtered df >>>>>>>>
-
-
-                    if len(filtered_df) != 3:     # there should be 3 rows of data
-
-                        filename = './metrics/discrepancy_log.csv'
-                        # mode='w' indicates 'overwrite'
-                        filtered_df.to_csv(filename, header=True, index=True, mode='a')
-                        print("*********  discrepancy written to ", filename) # julian 203, control, pm, week 29, row 48 
-                        #                                                     # julian 156 did not have am samples
-                        
-                    else:
-
-                        week = filtered_df.iloc[1, filtered_df.columns.get_loc('week')]
-
-                        # get the T/f text strings associated with each vineyard row and compute the
-                        # NGRAM similarity 
-
-                        row_a_text = filtered_df.iloc[0, filtered_df.columns.get_loc('counts')] 
-                        row_b_text = filtered_df.iloc[1, filtered_df.columns.get_loc('counts')] 
-                        row_c_text = filtered_df.iloc[2, filtered_df.columns.get_loc('counts')]
-
-                        # print("triplet: ", row_a_text, "     ", row_b_text, "    ", row_c_text)
-                        # triplet:  f f f f f f T f T f        f f f f T f f T f f       f f f f T f f f f f 
-
-
-                        row1_row2 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_b_text, ngrams=4)
-                        row1_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_c_text, ngrams=4)
-                        row2_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_b_text, sentence2 = row_c_text, ngrams=4)
-
-                        # print("sims: ", row1_row2, "     ", row1_row3, "    ", row2_row3)
-                        # sims:  1.0       0.7037037037037037      0.7037037037037037
-
-
-                        new_sim_df = pd.DataFrame({'transect': [transect], \
-                            'julian' : [julian], 'time' : [time], 'week' : [week], \
-                            'row_a_text' : [row_a_text], 'row_b_text' : [row_b_text], 'row_c_text' : [row_c_text], \
-                            'row1_row2' : [row1_row2], 'row1_row3' : [row1_row3], 'row2_row3' : [row2_row3]})
-  
-                        #print(">>>>>>>>>>>>>>> similarity_df >>>>>>>>>>>>>>>")
-                        #print(new_sim_df.to_string())
-                        #print(">>>>>>>>>>>>>>> end short similarity_df >>>>>>>>>>>>>>>\n")
-
-                        #   transect julian time week             row_a_text               row_b_text               row_c_text     row1_row2     row1_row3     row2_row3
-                        #0  control    236   pm   34  f f f f f f f f f f   f f f f f f f f T f   f f f f f f f f f T   0.703704  0.703704  0.703704
-
-                        sim_df = pd.concat([sim_df, new_sim_df], ignore_index=True)
-
-
-
-    filename = './metrics/NGRAM_row.csv'
-    # mode='w' indicates 'overwrite'
-    sim_df.to_csv(filename, header=True, index=False, mode='a')
-
-    return([binomial_df, sim_df])
+    return()
 
 
 
