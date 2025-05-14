@@ -44,22 +44,33 @@ library(dplyr)
 #
 # ================================================================================
 
-source.url <- c("./metrics/NGRAM_row.csv")
+source.row.url <- c("./metrics/NGRAM_row.csv")
 # written by the python function spider_lib.julian_row_compare_alternate(week_records_df)
 #  transect julian time week row_a_text row_b_text row_c_text row1_row2 row1_row3 row2_row3
 #0  control    236   pm   34  f f f f f f f f f f   f f f f f f f f T f   f f f f f f f f f T   0.703704  0.703704  0.703704
 
+source.transect.url <- c("./metrics/NGRAM_transect.csv")
+
 
   # ------------------------------------------------------------------------
-  plotHistBox <- function(tr, time, long.df, short.df) {
+  plotHistBox <- function(tr, time, long.df, short.df, chart.text) {
+    
+    if (chart.text == 'opposing') {
+      box.position = 55
+    } else {
+      box.position = 55
+    }
     
     NGRAM.median <- median(short.df$value)
     NGRAM.not.equal.one.variance <- var(subset(short.df, !(value %in% c(1)))$value)
+    # (also)
+    # NGRAM.not.equal.one.variance <- var(not.one.tibl$value)
     
     #print(paste("NGRAM.not.equal.one median= ", NGRAM.median, " mean: ", mean(short.df$value), sep=""))
     #print(paste("    NGRAM.not.equal.one variance= ", NGRAM.not.equal.one.variance, sep=""))
     
     NGRAM.median <- round(NGRAM.median, digits = 2)
+    NGRAM.variance <- round(NGRAM.not.equal.one.variance, digits = 2)
     
     NGRAM.mean <- mean(short.df$value)
     NGRAM.mean <- round(NGRAM.mean, digits = 2)
@@ -72,6 +83,8 @@ source.url <- c("./metrics/NGRAM_row.csv")
         upper = round(quantile(value, 0.75), digits=2),
         ymax = round(max(value[value <= quantile(value, 0.75) + 1.5 * IQR(value)]), digits=2)
       )
+    
+    IQR.lower <- round(stats.df$lower, digits=3)
   
     color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
     # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
@@ -82,17 +95,18 @@ source.url <- c("./metrics/NGRAM_row.csv")
     geom_histogram(data=long.df, aes(x=value),  binwidth = 0.01 ) + 
     
       # , size=2, fill="green4", color="limegreen"
-    geom_boxplot(data=short.df, aes(x = value, y = 20), width=1.5) +
+    geom_boxplot(data=short.df, aes(x = value, y = box.position), width=2.5) +
     
     scale_x_continuous(limits=c(0, 1.1), breaks=seq(0, 1.1, 0.1) ) +
     
     theme_bw() +
     
     labs(y = "row pairs assessed (count)", 
-         x = "NGRAM computed value\nsame transect, same day row-to-row comparison\n(boxplot excludes NGRAM=1)",
+         x = paste("NGRAM computed value\n", chart.text, " transect, same day row-to-row comparison\n(boxplot excludes NGRAM=1)",sep=""),
          caption = paste("daily rows presence pattern compared\n", 
                          "transect: ", tr, " daytime: ", daytime, 
                          "\nboxplot median: ", NGRAM.median,
+                         "\nboxplot IQR lower: ", IQR.lower,
                          "\nboxplot mean: ", NGRAM.mean, sep="" ))
     
     print(gg.dist)
@@ -104,18 +118,18 @@ source.url <- c("./metrics/NGRAM_row.csv")
 
 library(dplyr)
 
-NGRAM.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+NGRAM.row.tibl <- dplyr::as_tibble(read.csv(source.row.url, header=TRUE, row.names=NULL))
 
 library(coda)
 
-NGRAM.tibl <- NGRAM.tibl %>%
+NGRAM.row.tibl <- NGRAM.row.tibl %>%
   filter(week %in% c('23', '24', '25', '26', '27', '28', '29', '30', '31'))
 
 for (xsect in list("oakMargin", "control")) {
   
   for (daytime in list("am", "pm")) {
   
-    t.tibl <- NGRAM.tibl %>% 
+    t.tibl <- NGRAM.row.tibl %>% 
       dplyr::filter(transect == xsect) %>% 
       dplyr::filter(time == daytime) 
     
@@ -128,27 +142,73 @@ for (xsect in list("oakMargin", "control")) {
       values_to = "value"
       )
     
+    stacked.tibl$value <- as.numeric(stacked.tibl$value)
+    
     not.one.tibl <- stacked.tibl %>%
       dplyr::filter(value != 1)
       
     
     t.NGRAM <- length(stacked.tibl$value)
-    values.not.equal.one <- length(subset(stacked.tibl, !(value %in% c(1)))$value)
+    NGRAM.not.equal.one <- length(subset(stacked.tibl, !(value %in% c(1)))$value)
     values.equal.one <- t.NGRAM - NGRAM.not.equal.one
     
-    print(paste("total count= ", t.NGRAM, sep=""))
-    print(paste("values.not.equal.one= ", values.not.equal.one, sep=""))
+    #print(paste("total count= ", t.NGRAM, sep=""))
+    #print(paste("values.not.equal.one= ", values.not.equal.one, sep=""))
     
-    stats.df <- plotHistBox(tr = xsect, time = daytime, long.df = stacked.tibl, short.df = not.one.tibl)
+    stats.df <- plotHistBox(tr = xsect, time = daytime, long.df = stacked.tibl, short.df = not.one.tibl, chart.text="same")
     
     print(paste("stats: ", stats.df, "\n", sep=""))
+    
+    }
+  
+  
   }
   
-}
-  
-    
-    
 
+  
+  
+  # ===========================================================================================
+  # ===========================================================================================
+  # ===========================================================================================
+  NGRAM.transect.tibl <- dplyr::as_tibble(read.csv(source.transect.url, header=TRUE, row.names=NULL))
+  
+
+library(coda)
+
+NGRAM.transect.tibl <- NGRAM.transect.tibl %>%
+  filter(week %in% c('23', '24', '25', '26', '27', '28', '29', '30', '31'))
+  
+for (daytime in list("am", "pm")) {
+    
+    t.tibl <- NGRAM.transect.tibl %>% 
+      dplyr::filter(time == daytime) 
+    
+  library(tidyr)
+    
+  stacked.transect.tibl <- pivot_longer(
+      t.tibl,
+      cols = c(ng1, ng2, ng3, ng4, ng5, ng6, ng7, ng8, ng9),
+      names_to = "column",
+      values_to = "value"
+      )
+  
+  stacked.transect.tibl$value <- as.numeric(stacked.transect.tibl$value)
+  
+      not.one.transect.tibl <- stacked.transect.tibl %>%
+      dplyr::filter(value != 1)
+      
+    t.NGRAM <- length(stacked.transect.tibl$value)
+    values.not.equal.one <- length(subset(stacked.transect.tibl, !(value %in% c(1)))$value)
+    values.equal.one <- t.NGRAM - NGRAM.not.equal.one
+    
+    #print(paste("total tr count= ", t.NGRAM, sep=""))
+    #print(paste("tr values.not.equal.one= ", values.not.equal.one, sep=""))
+    
+    stats.df <- plotHistBox(tr = 'SNH-vs-control', time = daytime, long.df = stacked.transect.tibl, short.df = not.one.transect.tibl, chart.text="opposing")
+    
+    #print(paste("stats: ", stats.df, "\n", sep=""))
+
+}
 
 ```
 

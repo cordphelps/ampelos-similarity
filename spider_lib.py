@@ -1188,9 +1188,12 @@ def julian_row_compare_transect():
     #['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']
 
 
+    both_transects_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
+                                 'ng6', 'ng7', 'ng8', 'ng9' ])
+
     for time in unique_time:
 
-        both_transects_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
+        time_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
                                  'ng6', 'ng7', 'ng8', 'ng9' ])
         all9_df = pd.DataFrame(columns=['julian','time', 'week', 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', \
                                  'ng6', 'ng7', 'ng8', 'ng9' ]) 
@@ -1211,10 +1214,10 @@ def julian_row_compare_transect():
             #  !!!!!!!  'f' is curly brace support !!!!!!!
             filtered_df = incoming_df.query( f" julian == '{julian}' and time == '{time}' ")
 
-            print("incoming")
-            print("julian: " + julian + " time: " + time)
-            print(filtered_df.to_string())
-            print("end incoming")
+            #print("incoming")
+            #print("julian: " + julian + " time: " + time)
+            #print(filtered_df.to_string())
+            #print("end incoming")
 
             # incoming
             # julian: 156 time: pm
@@ -1316,17 +1319,19 @@ def julian_row_compare_transect():
 
                 import thad_o_mizer
 
-                ng1 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s0B_ng, ngrams=4)
-                ng2 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s1B_ng, ngrams=4)
-                ng3 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s2B_ng, ngrams=4)
+                ng = 3
 
-                ng4 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s0B_ng, ngrams=4)
-                ng5 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s1B_ng, ngrams=4)
-                ng6 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s2B_ng, ngrams=4)
+                ng1 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s0B_ng, ngrams=ng)
+                ng2 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s1B_ng, ngrams=ng)
+                ng3 = thad_o_mizer.compute_ngram_quick(sentence1 = s0A_ng, sentence2 = s2B_ng, ngrams=ng)
 
-                ng7 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s0B_ng, ngrams=4)
-                ng8 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s1B_ng, ngrams=4)
-                ng9 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s2B_ng, ngrams=4)
+                ng4 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s0B_ng, ngrams=ng)
+                ng5 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s1B_ng, ngrams=ng)
+                ng6 = thad_o_mizer.compute_ngram_quick(sentence1 = s1A_ng, sentence2 = s2B_ng, ngrams=ng)
+
+                ng7 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s0B_ng, ngrams=ng)
+                ng8 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s1B_ng, ngrams=ng)
+                ng9 = thad_o_mizer.compute_ngram_quick(sentence1 = s2A_ng, sentence2 = s2B_ng, ngrams=ng)
 
                 print(ng1)
                 print(ng2)
@@ -1343,13 +1348,20 @@ def julian_row_compare_transect():
                             'ng4' : [ng4], 'ng5' : [ng5], 'ng6' : [ng6], \
                             'ng7' : [ng7], 'ng8' : [ng8], 'ng9' : [ng9] }) 
 
-                both_transects_df = pd.concat([both_transects_df, all9_df], ignore_index=True)
+            time_df = pd.concat([time_df, all9_df], ignore_index=True)
 
-                
+        both_transects_df = pd.concat([both_transects_df, time_df], ignore_index=True)    
 
-        filename = './metrics/NGRAM_transect_' + time + '.csv'
+        filename = './metrics/NGRAM_transect.csv'
         # mode='w' indicates 'overwrite'
         both_transects_df.to_csv(filename, header=True, index=False, mode='w')
+
+        ng_columns = [ 'ng1', 'ng2', 'ng3', 'ng4', 'ng5', 'ng6', 'ng7', 'ng8', 'ng9' ]
+
+        long_df = both_transects_df.melt(value_vars = ng_columns, value_name = 'value')
+
+        print(long_df.to_string())
+
 
 
     exit(1)
