@@ -801,7 +801,7 @@ def julian_row_compare_alternate(df):
 
     ########################################################################
     #
-    # get binomial position counts by row calculate NGRAM similarity
+    # get binomial position counts by row calculate NGRAM similarity (same transect)
     # 
     #
     # compare spider count text similarity by julian day for each row by transect and time
@@ -810,7 +810,7 @@ def julian_row_compare_alternate(df):
     # save files and return two dataframes 
     #
     #      binomial-counts-as-string:  
-    #            transect time week julian row  counts
+    #            transect time week julian row  'counts' (which is a 10 position true/false string)
     #      NGRAM same transect row similarity:           
     #            transect julian time week row_a_text  row_b_text row_c_text  row1_row2 row1_row3 row2_row3 
     #
@@ -960,7 +960,7 @@ def julian_row_compare_alternate(df):
                             'julian' : [julian], 'row' : [row], 'counts' : [new_string_text]})
 
                         binomial_day_df = pd.DataFrame({'transect': [transect], 'time' : [time], 'week' : [week], \
-                            'julian' : [julian], 'row' : [row], 'nonZero' : nonZero})
+                            'julian' : [julian], 'row' : [row], 'nonZero' : [nonZero]})
                         # 
                         #print(">>>>>>>>>>>> new string >>>>>>>>>>>>>>>>")
                         #print(n2_df.to_string())
@@ -1028,9 +1028,9 @@ def julian_row_compare_alternate(df):
     filename = './metrics/binomial_position_success.csv'
     n1_df.to_csv(filename, header=True, index=False, mode='a')
 
-    #filename = './metrics/binomial_success_row.csv'
+    filename = './metrics/binomial_nonZero_counts_row.csv'
     # mode='w' indicates 'overwrite'
-    #binomial_df.to_csv(filename, header=True, index=False, mode='a')
+    binomial_df.to_csv(filename, header=True, index=False, mode='a')
 
 
     #############################################################################################
@@ -1092,10 +1092,11 @@ def julian_row_compare_alternate(df):
                         # print("triplet: ", row_a_text, "     ", row_b_text, "    ", row_c_text)
                         # triplet:  f f f f f f T f T f        f f f f T f f T f f       f f f f T f f f f f 
 
+                        ng=3
 
-                        row1_row2 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_b_text, ngrams=4)
-                        row1_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_c_text, ngrams=4)
-                        row2_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_b_text, sentence2 = row_c_text, ngrams=4)
+                        row1_row2 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_b_text, ngrams=ng)
+                        row1_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_c_text, ngrams=ng)
+                        row2_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_b_text, sentence2 = row_c_text, ngrams=ng)
 
                         # print("sims: ", row1_row2, "     ", row1_row3, "    ", row2_row3)
                         # sims:  1.0       0.7037037037037037      0.7037037037037037

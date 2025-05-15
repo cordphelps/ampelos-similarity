@@ -48,15 +48,29 @@ week_records_df = spider_lib.rough_dataset_clean(df)
 df_list = list() 
 
 
-spider_lib.julian_row_compare_transect()
-exit(1)
+
+########################################################################
+#
+# get binomial position pattern by row for each julian/time/transect
+# calculate NGRAM similarity between transects
+# save the NGRAM computation to disk
+# (in R) compare spider count text similarity between transects by julian day and time
+# compare across transects, save filename = './metrics/NGRAM_transect.csv'
+#
+
+#spider_lib.julian_row_compare_transect()
+#exit(1)
 
 
+
+# =======================================================================================
+# save binomial success count to filename = './metrics/binomial_nonZero_counts_row.csv'
+# save binomial success by postion to ilename = './metrics/binomial_position_success.csv'
+# compare same-transect true/false position strings for 3 same julian rows 
+#         save filename = './metrics/binomial_NGRAM_local.csv'
+#
 df_list = spider_lib.julian_row_compare_alternate(week_records_df)
 
-# list() of 2 dataframes written to 
-#  filename = './metrics/binomial_success_row.csv'
-#  filename = './metrics/NGRAM_row.csv'
 
 # print(df_list[0])
 # print("that was 0 \n")
@@ -91,8 +105,6 @@ df_list = spider_lib.julian_row_compare_alternate(week_records_df)
 # 119    control    236   am   34  ...  f f f f f f f f f f   1.000000  1.000000  1.000000
 # 
 # [120 rows x 10 columns]
-
-
 
 sys.exit(1)
 

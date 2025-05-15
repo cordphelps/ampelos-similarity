@@ -212,7 +212,62 @@ for (daytime in list("am", "pm")) {
 
 ```
 
+```{r mw-u-test, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
+
+
+library(dplyr)
+library(tidyr)
+library(coda)
+
+nonZero.counts.url <- c('./metrics/binomial_nonZero_counts_row.csv')
+
+nonZero.tibl <- dplyr::as_tibble(read.csv(nonZero.counts.url, header=TRUE, row.names=NULL))
+nonZero.tibl$week <- as.character(nonZero.tibl$week) 
+  
+core.weeks = c('23', '24', '25', '26', '27', '28', '29', '30', '31')
+nonZero.tibl <- nonZero.tibl %>%
+  filter(week %in% core.weeks)
+
+  
+  for (daytime in list("am", "pm")) {
+    
+    for (wk in core.weeks) {
+  
+      t.tibl <- nonZero.tibl %>% 
+        dplyr::filter(time == daytime) %>%
+        dplyr::filter(week == wk) 
+        
+        oakMargin.tibl <- t.tibl %>% 
+          dplyr::filter(transect == 'oakMargin') 
+        
+        control.tibl <- t.tibl %>% 
+          dplyr::filter(transect == 'control') 
+    
+        # "two.sided" = detect any difference (positive or negative) between groups
+        stats.df <- stats::wilcox.test(oakMargin.tibl$nonZero, y = control.tibl$nonZero,
+                alternative = "two.sided",
+                mu = 0, paired = FALSE, exact = NULL, correct = TRUE,
+                conf.int = FALSE, conf.level = 0.95,
+                tol.root = 1e-4, digits.rank = Inf)
+        
+        print(paste(" daytime: ", daytime, " week: ", wk, " days: ", nrow(control.tibl),
+                    " statistic: ", round(stats.df$statistic, digits=2), " ",  
+                    " p: ", round(stats.df$p.value, digits=3), 
+                    sep=""))
+        
+        # examine the odd day counts
+        #if (nrow(control.tibl) < 9 ) {
+          #print(oakMargin.tibl)
+          #print(control.tibl)
+        #}
+        
+      }
+    }
+
+
+
+```
 
 ```{r evaluatePosterior, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
