@@ -214,11 +214,18 @@ for (daytime in list("am", "pm")) {
 
 ```{r mw-u-test, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
-
-
 library(dplyr)
 library(tidyr)
-library(coda)
+library(tibble)
+
+wilcox.test.tibl <- tibble(
+  time = character(),
+  week = character(),
+  row.days = integer(),
+  U = double(),
+  p.value = double()
+)
+
 
 nonZero.counts.url <- c('./metrics/binomial_nonZero_counts_row.csv')
 
@@ -226,6 +233,9 @@ nonZero.tibl <- dplyr::as_tibble(read.csv(nonZero.counts.url, header=TRUE, row.n
 nonZero.tibl$week <- as.character(nonZero.tibl$week) 
   
 core.weeks = c('23', '24', '25', '26', '27', '28', '29', '30', '31')
+# core.weeks = c('32', '33', '34')
+# Error in wilcox.test.default(oakMargin.tibl$nonZero, y = control.tibl$nonZero,  : 
+# not enough (non-missing) 'x' observations
 nonZero.tibl <- nonZero.tibl %>%
   filter(week %in% core.weeks)
 
@@ -251,10 +261,19 @@ nonZero.tibl <- nonZero.tibl %>%
                 conf.int = FALSE, conf.level = 0.95,
                 tol.root = 1e-4, digits.rank = Inf)
         
-        print(paste(" daytime: ", daytime, " week: ", wk, " days: ", nrow(control.tibl),
-                    " statistic: ", round(stats.df$statistic, digits=2), " ",  
-                    " p: ", round(stats.df$p.value, digits=3), 
+        # in R, when you use `wilcox.test()`, the reported statistic is the Mann-Whitney U
+        # statistic, which is a linear transformation of the rank sum statistic (W). 
+        print(paste(" daytime: ", daytime, " week: ", wk, " row-days: ", nrow(control.tibl),
+                    " U-statistic: ", round(stats.df$statistic, digits=2), " ",  
+                    " p-value: ", round(stats.df$p.value, digits=3), 
                     sep=""))
+        
+        wilcox.test.tibl <- wilcox.test.tibl %>% 
+          add_row(time = daytime, 
+                  week = wk, 
+                  row.days = nrow(control.tibl), 
+                  U = round(stats.df$statistic, digits=2), 
+                  p.value = round(stats.df$p.value, digits=3))
         
         # examine the odd day counts
         #if (nrow(control.tibl) < 9 ) {
@@ -264,6 +283,33 @@ nonZero.tibl <- nonZero.tibl %>%
         
       }
     }
+
+setwd("/Users/rcphelps/code/groq/")
+filename <- c('./metrics/wilcox.p.values.csv')
+readr::write_csv(wilcox.test.tibl, filename)
+
+
+    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+    
+    gg.wilcox <- ggplot() +
+      
+      # , size=2, fill="green4", color="limegreen"
+    geom_boxplot(data=wilcox.test.tibl, aes(x = p.value, y = time), width=1.5) +
+    
+    scale_x_continuous(limits=c(0, 1.1), breaks=seq(0, 1.1, 0.1) ) +
+    
+    theme_bw() +
+    
+    labs(y = "daytime", 
+         x = paste("wilcox.test() p-value",
+                   sep=""),
+         caption = paste("SNH vs control", 
+                         "\ndistribution of daily row counts compared",
+                          "\nweeks 23-31", sep="" ))
+    
+    print(gg.wilcox)
+    
 
 
 
