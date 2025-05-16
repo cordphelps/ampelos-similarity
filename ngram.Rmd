@@ -305,12 +305,15 @@ readr::write_csv(wilcox.test.tibl, filename)
          x = paste("wilcox.test() p-value",
                    sep=""),
          caption = paste("SNH vs control", 
-                         "\ndistribution of daily row counts compared",
-                          "\nweeks 23-31", sep="" ))
+                         "\ndistribution of daily row counts compared by week",
+                          "\nweeks 23-31", 
+                         "\n(Wilcoxon rank sum test (equivalent to the Mann-Whitney U test))",
+                         sep="" ))
     
     print(gg.wilcox)
     
-
+    setwd("/Users/rcphelps/code/groq/")
+    savePDF(filename="wilcox.pdf", subdir="pdf.output", gg=gg.wilcox)
 
 
 ```
@@ -881,20 +884,35 @@ gg <- ggplot() +
 
 ```{r saveFile, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
      
-      setwd("/Users/rcphelps/code/groq/")
+savePDF <- function(filename, subdir, gg) {
       
-      fileName <- paste("ngram.pdf", sep="")
+      # fileName <- paste("ngram.pdf", sep="")
+  
       wd <- getwd() 
-      dirPath <- paste(wd, "/output", sep="")
-      fullPath <- paste(dirPath, "/", fileName, sep="")
-
-      if (file.exists(fullPath)) { file.remove(fullPath) }
-
-      suppressMessages(ggsave(fileName, plot = gg, device = NULL, path = dirPath,
-       scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
-       units = "in") )
       
-      print(paste( "saved ", fullPath, sep=" "))
+      # Check if the subdirectory exists
+      if (dir.exists(file.path(subdir))) {
+      
+        dirPath <- paste(wd, "/", subdir, sep="")
+        fullPath <- paste(dirPath, "/", filename, sep="")
+  
+        if (file.exists(fullPath)) { file.remove(fullPath) }
+  
+        suppressMessages(ggsave(filename, plot = gg, device = NULL, path = dirPath,
+         scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
+         units = "in") )
+        
+        print(paste( "saved ", fullPath, sep=" "))
+        
+      } else {
+        
+        print(paste("subdirectory ", subdir, " does not exist", sep=""))
+        
+      }
+      
+return()
+      
+}
     
     
 ```  
