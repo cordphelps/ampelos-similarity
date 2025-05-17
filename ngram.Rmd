@@ -34,7 +34,7 @@ library(dplyr)
 
 
 
-```{r evaluateNGRAMs, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+```{r evaluateNGRAMs, echo=FALSE, include=F, results='asis', message=F, warning=F}
 
 # ================================================================================
 #
@@ -111,6 +111,10 @@ source.transect.url <- c("./metrics/NGRAM_transect.csv")
     
     print(gg.dist)
     
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename = paste("ngram.dist.", tr, ".", daytime, ".png", sep=""), 
+            subdir = "png.output", gg = gg.dist)
+    
     return(stats.df)
   }
 # ------------------------------------------------------------------------
@@ -120,6 +124,17 @@ library(dplyr)
 
 NGRAM.row.tibl <- dplyr::as_tibble(read.csv(source.row.url, header=TRUE, row.names=NULL))
 
+# squeeze the width to make the png fit
+tb <- as.tibble(NGRAM.row.tibl)
+tb$row1_row2 <- round(as.double(tb$row1_row2), digits=3)
+tb$row1_row3 <- round(as.double(tb$row1_row3), digits=3)
+tb$row2_row3 <- round(as.double(tb$row2_row3), digits=3)
+tb <- tb %>% rename(r1r2 = row1_row2)
+tb <- tb %>% rename(r1r3 = row1_row3)
+tb <- tb %>% rename(r2r3 = row2_row3)
+tb$transect[tb$transect == "oakMargin"] <- "SNH"
+saveDFpng(filename = "ngram.row.png", subdir = "png.output", df= head(tb))
+  
 library(coda)
 
 NGRAM.row.tibl <- NGRAM.row.tibl %>%
@@ -313,7 +328,7 @@ readr::write_csv(wilcox.test.tibl, filename)
     print(gg.wilcox)
     
     setwd("/Users/rcphelps/code/groq/")
-    savePDF(filename="wilcox.pdf", subdir="pdf.output", gg=gg.wilcox)
+    saveGGpng(filename="wilcox.pdf", subdir="png.output", gg=gg.wilcox)
 
 
 ```
@@ -452,12 +467,21 @@ for (daytime in list("am", "pm")) {
       
       theme_bw() +
       
-      labs(x = "animal presence probability for the simulated posterior", 
-           y = "relative liklihood (density)",
-           caption = paste("SNH / control pairs for 3 clusters of weeks\n", 
+      labs(x = "spider presence probability for the simulated posterior", 
+           y = "relative liklihood",
+           caption = paste("SNH / control pairs for 3 clusters of weeks\n",
+                           "cluster 1: weeks 23-25 (dark)\n",
+                           "cluster 2: weeks 26-31 (light)\n",
+                           "cluster 3: weeks 32-34 (lightest)\n",
                            "daytime: ", daytime, sep="" ))
     
     print(gg.dist)
+    
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename = paste("posterior.dist.", daytime, ".png", sep=""), 
+            subdir = "png.output", gg = gg.dist)
+    
+    
     
     jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
     
@@ -518,13 +542,17 @@ for (daytime in list("am", "pm")) {
     
       labs( 
             y="SNH / control pair", 
-            x="animal presence probability for the simulated posterior", 
+            x="spider presence probability for the simulated posterior", 
             caption = paste("posterior median and 95% credible interval\n", 
                             "daytime: ", daytime, sep="" ) 
             ) 
       
       
       print(gg.ci)
+      
+      setwd("/Users/rcphelps/code/groq/")
+      saveGGpng(filename = paste("posterior.credible.interval.", daytime, ".pdf", sep=""), 
+            subdir = "png.output", gg = gg.ci)
     
 }
 
@@ -884,9 +912,7 @@ gg <- ggplot() +
 
 ```{r saveFile, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
      
-savePDF <- function(filename, subdir, gg) {
-      
-      # fileName <- paste("ngram.pdf", sep="")
+saveGGpng <- function(filename, subdir, gg) {
   
       wd <- getwd() 
       
@@ -903,6 +929,68 @@ savePDF <- function(filename, subdir, gg) {
          units = "in") )
         
         print(paste( "saved ", fullPath, sep=" "))
+        
+      } else {
+        
+        print(paste("subdirectory ", subdir, " does not exist", sep=""))
+        
+      }
+      
+return()
+      
+}
+
+# ==================================================================================
+
+saveDFpng <- function(filename, subdir, df) {
+  
+  library(gridExtra)
+  library(grid)
+
+      wd <- getwd() 
+      
+      # Check if the subdirectory exists
+      if (dir.exists(file.path(subdir))) {
+      
+        dirPath <- paste(wd, "/", subdir, sep="")
+        fullPath <- paste(dirPath, "/", filename, sep="")
+  
+        if (file.exists(fullPath)) { file.remove(fullPath) }
+        
+            library(gridExtra)
+            library(png)
+            # Save the table as a PNG
+            png(fullPath, units = "in", width = 8, height = 4, res = 72, pointsize = 10)
+            grid.table(df, rows = NULL)
+            dev.off()
+        
+            if (FALSE) {
+              library(magick)
+              # Read the PDF (first page by default)
+              img <- image_read_pdf("input.pdf", density = 300)  # Higher density = better quality
+              # Save as PNG
+              image_write(img, path = "output.png", format = "png")
+            }
+
+            if (FALSE) {
+              #suppressMessages(ggsave(filename, plot = gg, device = NULL, path = dirPath,
+              # scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
+              # units = "in") )
+              # Open a PDF device
+              pdf(fullPath, width = 8, height = 4)  # adjust size as needed
+              #
+              # Create a table grob with smaller font size
+              g <- tableGrob(head(df), 
+                    theme = ttheme_default(core = list(fg_params = list(fontsize = 10)),
+                                           colhead = list(fg_params = list(fontsize = 10)),
+                                           rowhead = list(fg_params = list(fontsize = 10))))
+              # Draw the table
+              #grid.table(df)
+              grid::grid.draw(g)
+              # Close the PDF device
+              dev.off()
+              print(paste( "saved ", fullPath, sep=" "))
+            }
         
       } else {
         
