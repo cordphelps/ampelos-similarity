@@ -1894,3 +1894,97 @@ def chopWeek(df, week_list):
     return(filtered_df)
 
 
+def sorensenIndex(df):
+
+    # for each transect and week, count the occurrence of different species 
+
+    import pandas as pd
+
+    col_list = list() 
+    col_list = list(df.columns)
+
+    print(col_list)
+
+    print(df.columns[4])  # Diptera (Agromyzidae: leafminer?)
+    print(df.columns[21]) # Orius (pirate bug)
+
+    unique_transect = ['oakMargin', 'control']
+    unique_time = ['am', 'pm']
+    unique_cluster = [ ['23', '24', '25'], ['26', '27', '28', '29', '30', '31'], ['32', '33', '34'] ]
+
+    for cluster in unique_cluster:            
+
+        if cluster == ['23', '24', '25']:
+            cluster_label = "week-cluster-1"
+        elif cluster == ['26', '27', '28', '29', '30', '31']:
+            cluster_label = "week-cluster-2"
+        else:
+            cluster_label = "week-cluster-3"
+
+        cluster_df = chopWeek(df=df, week_list=cluster)
+
+        filtered_df = pd.DataFrame()
+
+        for time in unique_time: 
+
+            # 1,2,3,22 inserted for debug
+            species_SNH_list = [0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22]
+            species_control_list = [0,1,2,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,22]
+
+            for transect in unique_transect:
+
+                temp_df = cluster_df.query( f" transect == '{transect}' and time == '{time}' ")
+
+                for i in range(4, 21):
+
+                    # check for any non-zero (ignore the header row)
+                    # 
+                    if (temp_df.iloc[1:, i].astype(int) != 0).any():
+
+                        if transect == "oakMargin":
+
+                            species_SNH_list[i] = 1
+
+                        else:
+
+                            species_control_list[i] = 1
+
+            # the Sørensen index (also known as the Sørensen-Dice coefficient) can be 
+            # calculated directly from two lists, not just sets. In fact, when the lists 
+            # may contain duplicate elements, the calculation should account for the 
+            # number of times each element appears in both lists, rather than simply 
+            # converting them to sets and losing information about duplicates.
+
+            # Python lists are indexed using zero-based indexing,
+            del species_SNH_list[22]
+            del species_SNH_list[3]
+            del species_SNH_list[2]
+            del species_SNH_list[1]
+            del species_SNH_list[0]
+
+            del species_control_list[22]
+            del species_control_list[3]
+            del species_control_list[2]
+            del species_control_list[1]
+            del species_control_list[0]
+
+            print(species_SNH_list)
+            print(species_control_list)
+            
+            from collections import Counter
+            c1 = Counter(species_SNH_list)
+            c2 = Counter(species_control_list)
+            intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
+            total = len(species_SNH_list) + len(species_control_list)
+            index = 2 * intersection / total if total else 1.0
+
+            print("\n" + time + " SI= ", index, " cluster: ", cluster_label + "\n")
+
+
+    exit(1)
+
+
+    return()
+
+
+

@@ -41,6 +41,17 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+########################################################################
+#
+# assess the species composition of both transects
+# and calculate the Sorensen Index of similarity
+# (used by Daane/Hogg 2010)
+# since it uses incidence of species to compare
+# samples, and is insensitive to changes in species abundances.
+
+spider_lib.sorensenIndex(df=df)
+
+
 
 # get NGRAMS to compare row triplets in transect/daytime pairs
 # write
