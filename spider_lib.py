@@ -1987,4 +1987,210 @@ def sorensenIndex(df):
     return()
 
 
+def sorensenEval():
 
+    # data derived from species counts
+    row_a_list = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]
+    row_b_list = [1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0]
+    row_c_list = [1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0]
+
+    index = sorensenCompute(list1=row_a_list, list2=row_b_list)
+    print("\n" + " SI= ", index )
+
+    index = sorensenCompute(list1=row_a_list, list2=row_c_list)
+    print("\n" + " SI= ", index )
+
+    index = sorensenCompute(list1=row_b_list, list2=row_c_list)
+    print("\n" + " SI= ", index )
+
+    # ====================================================================
+
+    unique_list = [row_a_list, row_b_list, row_c_list]
+
+    new_string_list = []
+    new_string_text = ''
+
+    j = 0
+
+    for flist in unique_list:
+
+        print("flist: ", flist, " len:", len(flist))
+
+        j = j + 1
+
+        new_string_list = []
+
+        for i in range(len(flist)):
+
+            if flist[i] == 0:
+
+                new_string_list.append('f ')  # spider count is zero for that position
+
+            else:
+
+                new_string_list.append('T ')  # spider count is non-zero for that position
+
+
+        #print(new_string_list)
+        # compress that list of strings into a single string
+        single_string = ''.join(new_string_list)
+        print(single_string, " i= ", i, "\n")
+
+        if (j == 1):
+            row_a_text = single_string
+        elif (j==2):
+            row_b_text = single_string
+        else:
+            row_c_text = single_string
+
+
+    ng=3
+
+    import thad_o_mizer
+
+    row1_row2 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_b_text, ngrams=ng)
+    row1_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_a_text, sentence2 = row_c_text, ngrams=ng)
+    row2_row3 = thad_o_mizer.compute_ngram_quick(sentence1 = row_b_text, sentence2 = row_c_text, ngrams=ng)
+
+    print("ngram: ", row1_row2, "   ", row1_row3, "   ", row2_row3)
+
+     
+    return()
+
+
+
+def sorensenCompute(list1, list2):
+
+    from collections import Counter
+    c1 = Counter(list1)
+    c2 = Counter(list2)
+    intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
+    total = len(list1) + len(list2)
+    index = 2 * intersection / total if total else 1.0
+
+    return(index)
+
+
+def buildIndexComparitor():
+
+    import pandas as pd
+
+    df = pd.DataFrame()
+    sim_df = pd.DataFrame()
+
+    for i in range(9999):
+
+        df = randomizedTriplet(label=i)
+
+        print("chr(i): ", i)
+
+        sim_df = pd.concat([sim_df, df], ignore_index=True)
+
+    import os 
+    filename = './metrics/sorensen_ngram.csv'
+    if os.path.exists(filename):
+        os.remove(filename)
+    sim_df.to_csv(filename, header=True, index=False, mode='w')
+
+    stacked_sim_df = pd.concat([sim_df['index_0'], sim_df['index_1'], sim_df['index_2']], ignore_index=True)
+    stacked_sim_df = pd.DataFrame({'stacked_sim': stacked_sim_df})
+    #print("to_string()")
+    #print(stacked_sim_df.to_string())
+
+    stacked_ngram_df = pd.concat([sim_df['ngram_0'], sim_df['ngram_1'], sim_df['ngram_2']], ignore_index=True)
+    stacked_ngram_df = pd.DataFrame({'stacked_ngram': stacked_ngram_df})
+
+    combined_df = pd.concat([stacked_sim_df, stacked_ngram_df], axis=1)
+    combined_df = combined_df.reset_index(drop=True)
+    combined_df['row'] = combined_df.index
+    filename = './metrics/sorensen_combined.csv'
+    if os.path.exists(filename):
+        os.remove(filename)
+    combined_df.to_csv(filename, header=True, index=False, mode='w')
+
+    # now see the sorensen_correlation block in R
+
+
+
+def randomizedTriplet(label):
+
+    import pandas as pd
+
+    # proposing a random binary result for 3 vineyard rows (a daily pm sample)
+    # Example: 10 elements with 30% chance of 1 (y=0.3)
+    binary_a_list = generate_binary_list(10, 0.2)
+    binary_b_list = generate_binary_list(10, 0.2)
+    binary_c_list = generate_binary_list(10, 0.2)
+
+    index_0 = round(sorensenCompute(binary_a_list, binary_b_list), 3)
+    index_1 = round(sorensenCompute(binary_a_list, binary_c_list), 3)
+    index_2 = round(sorensenCompute(binary_b_list, binary_c_list), 3)
+
+    ngram_a_str = generate_ngram_string(lst=binary_a_list)
+    ngram_b_str = generate_ngram_string(lst=binary_b_list)
+    ngram_c_str = generate_ngram_string(lst=binary_c_list)
+
+    ng=3
+    import thad_o_mizer
+    ngram_0 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_b_str, ngrams=ng), 3)
+    ngram_1 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_c_str, ngrams=ng), 3)
+    ngram_2 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_b_str, sentence2 = ngram_c_str, ngrams=ng), 3)
+
+
+    new_sim_df = pd.DataFrame({'triplet' : label, \
+    'index_0' : index_0, 'index_1' : index_1, 'index_2' : index_2, \
+    'ngram_0' : ngram_0, 'ngram_1' : ngram_1, 'ngram_2' : ngram_2}, index=[0]) # pandas needs either a list/array 
+    #         for each column, or an explicit index` argument. always pass a list, tuple, or array
+
+    #print(binary_a_list, "   ", ngram_a_str, "\n")
+    #print(binary_b_list, "   ", ngram_b_str, "\n")
+    #print(binary_c_list, "   ", ngram_c_str, "\n")
+
+    #print("\nnew_sim_df: \n", new_sim_df)
+
+
+    return(new_sim_df)
+
+
+
+
+def generate_binary_list(length, y):
+    #
+    # create a random binary list with probability `y` for 1s 
+    # - Independent trials: Each position is determined independently using `random.random()`, 
+    #    which generates floats uniformly in [0, 1)
+    # - Reproducibility: Add `random.seed()` for repeatable results
+    #
+    import random
+    return [1 if random.random() < y else 0 for _ in range(length)]
+
+
+def generate_ngram_string(lst):
+
+    new_string_list = []
+
+    flist = lst 
+
+    #print("flist: ", flist, " len:", len(flist))
+
+    new_string_list = []
+
+    for i in range(len(flist)):
+
+        if flist[i] == 0:
+
+            new_string_list.append('f ')  # spider count is zero for that position
+
+        else:
+
+            new_string_list.append('T ')  # spider count is non-zero for that position
+
+
+    #print(new_string_list)
+    # compress that list of strings into a single string
+    single_string = ''.join(new_string_list)
+    print(single_string, " i= ", i, "\n")
+
+
+
+    return(single_string)

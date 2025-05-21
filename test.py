@@ -41,6 +41,10 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+
+spider_lib.buildIndexComparitor()
+exit(1)
+
 ########################################################################
 #
 # assess the species composition of both transects

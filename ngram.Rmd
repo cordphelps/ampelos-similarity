@@ -227,6 +227,7 @@ for (daytime in list("am", "pm")) {
 
 ```
 
+
 ```{r mw-u-test, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 library(dplyr)
@@ -332,6 +333,53 @@ readr::write_csv(wilcox.test.tibl, filename)
 
 
 ```
+
+
+
+```{r sorensen_correlation, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+library(dplyr)
+library(tidyr)
+library(tibble)
+
+si.ngram.url <- c('./metrics/sorensen_combined.csv')
+
+si.ngram.tibl <- dplyr::as_tibble(read.csv(si.ngram.url, header=TRUE, row.names=NULL))
+
+coeff <- round(cor(si.ngram.tibl$stacked_ngram, si.ngram.tibl$stacked_sim), digits=3)
+
+color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+    
+    gg.correlation <- ggplot(si.ngram.tibl, aes(x = stacked_ngram, y = stacked_sim)) +
+      
+    geom_point() +
+      
+    geom_smooth(method = "lm", se = TRUE) +
+      
+      scale_x_continuous(limits=c(0, 1), breaks=seq(0, 1, 0.1) ) +
+      scale_y_continuous(limits=c(0, 1), breaks=seq(0, 1, 0.1) ) +
+      
+      geom_boxplot(data=si.ngram.tibl, aes(x = stacked_ngram, y = 0.2), width=0.1) +
+      
+      geom_boxplot(data=si.ngram.tibl, aes(x = stacked_sim, y = 0.3), width=0.1) +
+    
+    theme_bw() +
+    
+    labs(y = "sorensen", 
+         x = paste("ngram",
+                   sep=""),
+         caption = paste("correlation coefficient: ", coeff, sep="" ))
+    
+    print(gg.correlation)
+    
+    #setwd("/Users/rcphelps/code/groq/")
+    #saveGGpng(filename="wilcox.pdf", subdir="png.output", gg=gg.wilcox)
+
+
+```
+
+
 
 ```{r evaluatePosterior, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
