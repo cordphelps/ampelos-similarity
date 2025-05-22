@@ -346,6 +346,9 @@ si.ngram.url <- c('./metrics/sorensen_combined.csv')
 
 si.ngram.tibl <- dplyr::as_tibble(read.csv(si.ngram.url, header=TRUE, row.names=NULL))
 
+sp <- round(as.numeric(si.ngram.tibl[1, "success_probability", drop = TRUE])/10, digits=3)
+nw <- si.ngram.tibl[1, "ngram_width", drop = TRUE]
+
 coeff <- round(cor(si.ngram.tibl$stacked_ngram, si.ngram.tibl$stacked_sim), digits=3)
 
 color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
@@ -353,23 +356,27 @@ color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "dar
     
     gg.correlation <- ggplot(si.ngram.tibl, aes(x = stacked_ngram, y = stacked_sim)) +
       
-    geom_point() +
+    geom_jitter() +
       
     geom_smooth(method = "lm", se = TRUE) +
       
       scale_x_continuous(limits=c(0, 1), breaks=seq(0, 1, 0.1) ) +
       scale_y_continuous(limits=c(0, 1), breaks=seq(0, 1, 0.1) ) +
       
-      geom_boxplot(data=si.ngram.tibl, aes(x = stacked_ngram, y = 0.2), width=0.1) +
+      geom_boxplot(data=si.ngram.tibl, aes(x = stacked_ngram, y = 0.15), width=0.1) +
       
-      geom_boxplot(data=si.ngram.tibl, aes(x = stacked_sim, y = 0.3), width=0.1) +
+      geom_boxplot(data=si.ngram.tibl, aes(y = stacked_sim, x = 0.95), width=0.1) +
     
     theme_bw() +
     
-    labs(y = "sorensen", 
-         x = paste("ngram",
+    labs(y = "Sorensen Index", 
+         x = paste("ngram similarity",
                    sep=""),
-         caption = paste("correlation coefficient: ", coeff, sep="" ))
+         caption = paste("success probability: ", sp, ", ngram width: ", nw, 
+                         "\ncorrelation coefficient: ", coeff,
+                         "\nSI mean: ", round(mean(si.ngram.tibl$stacked_sim), digits=3),
+                         "\nngram mean: ", round(mean(si.ngram.tibl$stacked_ngram), digits=3),
+                         sep="" ))
     
     print(gg.correlation)
     

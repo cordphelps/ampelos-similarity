@@ -2078,11 +2078,12 @@ def buildIndexComparitor():
     df = pd.DataFrame()
     sim_df = pd.DataFrame()
 
+    sp = 0.5
+    ng = 4
+
     for i in range(9999):
 
-        df = randomizedTriplet(label=i)
-
-        print("chr(i): ", i)
+        df = randomizedTriplet(label=i, success_probability=sp, ngram_width=ng)
 
         sim_df = pd.concat([sim_df, df], ignore_index=True)
 
@@ -2101,6 +2102,9 @@ def buildIndexComparitor():
     stacked_ngram_df = pd.DataFrame({'stacked_ngram': stacked_ngram_df})
 
     combined_df = pd.concat([stacked_sim_df, stacked_ngram_df], axis=1)
+    # add two columns to capture the success_probability and ngram_width parameters
+    combined_df['success_probability'] = str(int(sp * 10))  # get rid of the decimal point
+    combined_df['ngram_width'] = str(ng)
     combined_df = combined_df.reset_index(drop=True)
     combined_df['row'] = combined_df.index
     filename = './metrics/sorensen_combined.csv'
@@ -2112,15 +2116,16 @@ def buildIndexComparitor():
 
 
 
-def randomizedTriplet(label):
+def randomizedTriplet(label, success_probability, ngram_width):
 
     import pandas as pd
 
     # proposing a random binary result for 3 vineyard rows (a daily pm sample)
     # Example: 10 elements with 30% chance of 1 (y=0.3)
-    binary_a_list = generate_binary_list(10, 0.2)
-    binary_b_list = generate_binary_list(10, 0.2)
-    binary_c_list = generate_binary_list(10, 0.2)
+    #sp = 0.3
+    binary_a_list = generate_binary_list(10, success_probability)
+    binary_b_list = generate_binary_list(10, success_probability)
+    binary_c_list = generate_binary_list(10, success_probability)
 
     index_0 = round(sorensenCompute(binary_a_list, binary_b_list), 3)
     index_1 = round(sorensenCompute(binary_a_list, binary_c_list), 3)
@@ -2130,14 +2135,14 @@ def randomizedTriplet(label):
     ngram_b_str = generate_ngram_string(lst=binary_b_list)
     ngram_c_str = generate_ngram_string(lst=binary_c_list)
 
-    ng=3
+    #ng=4
     import thad_o_mizer
-    ngram_0 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_b_str, ngrams=ng), 3)
-    ngram_1 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_c_str, ngrams=ng), 3)
-    ngram_2 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_b_str, sentence2 = ngram_c_str, ngrams=ng), 3)
+    ngram_0 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_b_str, ngrams=ngram_width), 3)
+    ngram_1 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_a_str, sentence2 = ngram_c_str, ngrams=ngram_width), 3)
+    ngram_2 = round(thad_o_mizer.compute_ngram_quick(sentence1 = ngram_b_str, sentence2 = ngram_c_str, ngrams=ngram_width), 3)
 
 
-    new_sim_df = pd.DataFrame({'triplet' : label, \
+    new_sim_df = pd.DataFrame({'triplet' : label,  \
     'index_0' : index_0, 'index_1' : index_1, 'index_2' : index_2, \
     'ngram_0' : ngram_0, 'ngram_1' : ngram_1, 'ngram_2' : ngram_2}, index=[0]) # pandas needs either a list/array 
     #         for each column, or an explicit index` argument. always pass a list, tuple, or array
