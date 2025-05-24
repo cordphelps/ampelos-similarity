@@ -41,6 +41,46 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+import os
+filename = './data/bugs.csv'
+if os.path.exists(filename):
+    os.remove(filename)
+week_records_df.to_csv(filename, header=True, index=False, mode='w')
+
+# Great observation! If `.describe()` returns `'object'` as the dtype for your column, 
+#that means pandas is treating `'Thomisidae (crab spider)'` as a string/object column, 
+#not as numeric. This is common if the column was read from a CSV or Excel file and contains 
+#any non-numeric entries, missing values, or even just because pandas couldn’t infer the type.
+
+week_records_df['Thomisidae (crab spider)'] = pd.to_numeric(
+    week_records_df['Thomisidae (crab spider)'], errors='coerce'
+)
+week_records_df['position'] = week_records_df['position'].astype("string")
+week_records_df['week'] = week_records_df['week'].astype("string")
+
+
+######################################################################
+# find clusters
+# build
+#     # > head(total.df, 10)                          <-- 372 rows
+#    #   week  transect time trap-position 1 : 10 
+#    #1    23 oakMargin   am   each:totalSpiders
+#    #2    23 oakMargin   am   each:totalSpiders
+#
+#   # return a list of the clusters occurring in the dataset
+# 
+#    #   week  transect time trap-position 1 : 10 
+#    #1    23 oakMargin   am   each:clusterID
+#    #2    23 oakMargin   am   each:clusterID
+
+
+spider_lib.kmeans_clusters(df=week_records_df)
+
+exit(1)
+
+
+######################################################################
+# compare SI and NGRAM indecies
 
 spider_lib.buildIndexComparitor()
 exit(1)

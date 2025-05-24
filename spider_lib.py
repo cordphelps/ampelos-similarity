@@ -2199,3 +2199,256 @@ def generate_ngram_string(lst):
 
 
     return(single_string)
+
+
+def kmeans_clusters(df):
+
+    # 0      transect row time week julian Thomisidae (crab spider) position
+    # 1     oakMargin  79   pm   23    156                        0        1
+    # 2     oakMargin  79   pm   23    156                        0        2
+    # 3     oakMargin  79   pm   23    156                        0        3
+    # 4     oakMargin  79   pm   23    156                        0        4
+    # 5     oakMargin  79   pm   23    156                        0        5
+
+    # get the total crab spiders by week by position 
+    # save in a csv
+
+    import pandas as pd
+
+    cluster_count_df = pd.DataFrame(columns=['transect','time', 'week', 'trap1', 'trap2', 'trap3', \
+       'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10' ])
+
+    output_df = pd.DataFrame(columns=['transect','time', 'week', 'trap1', 'trap2', 'trap3', \
+    'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10' ])
+
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+    unique_position = df['position'].unique()
+
+    incoming_df = pd.DataFrame()
+
+    incoming_df = df
+
+
+
+    for transect in unique_transect:
+
+        for time in unique_time:
+
+            for week in unique_week:
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and time == '{time}' and week == '{week}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
+                
+
+                #print(filtered_df.to_string()) 
+
+                #print(filtered_df['position'].describe())
+                #print(filtered_df['Thomisidae (crab spider)'].dtype)
+
+                #print(filtered_df.to_string())
+                #bad_rows = filtered_df[~filtered_df['Thomisidae (crab spider)'].astype(str).str.isdigit()]
+                #print(bad_rows)
+                #exit(1)
+
+                sum_counts_df = filtered_df.assign(counts=filtered_df['Thomisidae (crab spider)']\
+                    .astype(int)).groupby('position')['Thomisidae (crab spider)'].sum().reset_index()
+
+                #print(sum_counts_df.to_string())
+                #exit(1)          
+
+                
+                # ensure it is an integer
+                sum_counts_df['Thomisidae (crab spider)'] = sum_counts_df['Thomisidae (crab spider)'].astype(int)
+
+                #print(sum_counts_df.to_string())
+                #exit(1)
+                # 
+                #   position  Thomisidae (crab spider)
+                # 0        1                         1
+                # 1       10                         3
+                # 2        2                         3
+                # 3        3                         2
+                # 4        4                         3
+                # 5        5                         5
+                # 6        6                         0
+                # 7        7                         3
+                # 8        8                         3
+                # 9        9                         4
+
+
+                trap1 = 0 
+                trap2 = 0
+                trap3 = 0 
+                trap4 = 0 
+                trap5 = 0
+                trap6 = 0 
+                trap7 = 0 
+                trap8 = 0
+                trap9 = 0
+                trap10 = 0 
+
+                for position in unique_position:  
+
+                    #print("position: ", position)
+                    #print(unique_position)
+
+                    temp_df = sum_counts_df.query( f" position == '{position}' ")  
+
+                    #print(temp_df.to_string())
+                    #exit(1)          
+
+                    if position == "1":
+                        trap1 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "2":
+                        trap2 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "3":
+                        trap3 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "4":
+                        trap4 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "5":
+                        trap5 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "6":
+                        trap6 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "7":
+                        trap7 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "8":
+                        trap8 = temp_df['Thomisidae (crab spider)'].sum()
+                    elif position == "9":
+                        trap9 = temp_df['Thomisidae (crab spider)'].sum()
+                    else:
+                        trap10 = temp_df['Thomisidae (crab spider)'].sum()
+
+
+                # add a new row 
+                output_df.loc[len(output_df)] = [transect, time, week, \
+                trap1, trap2, trap3, trap4, trap5, trap6, trap7, trap8, trap9, trap10]  # Adds a new row at the next index
+
+    #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
+    # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
+    # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
+    # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
+    # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
+    # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
+    # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
+    # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
+
+
+    for transect in unique_transect:
+
+        for time in unique_time:
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = output_df.query( f" transect == '{transect}' and time == '{time}' ")
+
+                transposed_df = km(filtered_df)
+
+                filename = './metrics/kmeans.' + transect + '.' + time + '.csv'
+                import os
+                if os.path.exists(filename):
+                    os.remove(filename)
+                transposed_df.to_csv(filename, header=True, index=False, mode='w')
+
+
+    return(output_df)
+
+
+
+def km(df):
+
+    # look for kmeans clusters
+    #
+    #  ========== K-means groups rows into clusters based on their feature values (columns). =====
+    #
+    # pass in a df of the form
+    #
+    #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
+    # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
+    # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
+    # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
+    # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
+    # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
+    # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
+    # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
+    #
+    #
+    # ============ which needs to be inverted so that clusters are assigned to 'positions' not 'weeks'
+    #
+
+    # invert
+    df = df.copy()
+    df.drop(['transect', 'time'], axis=1, inplace=True)
+    # make week = columns
+    # Transpose the DataFrame
+    df_t = df.transpose()
+    # Set new columns using the values from row 0
+    df_t.columns = df_t.iloc[0]
+    #df_t = df_t.drop(index=1)
+    df_t = df_t.iloc[1:].reset_index(drop=True)
+
+    print(df_t.to_string())
+
+    # week    23  24  25  26  27  28  29  30  31  32  34
+    # trap1    1   8   1   1   1   2   0   0   0   0   0
+    # trap2    3   6   3   0   0   3   0   0   0   0   1
+    # trap3    4  10   1   0   0   4   1   1   0   1   0
+    # trap4    5   3   0   4   0   0   0   1   0   0   0
+    # trap5    1  10   7   2   0   1   1   1   2   0   0
+    # trap6    5   7   5   1   1   1   2   2   1   0   0
+    # trap7    6  10   4   3   1   0   0   1   0   0   0
+    # trap8    5   5   4   4   1   4   2   3   1   3   0
+    # trap9    1  14   2   2   0   0   0   2   0   0   1
+    # trap10   4  15   3   1   0   2   4   0   0   2   1
+
+
+    import pandas as pd
+
+    #X = df[['trap1', 'trap2', 'trap3', 'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10']]
+    X = df_t[['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']]
+
+    from sklearn.cluster import KMeans
+
+    kmeans = KMeans(n_clusters=3, random_state=42)
+    kmeans.fit(X)  # or X if you didn't standardize
+    labels = kmeans.labels_  # Cluster assignment for each row
+    #                          `kmeans.labels_` is a NumPy array where each entry is an 
+    #                          integer (e.g., 0, 1, or 2 if you used 3 clusters) indicating 
+    #                          which cluster that row belongs to
+
+    df_t['cluster'] = labels
+    # df_t['trap'] = trap_labels
+    df_t['trap position'] = ['trap1', 'trap2', 'trap3', 'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10'] 
+
+    print(df_t.to_string())
+
+    # week 23  24 25 26 27 28 29 30 31 32 34  cluster trap position
+    # 0     1   8  1  1  1  2  0  0  0  0  0        1         trap1
+    # 1     3   6  3  0  0  3  0  0  0  0  1        1         trap2
+    # 2     4  10  1  0  0  4  1  1  0  1  0        1         trap3
+    # 3     5   3  0  4  0  0  0  1  0  0  0        0         trap4
+    # 4     1  10  7  2  0  1  1  1  2  0  0        2         trap5
+    # 5     5   7  5  1  1  1  2  2  1  0  0        1         trap6
+    # 6     6  10  4  3  1  0  0  1  0  0  0        1         trap7
+    # 7     5   5  4  4  1  4  2  3  1  3  0        0         trap8
+    # 8     1  14  2  2  0  0  0  2  0  0  1        2         trap9
+    # 9     4  15  3  1  0  2  4  0  0  2  1        2        trap10
+
+    # now re-name the clusters such that the '3' is most likely at trap10
+    # and the '0' is most likely at trap1
+
+    df_t['position'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] 
+
+    
+
+
+    return(df_t)
+
+
+
+

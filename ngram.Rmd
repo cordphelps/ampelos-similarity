@@ -370,12 +370,14 @@ color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "dar
     theme_bw() +
     
     labs(y = "Sorensen Index", 
-         x = paste("ngram similarity",
+         x = paste("ngram index",
                    sep=""),
          caption = paste("success probability: ", sp, ", ngram width: ", nw, 
                          "\ncorrelation coefficient: ", coeff,
-                         "\nSI mean: ", round(mean(si.ngram.tibl$stacked_sim), digits=3),
-                         "\nngram mean: ", round(mean(si.ngram.tibl$stacked_ngram), digits=3),
+                         "\nSorensen Index median: ", 
+                             round(median(si.ngram.tibl$stacked_sim), digits=3),
+                         "\nngram index median: ", 
+                             round(median(si.ngram.tibl$stacked_ngram), digits=3),
                          sep="" ))
     
     print(gg.correlation)
