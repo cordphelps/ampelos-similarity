@@ -1,11 +1,11 @@
-23,24,25,26,27,28,29,30,31,32,34,cluster,trap position
-1,10,0,1,0,1,0,0,0,1,1,2,trap1
-3,9,5,1,0,1,2,0,0,0,0,2,trap2
-2,6,3,0,1,2,1,0,3,0,0,1,trap3
-3,2,4,2,1,2,2,0,1,2,0,1,trap4
-5,7,3,2,0,3,1,3,1,0,0,2,trap5
-0,5,2,0,0,3,1,1,0,2,0,1,trap6
-3,7,0,1,0,1,3,2,1,3,0,2,trap7
-3,9,1,1,2,3,3,0,1,0,0,2,trap8
-4,14,1,3,1,2,3,0,0,1,0,0,trap9
-3,6,1,1,2,0,0,0,0,0,0,2,trap10
+23,24,25,26,27,28,29,30,31,32,34
+min,mid,min,mid,min,min,min,min,min,mid,max
+mid,mid,max,mid,min,min,max,min,min,min,min
+mid,min,mid,min,mid,mid,mid,min,max,min,min
+mid,min,max,max,mid,mid,max,min,mid,max,min
+max,min,mid,max,min,max,mid,max,mid,min,min
+min,min,mid,min,min,max,mid,mid,min,max,min
+mid,min,min,mid,min,min,max,max,mid,max,min
+mid,mid,min,mid,max,max,max,min,mid,min,min
+max,max,min,max,mid,mid,max,min,min,mid,min
+mid,min,min,mid,max,min,min,min,min,min,min

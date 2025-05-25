@@ -369,12 +369,12 @@ color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "dar
     
     theme_bw() +
     
-    labs(y = "Sorensen Index", 
+    labs(y = "Sørensen Index", 
          x = paste("ngram index",
                    sep=""),
          caption = paste("success probability: ", sp, ", ngram width: ", nw, 
                          "\ncorrelation coefficient: ", coeff,
-                         "\nSorensen Index median: ", 
+                         "\nSørensen Index median: ", 
                              round(median(si.ngram.tibl$stacked_sim), digits=3),
                          "\nngram index median: ", 
                              round(median(si.ngram.tibl$stacked_ngram), digits=3),

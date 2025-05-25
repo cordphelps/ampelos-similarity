@@ -2214,6 +2214,7 @@ def kmeans_clusters(df):
     # save in a csv
 
     import pandas as pd
+    from km_lib import km 
 
     cluster_count_df = pd.DataFrame(columns=['transect','time', 'week', 'trap1', 'trap2', 'trap3', \
        'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10' ])
@@ -2342,112 +2343,68 @@ def kmeans_clusters(df):
 
         for time in unique_time:
 
-                filtered_df = pd.DataFrame()
+                df = pd.DataFrame()
 
                 #  !!!!!!!  'f' is curly brace support !!!!!!!
-                filtered_df = output_df.query( f" transect == '{transect}' and time == '{time}' ")
+                df = output_df.query( f" transect == '{transect}' and time == '{time}' ")
 
-                transposed_df = km(filtered_df)
+                # look for kmeans clusters
+                #
+                #  ========== K-means groups rows into clusters based on their feature values (columns). =====
+                #
+                # pass in a df of the form
+                #
+                #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
+                # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
+                # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
+                # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
+                # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
+                # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
+                # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
+                # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
+                #
+                #
+                # ============ which needs to be inverted so that clusters are assigned to 'positions' not 'weeks'
+                #
+                 # invert
+                df = df.copy()
+                df.drop(['transect', 'time'], axis=1, inplace=True)
+                # make week = columns
+                # Transpose the DataFrame
+                df_t = df.transpose()
+                # Set new columns using the values from row 0
+                df_t.columns = df_t.iloc[0]
+                #df_t = df_t.drop(index=1)
+                df_t = df_t.iloc[1:].reset_index(drop=True)
+
+                print(df_t.to_string())
+
+                # week    23  24  25  26  27  28  29  30  31  32  34
+                # trap1    1   8   1   1   1   2   0   0   0   0   0
+                # trap2    3   6   3   0   0   3   0   0   0   0   1
+                # trap3    4  10   1   0   0   4   1   1   0   1   0
+                # trap4    5   3   0   4   0   0   0   1   0   0   0
+                # trap5    1  10   7   2   0   1   1   1   2   0   0
+                # trap6    5   7   5   1   1   1   2   2   1   0   0
+                # trap7    6  10   4   3   1   0   0   1   0   0   0
+                # trap8    5   5   4   4   1   4   2   3   1   3   0
+                # trap9    1  14   2   2   0   0   0   2   0   0   1
+                # trap10   4  15   3   1   0   2   4   0   0   2   1
+
+                # removes the index and replace it with the default integer index
+                df_t = df_t.reset_index(drop=True)
+
+                # get the clusters
+                clusters_df = km(df=df_t)
 
                 filename = './metrics/kmeans.' + transect + '.' + time + '.csv'
                 import os
                 if os.path.exists(filename):
                     os.remove(filename)
-                transposed_df.to_csv(filename, header=True, index=False, mode='w')
+                clusters_df.to_csv(filename, header=True, index=False, mode='w')
 
 
     return(output_df)
-
-
-
-def km(df):
-
-    # look for kmeans clusters
-    #
-    #  ========== K-means groups rows into clusters based on their feature values (columns). =====
-    #
-    # pass in a df of the form
-    #
-    #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
-    # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
-    # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
-    # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
-    # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
-    # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
-    # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
-    # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
-    #
-    #
-    # ============ which needs to be inverted so that clusters are assigned to 'positions' not 'weeks'
-    #
-
-    # invert
-    df = df.copy()
-    df.drop(['transect', 'time'], axis=1, inplace=True)
-    # make week = columns
-    # Transpose the DataFrame
-    df_t = df.transpose()
-    # Set new columns using the values from row 0
-    df_t.columns = df_t.iloc[0]
-    #df_t = df_t.drop(index=1)
-    df_t = df_t.iloc[1:].reset_index(drop=True)
-
-    print(df_t.to_string())
-
-    # week    23  24  25  26  27  28  29  30  31  32  34
-    # trap1    1   8   1   1   1   2   0   0   0   0   0
-    # trap2    3   6   3   0   0   3   0   0   0   0   1
-    # trap3    4  10   1   0   0   4   1   1   0   1   0
-    # trap4    5   3   0   4   0   0   0   1   0   0   0
-    # trap5    1  10   7   2   0   1   1   1   2   0   0
-    # trap6    5   7   5   1   1   1   2   2   1   0   0
-    # trap7    6  10   4   3   1   0   0   1   0   0   0
-    # trap8    5   5   4   4   1   4   2   3   1   3   0
-    # trap9    1  14   2   2   0   0   0   2   0   0   1
-    # trap10   4  15   3   1   0   2   4   0   0   2   1
-
-
-    import pandas as pd
-
-    #X = df[['trap1', 'trap2', 'trap3', 'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10']]
-    X = df_t[['23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '34']]
-
-    from sklearn.cluster import KMeans
-
-    kmeans = KMeans(n_clusters=3, random_state=42)
-    kmeans.fit(X)  # or X if you didn't standardize
-    labels = kmeans.labels_  # Cluster assignment for each row
-    #                          `kmeans.labels_` is a NumPy array where each entry is an 
-    #                          integer (e.g., 0, 1, or 2 if you used 3 clusters) indicating 
-    #                          which cluster that row belongs to
-
-    df_t['cluster'] = labels
-    # df_t['trap'] = trap_labels
-    df_t['trap position'] = ['trap1', 'trap2', 'trap3', 'trap4', 'trap5', 'trap6', 'trap7', 'trap8', 'trap9', 'trap10'] 
-
-    print(df_t.to_string())
-
-    # week 23  24 25 26 27 28 29 30 31 32 34  cluster trap position
-    # 0     1   8  1  1  1  2  0  0  0  0  0        1         trap1
-    # 1     3   6  3  0  0  3  0  0  0  0  1        1         trap2
-    # 2     4  10  1  0  0  4  1  1  0  1  0        1         trap3
-    # 3     5   3  0  4  0  0  0  1  0  0  0        0         trap4
-    # 4     1  10  7  2  0  1  1  1  2  0  0        2         trap5
-    # 5     5   7  5  1  1  1  2  2  1  0  0        1         trap6
-    # 6     6  10  4  3  1  0  0  1  0  0  0        1         trap7
-    # 7     5   5  4  4  1  4  2  3  1  3  0        0         trap8
-    # 8     1  14  2  2  0  0  0  2  0  0  1        2         trap9
-    # 9     4  15  3  1  0  2  4  0  0  2  1        2        trap10
-
-    # now re-name the clusters such that the '3' is most likely at trap10
-    # and the '0' is most likely at trap1
-
-    df_t['position'] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] 
-
-    
-
-
-    return(df_t)
 
 
 
