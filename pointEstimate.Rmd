@@ -1,0 +1,327 @@
+---
+title: "spider population density from point observations"
+output: 
+ github_document: default
+ 
+always_allow_html: true
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results='hide')
+
+# https://yihui.org/knitr/options/
+
+# echo: (TRUE; logical or numeric) Whether to display the source code
+# results: ('markup'; character) Controls how to display the text results.
+# warning: (TRUE; logical) Whether to preserve warnings
+# error: (TRUE; logical) Whether to preserve errors
+# include: (TRUE; logical) Whether to include the chunk output in the output document.
+# 
+```
+
+```{r localCode, echo=FALSE, include=FALSE}
+
+
+
+output.path <- "/Users/rcphelps/code/thesis/pointEstimate/output"
+
+
+
+library(tidyverse)
+library(dplyr)
+
+# https://github.com/tmcd82070/Rdistance/wiki
+library(Rdistance)
+
+
+
+```
+
+
+
+```{r area, echo=FALSE, include=TRUE, results='asis', message=F, warning=T, out.width=c('50%', '50%'), fig.show='hold' }
+
+#source('/Users/rcphelps/code/thesis/journalArticle/code/rdistance.v2.R') # for spiderArea()
+source('/Users/rcphelps/code/groq/rdistance.v2.R') # for spiderArea()
+
+#setwd("/Users/rcphelps/code/thesis/pointEstimate")
+setwd("/Users/rcphelps/code/groq")
+
+if (TRUE) {
+  source.url <- c("https://raw.githubusercontent.com/cordphelps/ampelos/master/data/bugs.csv")
+  bugs_all.df <- read.csv(source.url, header=TRUE, row.names=NULL)
+  bugs.tibl <- bugs_all.df
+}
+
+if (FALSE) {
+  source.url <- c("./data/bugs.csv")   # created by test.py
+  # get a lot of insect observations
+  bugs.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
+}
+
+# 
+rowWidth <- 1
+controlStartRow <- 44
+SNHStartRow <- 78
+
+# assign x:y coordinates to each count 
+# calculate a 'distance' from the transect origin (0,0)
+#
+area.spiders.pm.control.p1.tbl <- bugs.tibl %>% 
+  dplyr::filter(time == 'pm', transect=='control', week < 26) %>%
+  dplyr::select(row, positionX, Thomisidae..crab.spider.) %>%
+  dplyr::mutate(positionY = (row - controlStartRow) ) %>%
+  dplyr::mutate(distance = (positionX**2 + (positionY*10)**2) ** .5)
+
+area.spiders.pm.SNH.p1.tbl <- bugs.tibl %>% 
+  dplyr::filter(time == 'pm', transect=='oakMargin', week < 26) %>%
+  dplyr::select(row, positionX, Thomisidae..crab.spider.) %>%
+  dplyr::mutate(positionY = (row - SNHStartRow) ) %>%
+  dplyr::mutate(distance = (positionX**2 + (positionY*10)**2) ** .5)
+
+
+gg.c <- spiderArea(tibbleData = area.spiders.pm.control.p1.tbl, 
+                 tLabel= "transect: control, time: pm", dotFill = 'darkorange')
+
+print(gg.c)
+
+outout.path <- "/Users/rcphelps/code/groq/png.output"
+
+    fileName <- "f.aerial.c.pt.estimate.png"
+    fullPath <- paste(output.path, "/", fileName, sep="")
+    if (file.exists(fullPath)) { file.remove(fullPath) }
+
+ggsave(fileName, plot = gg.c, device = NULL, path = outout.path,
+       scale = 1, width = 3.5, height = 3.5, dpi = 300, limitsize = TRUE,
+       units = c("in"))
+
+
+
+gg.s <- spiderArea(tibbleData = area.spiders.pm.SNH.p1.tbl, 
+                 tLabel="transect: SNH, time: pm", dotFill = 'royalblue')
+	
+print(gg.s)
+
+    fileName <- "f.aerial.s.pt.estimate.png"
+    fullPath <- paste(output.path, "/", fileName, sep="")
+    if (file.exists(fullPath)) { file.remove(fullPath) }
+
+
+ggsave(fileName, plot = gg.s, device = NULL, path = outout.path,
+       scale = 1, width = 3.5, height = 3.5, dpi = 300, limitsize = TRUE,
+       units = c("in"))    
+  
+
+
+	
+```
+
+**Abundance Estimate** 
+
+| Control Transect                                | SNH Transect                                    |
+| ----------------------------------------------- |:-----------------------------------------------:|
+| 0.9573448 spiders/sq-ft    | 0.9118289  spiders/sq-ft |
+| 95% CI=( 0.8170945 to 1.196123 )                | 95% CI=( 0.7399267 to 1.187072 )                |
+
+
+
+
+```{r saveGraph, echo=FALSE, include=F, results='asis', message=F, warning=T}
+
+	fileName <- "spiderDensity.pdf"
+	fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+ggsave(fileName, plot = gg, device = NULL, path = output.path,
+       scale = 1, width = 6, height = NA, dpi = 300, limitsize = TRUE,
+       units = c("in", "cm", "mm"))
+
+```
+
+
+diagnostics (below) from Beginner Point-Transect Analysis in Rdistance (https://cran.r-project.org/web/packages/Rdistance/vignettes/Rdistance_BeginnerPointTransects.pdf)
+
+```{r histogram, echo=F, include=TRUE, results='asis', message=F, warning=T, out.width=c('50%', '50%'), fig.show='hold' }
+
+
+# https://cran.r-project.org/web/packages/Rdistance/vignettes/Rdistance_BeginnerPointTransects.pdf
+
+hist(area.spiders.pm.control.p1.tbl$distance, n=270, col="grey", main="", xlab="distance (ft)")
+
+hist(area.spiders.pm.SNH.p1.tbl$distance, n=270, col="grey", main="", xlab="distance (ft)")
+
+```
+
+
+
+```{r summary, echo=FALSE, include=F, results='asis', message=F, warning=T, out.width=c('50%', '50%'), fig.show='hold' }
+
+
+summary(area.spiders.pm.control.p1.tbl$distance)
+summary(area.spiders.pm.SNH.p1.tbl$distance)
+
+# convert to Rdistance() format
+# siteID, groupsize, dist
+# https://www.rdocumentation.org/packages/Rdistance/versions/2.1.3/topics/thrasherDetectionData
+countsControl.df <- as_data_frame(area.spiders.pm.control.p1.tbl) %>%
+  rename(groupsize = Thomisidae..crab.spider.) %>%
+  rename(dist = distance) %>%
+  mutate(rowChar = as.character(row)) %>%
+  mutate(posChar = as.character(positionX)) %>%
+  unite("siteID", rowChar:posChar) %>%
+  select(-row, -positionX, -positionY)
+
+# make a 'transect' df for abundEstim()
+# siteID
+# https://www.rdocumentation.org/packages/Rdistance/versions/2.1.3/topics/thrasherSiteData
+dfControl.df <- as_data_frame(countsControl.df) 
+siteControl.df <- dfControl.df %>% distinct(siteID) %>% select(siteID)
+
+
+detectionFunctionControl <- dfuncEstim(formula = dist ~ 1,
+detectionData = countsControl.df,
+pointSurvey = TRUE,
+likelihood = "halfnorm")
+
+##################################################################################
+
+countsSNH.df <- as_data_frame(area.spiders.pm.SNH.p1.tbl) %>%
+  rename(groupsize = Thomisidae..crab.spider.) %>%
+  rename(dist = distance) %>%
+  mutate(rowChar = as.character(row)) %>%
+  mutate(posChar = as.character(positionX)) %>%
+  unite("siteID", rowChar:posChar) %>%
+  select(-row, -positionX, -positionY)
+
+dfSNH.df <- as_data_frame(countsSNH.df) 
+siteSNH.df <- dfSNH.df %>% distinct(siteID) %>% select(siteID)
+
+
+detectionFunctionSNH <- dfuncEstim(formula = dist ~ 1,
+detectionData = countsSNH.df,
+pointSurvey = TRUE,
+likelihood = "halfnorm")
+
+
+##################################################################################
+```
+
+
+```{r plotDetection, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('50%', '50%'), fig.show='hold' }
+
+plot(detectionFunctionControl)
+
+plot(detectionFunctionSNH)
+
+```
+
+
+```{r estimates, echo=FALSE, include=F, results='asis', message=F, warning=F }
+
+# Estimate Abundance 
+fitSNH <- abundEstim(dfunc = detectionFunctionSNH,
+detectionData = countsSNH.df,
+siteData = siteSNH.df,
+area = 20000, # 200' x 100'
+R = 100,
+ci = 0.95)
+
+# Automated Fit - fit several models, choose the best model based on AIC
+autoDS.SNH <- autoDistSamp(formula = countsSNH.df$dist ~ 1,
+detectionData = countsSNH.df,
+siteData = siteSNH.df,
+pointSurvey = TRUE,
+expansions = c(0),
+likelihoods = c("halfnorm", "hazrate", "negexp", "uniform"),
+plot = FALSE,
+area = 20000,
+R = 100,
+ci = 0.95,
+plot.bs = FALSE)
+
+fitControl <- abundEstim(dfunc = detectionFunctionControl,
+detectionData = countsControl.df,
+siteData = siteControl.df,
+area = 20000, # 200' x 100'
+R = 100,
+ci = 0.95)
+
+# Automated Fit - fit several models, choose the best model based on AIC
+autoDS.Control <- autoDistSamp(formula = countsControl.df$dist ~ 1,
+detectionData = countsControl.df,
+siteData = siteControl.df,
+pointSurvey = TRUE,
+expansions = c(0),
+likelihoods = c("halfnorm", "hazrate", "negexp", "uniform"),
+plot = FALSE,
+area = 20000,
+R = 100,
+ci = 0.95,
+plot.bs = FALSE)
+
+```
+
+```{r CI, echo=FALSE, include=F, results='asis', message=F, warning=F}
+
+# abundance estimate
+fitSNH$n.hat
+fitSNH$ci
+
+# abundance estimate
+fitControl$n.hat
+fitControl$ci
+
+```
+
+For each method, the primary survey comprises a random sample of points, or more usually a systematic grid of points, through the region of interest. Animals are lured to a point, or trapped at a point, and the number of animals observed at each point is recorded. A separate study is conducted on a subset of animals, to record whether they respond to the lure or enter the trap, for a range of known distances from the point. These data are used to estimate the probability that an animal will respond to the lure or enter the trap, as a function of its initial distance from the point. This allows the counts to be converted to an estimate of abundance in the survey region. https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2664.2006.01135.x#b4
+
+Point transect methods work well for many species, but some species are insufficiently visible or noisy to allow adequate numbers of detections by observers standing at random points. This has led to the development of methods that combine trapping studies with point transect sampling. The standard method for this is the trapping web (Anderson et al. 1983; Lukacs, Franklin & Anderson 2004). A single web typically contains 90 or more traps, which are arranged rather like a circular spider's web, with a higher density of traps at the centre than at the edges. Conceptually, the point of the point transect is at the centre of the web, and trapping density is sufficient to be certain of trapping any animals located at or near the web centre.
+https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2664.2006.01135.x#b7
+* https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/j.1365-2664.2006.01135.x#b19 *
+
+A fundamental characteristic of distance-sampling analyses is that sightability (probability of detection) of targets is assumed to decline as off-transect distances increase. Targets far from the transect are assumed to be harder to detect than targets close to the transect. https://github.com/tmcd82070/Rdistance/wiki/Basic-information-on-distance-sampling
+
+User-Defined Likelihood Functions in Rdistance
+https://cran.r-project.org/web/packages/Rdistance/vignettes/Rdistance_CustomDetectionFunction.pdf
+
+Distance software: design and analysis of distance sampling surveys for estimating population size https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2847204/
+
+Distance Sampling https://onlinelibrary.wiley.com/doi/abs/10.1002/0470011815.b2a16019
+
+
+```{r radius1, echo=FALSE, include=F, results='asis', message=F, warning=F, out.width=c('50%', '50%'), fig.show='hold' }
+
+# examine density in radial bands
+
+# get quantiles
+a <- quantile(area.spiders.pm.SNH.p1.tbl$distance, probs=seq(0,1,.25))
+# > a
+#       0%       25%       50%       75%      100% 
+# 10.77033  56.60389  85.15821 136.01471 211.89620 
+
+# filter data preserving only observations inside the slice, 
+# return the graph, spider density, and CI
+sliced12 <- radialSlice(tibbleInput=area.spiders.pm.SNH.p1.tbl, distanceMin=a[[1]], distanceMax=a[[2]], info="SNH-Band 1")
+
+sliced23 <- radialSlice(tibbleInput=area.spiders.pm.SNH.p1.tbl, distanceMin=a[[2]], distanceMax=a[[3]], info="SNH-Band 2")
+
+sliced34 <- radialSlice(tibbleInput=area.spiders.pm.SNH.p1.tbl, distanceMin=a[[3]], distanceMax=a[[4]], info="SNH-Band 3")
+
+sliced45 <- radialSlice(tibbleInput=area.spiders.pm.SNH.p1.tbl, distanceMin=a[[4]], distanceMax=a[[5]], info="SNH-Band 4")
+
+slicedAll <- radialSlice(tibbleInput=area.spiders.pm.SNH.p1.tbl, distanceMin=a[[1]], distanceMax=a[[5]], info="SNH-Band All")
+
+```
+
+```{r radius2, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('50%', '50%'), fig.show='hold' }
+
+print(sliced12[[1]])
+print(sliced23[[1]])
+print(sliced34[[1]])
+print(sliced45[[1]])
+
+print(slicedAll[[1]])
+
+```

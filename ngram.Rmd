@@ -329,7 +329,7 @@ readr::write_csv(wilcox.test.tibl, filename)
     print(gg.wilcox)
     
     setwd("/Users/rcphelps/code/groq/")
-    saveGGpng(filename="wilcox.pdf", subdir="png.output", gg=gg.wilcox)
+    saveGGpng(filename="wilcox.png", subdir="png.output", gg=gg.wilcox)
 
 
 ```
@@ -967,100 +967,8 @@ gg <- ggplot() +
 
 ```
 
-```{r saveFile, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
-     
-saveGGpng <- function(filename, subdir, gg) {
-  
-      wd <- getwd() 
-      
-      # Check if the subdirectory exists
-      if (dir.exists(file.path(subdir))) {
-      
-        dirPath <- paste(wd, "/", subdir, sep="")
-        fullPath <- paste(dirPath, "/", filename, sep="")
-  
-        if (file.exists(fullPath)) { file.remove(fullPath) }
-  
-        suppressMessages(ggsave(filename, plot = gg, device = NULL, path = dirPath,
-         scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
-         units = "in") )
-        
-        print(paste( "saved ", fullPath, sep=" "))
-        
-      } else {
-        
-        print(paste("subdirectory ", subdir, " does not exist", sep=""))
-        
-      }
-      
-return()
-      
-}
 
-# ==================================================================================
 
-saveDFpng <- function(filename, subdir, df) {
-  
-  library(gridExtra)
-  library(grid)
-
-      wd <- getwd() 
-      
-      # Check if the subdirectory exists
-      if (dir.exists(file.path(subdir))) {
-      
-        dirPath <- paste(wd, "/", subdir, sep="")
-        fullPath <- paste(dirPath, "/", filename, sep="")
-  
-        if (file.exists(fullPath)) { file.remove(fullPath) }
-        
-            library(gridExtra)
-            library(png)
-            # Save the table as a PNG
-            png(fullPath, units = "in", width = 8, height = 4, res = 72, pointsize = 10)
-            grid.table(df, rows = NULL)
-            dev.off()
-        
-            if (FALSE) {
-              library(magick)
-              # Read the PDF (first page by default)
-              img <- image_read_pdf("input.pdf", density = 300)  # Higher density = better quality
-              # Save as PNG
-              image_write(img, path = "output.png", format = "png")
-            }
-
-            if (FALSE) {
-              #suppressMessages(ggsave(filename, plot = gg, device = NULL, path = dirPath,
-              # scale = 1, width = 8, height = NA, dpi = 300, limitsize = TRUE,
-              # units = "in") )
-              # Open a PDF device
-              pdf(fullPath, width = 8, height = 4)  # adjust size as needed
-              #
-              # Create a table grob with smaller font size
-              g <- tableGrob(head(df), 
-                    theme = ttheme_default(core = list(fg_params = list(fontsize = 10)),
-                                           colhead = list(fg_params = list(fontsize = 10)),
-                                           rowhead = list(fg_params = list(fontsize = 10))))
-              # Draw the table
-              #grid.table(df)
-              grid::grid.draw(g)
-              # Close the PDF device
-              dev.off()
-              print(paste( "saved ", fullPath, sep=" "))
-            }
-        
-      } else {
-        
-        print(paste("subdirectory ", subdir, " does not exist", sep=""))
-        
-      }
-      
-return()
-      
-}
-    
-    
-```  
 
 ```{r graphics.1, echo=FALSE, include=TRUE, results='asis', message=F, warning=F, out.width=c('33%', '33%', '33%'), fig.show='hold'}
 

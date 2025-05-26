@@ -2397,6 +2397,10 @@ def kmeans_clusters(df):
                 # get the clusters
                 clusters_df = km(df=df_t)
 
+                # this helps when the plots are made
+                if transect == 'oakMargin':
+                    transect = 'SNH'
+
                 filename = './metrics/kmeans.' + transect + '.' + time + '.csv'
                 import os
                 if os.path.exists(filename):
