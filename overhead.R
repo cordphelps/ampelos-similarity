@@ -62,7 +62,7 @@ plotBugPercentages <- function(list, spidersOnly) {
                   shape=21, size=3, show.legend=TRUE) +
       
       scale_fill_manual(name = 'insect family', 
-                        values = c('black','green', 'blue', 'violet', 'purple', 'red'), 
+                        values = c('white','green', 'royalblue', 'darkorange', 'lightgrey', 'lightgrey'), 
                         breaks = c("Other", 'Araneae', 'Diptera', 'Hymenoptera', 'Hemiptera', 'Lepidoptera'),
                         labels = c("other", "Araneae", 'Diptera', 'Hymenoptera', 'Hemiptera', 'Lepidoptera')) +
       
@@ -74,20 +74,24 @@ plotBugPercentages <- function(list, spidersOnly) {
       
       scale_x_continuous(breaks=seq(22,40,2)) + 
       
-      labs(y="percent", x="week", 
-           caption = paste("insect abundance by taxonometric Order\n", 
-                           "percent of total population by week", sep="") ) +
+      labs(y="sampled population (percent)", 
+           x="week",
+            caption = paste("Araneae (green), Diptera (blue), Hymenoptera (orange)\n", 
+                           "Hemiptera and Lepidoptera (grey), 'other' (white)", sep="") ) +
       
       theme_bw() +
       
       theme(legend.title = element_blank(),
             legend.spacing.y = unit(0, "mm"), 
-            legend.position="bottom",
+            legend.position="none",
             legend.justification=c(1,0),
             panel.border = element_rect(colour = "black", fill=NA),
             aspect.ratio = 1, axis.text = element_text(colour = 1, size = 12),
             legend.background = element_blank(),
             legend.box.background = element_rect(colour = "black")) 
+    
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename="f.pop.abundance.png", subdir="png.output", gg=gg)
     
   }
   
