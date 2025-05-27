@@ -293,8 +293,7 @@ if (TRUE) {
   # get a list of week IDs ('integers')
   weekID.list <- dissectWeeks(w=weeks)
   
-  captionText <- paste("crab spiders by week", 
-                       "\ndaytime: ", "pm", sep="")
+  captionText <- paste("daytime: ", "pm", sep="")
   
   week.control.tibl <- week.tibl %>% dplyr::filter(transect=='control')
   week.snh.tibl <- week.tibl %>% dplyr::filter(transect=='SNH')
@@ -306,28 +305,33 @@ if (TRUE) {
       #geom_bar(data=week.tibl, aes(y=crabSpiders, x = factor(week), fill = transect, colour = transect),
     #           stat="identity", alpha=.3, position = "dodge") +
     
-          geom_bar(data=week.control.tibl, x = factor(week), aes(y=crabSpiders, fill = transect, colour = transect),
-                   position = position_dodge(width = 0.7)) +
+          geom_bar(data=week.control.tibl, aes(y=crabSpiders, x = factor(week), fill = transect, colour = transect),
+                   stat = "identity", fill = "darkorange3", position = position_nudge(x = -0.15), width = 0.3) +
     
-          geom_bar(data=week.snh.tibl, x = factor(week), aes(y=crabSpiders, fill = transect, colour = transect),
-                   position = position_dodge(width = 0.7)) +
+          geom_bar(data=week.snh.tibl, aes(y=crabSpiders, x = factor(week), fill = transect, colour = transect),
+                   stat = "identity", fill = "royalblue3", position = position_nudge(x = 0.15), width = 0.3) +
 	
       scale_y_continuous(breaks = seq(min(0), max(100), by = 10)) +
 	  
 	     scale_x_discrete(breaks=weeks, labels=weekID.list) +
 
-        labs(x="week number", y="crab spiders", caption = captionText ) +
+        labs(x="week", y="Thomisidae count", caption = captionText ) +
     
   	theme_bw() +
 	  
     theme(
           # axis.text.x = element_text(angle = 45),
           panel.border = element_rect(colour = "black", fill=NA),
-          legend.position="bottom",
+          legend.position="none",
           legend.title = element_blank()
           ) 
   
   print(ggWeek)
+  
+      file <- paste("f.counts.weekly", ".png", sep="")
+      setwd("/Users/rcphelps/code/groq/")
+      saveGGpng(filename=file, subdir="png.output", gg=ggWeek)
+      
   
   ####################################################################
    
@@ -342,56 +346,30 @@ if (TRUE) {
         dplyr::mutate(cum_spiders = cumsum(crabSpiders))
  
 
-  captionText <- paste("crab spiders by julian day", 
-                       "\ndaytime : ", "XXXXXXX", sep="")
+  captionText <- paste("daytime: ", "pm", sep="")
   
   ggJulian <- ggplot() + 
-
-      # geom_bar(data=julian.tibl, aes(y=crabSpiders, x = factor(julian), fill = transect, colour = transect), stat="identity", alpha=.3, position = "dodge") +
      
       geom_line(data=julian.tibl, aes(y=crabSpiders, x = factor(julian), colour = transect, group=transect)) +
 	
       scale_y_continuous(breaks = seq(min(0), max(100), by = 10)) +
 
-      labs(x="julian day 2018", y="crab spiders", caption = captionText ) +
+      labs(x="julian day 2018", y="Thomisidae count", caption = captionText ) +
     
   	  theme_bw() +
 	  
       theme(
-          axis.text.x = element_text(angle = 45),
+          #axis.text.x = element_text(angle = 45),
           panel.border = element_rect(colour = "black", fill=NA),
-          legend.position="bottom",
+          legend.position="none",
           legend.title = element_blank()
           ) 
   
   print(ggJulian)
+  
   ####################################################################
 
-  captionText <- paste("cumulative crab spiders", 
-                       "\ndaytime : ", "XXXXXXXX", sep="")
-     
-  ggCumulative <- ggplot() + 
 
-      # geom_bar(data=julian.tibl, aes(y=crabSpiders, x = factor(julian), fill = transect, colour = transect), stat="identity", alpha=.3, position = "dodge") +
-     
-      geom_line(data=julian.tibl, aes(y=cum_spiders, x = factor(julian), colour = transect, group=transect)) +
-	
-      scale_y_continuous(breaks = seq(min(0), max(250), by = 50)) +
-
-      labs(x="julian day 2018", y="crab spiders", caption = captionText ) +
-    
-  	  theme_bw() +
-	  
-      theme(
-          axis.text.x = element_text(angle = 45),
-          panel.border = element_rect(colour = "black", fill=NA),
-          legend.position="bottom",
-          legend.title = element_blank()
-          ) 
-  
-  print(ggCumulative)
-  
-    ####################################################################
    
   bothTimes.tibl <- bugs.tibl %>%
         dplyr::select(-date, -time) %>%
@@ -403,30 +381,45 @@ if (TRUE) {
         dplyr::mutate(cum_spiders = cumsum(crabSpiders))
  
 
-  captionText <- paste("crab spiders by julian day", 
-                       "\nboth collection times ", sep="")
+  captionText <- paste("daytime: 'am' + 'pm' ", sep="")
   
+  transect = c("control" = "darkorange3", "SNH" = "royalblue3")
      
   ggBoth <- ggplot() + 
 
       # geom_bar(data=julian.tibl, aes(y=crabSpiders, x = factor(julian), fill = transect, colour = transect), stat="identity", alpha=.3, position = "dodge") +
      
       geom_line(data=julian.tibl, aes(y=cum_spiders, x = factor(julian), colour = transect, group=transect)) +
+    
+      scale_colour_manual(values = c("control" = "darkorange3", "SNH" = "royalblue3")) +
 	
       scale_y_continuous(breaks = seq(min(0), max(250), by = 50)) +
 
-      labs(x="julian day 2018", y="crab spiders", caption = captionText ) +
+      labs(x="julian", y="Thomisidae count", caption = captionText ) +
+    
+      scale_x_discrete(
+                        labels = function(x) {
+                          # Only label every 5th factor, else blank
+                          idx <- as.numeric(x)
+                          lbls <- ifelse(idx %% 5 == 1, x, "")
+                          lbls
+                        }
+                      ) +
     
   	  theme_bw() +
 	  
       theme(
-          axis.text.x = element_text(angle = 45),
+          #axis.text.x = element_text(angle = 45),
           panel.border = element_rect(colour = "black", fill=NA),
-          legend.position="bottom",
+          legend.position="none",
           legend.title = element_blank()
           ) 
   
-  print(ggBoth)
+      print(ggBoth)
+      
+      file <- paste("f.counts.cumulative", ".png", sep="")
+      setwd("/Users/rcphelps/code/groq/")
+      saveGGpng(filename=file, subdir="png.output", gg=ggBoth)
   
   
     ####################################################################
@@ -489,14 +482,14 @@ if (TRUE) {
 
           #coord_fixed(ratio=1) + # control the aspect ratio
 
-         labs(x="week number", y="crab spiders", caption = captionText ) +
+         labs(x="week", y="Thomisidae count", caption = captionText ) +
 
   	theme_bw() +
 	  
     theme(
           # axis.text.x = element_text(angle = 45),
           panel.border = element_rect(colour = "black", fill=NA),
-          legend.position="bottom",
+          legend.position="none",
           legend.title = element_blank()
           ) 
 	
