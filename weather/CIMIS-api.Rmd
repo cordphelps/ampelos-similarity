@@ -1,0 +1,338 @@
+---
+title: "CIMIS"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+```{r fromCSV, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(tidyr)
+library(tibble)
+
+setwd("/Users/rcphelps/code/groq")
+
+w.url <- c('./weather/weatherCIMIS231.csv')
+
+w.tibl <- dplyr::as_tibble(read.csv(w.url, header=TRUE, row.names=NULL))
+
+outout.path <- "/Users/rcphelps/code/groq/png.output"
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+        geom_line(aes(y = DayAirTmpMax.Value), colour = "red") +
+        geom_line(aes(y = DayAirTmpAvg.Value), colour = "green") +
+        geom_line(aes(y = DayAirTmpMin.Value), colour = "blue") +
+  
+        ylim(-10,40) +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        scale_y_continuous(breaks=seq(-10,40,10), 
+                             sec.axis = sec_axis(~.*(9/5) + 32,
+                                                 breaks= seq(0, 110, 10),
+                                                 name= "air temp (F)"))  +
+  
+        labs(y = "air temperature (C)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.title.y.right = element_text(angle = 90)) 
+  
+print(gg)
+
+fileName <- "f.w.airtemp.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.air.temp.png", subdir="png.output", gg=gg)
+
+
+# ==================================================================================
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+  
+        geom_line(aes(y = DayDewPnt.Value), colour = "blue") +
+  
+        ylim(-10,40) +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        scale_y_continuous(breaks=seq(-10,40,10), 
+                             sec.axis = sec_axis(~.*(9/5) + 32,
+                                                 breaks= seq(0, 110, 10),
+                                                 name= "air temp (F)"))  +
+  
+        labs(y = "dew point (C)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.title.y.right = element_text(angle = 90))            # Ensure labels are visible
+  
+print(gg)
+
+fileName <- "f.w.dew.point.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.dew.point.png", subdir="png.output", gg=gg)
+
+
+
+
+# ==================================================================================
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+  
+        geom_line(aes(y = DayWindSpdAvg.Value), colour = "blue") +
+
+        ylim(0,10) +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        scale_y_continuous(breaks=seq(0,10,2.5), 
+                             sec.axis = sec_axis(~.*2.23694,
+                                                 breaks= seq(0, 22, 5),
+                                                 name= "(mph)"))  +
+  
+        labs(y = "average wind speed (m/s)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.title.y.right = element_text(angle = 90)) 
+  
+print(gg)
+
+fileName <- "f.w.wind.speed.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.wind.speed.png", subdir="png.output", gg=gg)
+
+# =================================================================================
+
+#The CIMIS parameter DayWindRun.Value represents the total distance that the wind has traveled over a 24-hour period at a given station. It is typically measured in miles (MPH) or kilometers (km), depending on the unit system specified in your query.
+#	•	DayWindRun is calculated by summing the wind speed over each hour of the day, effectively giving you the total “run” or distance the wind would have traveled if it blew continuously at the measured speeds throughout the day.
+#	•	For example, a DayWindRun value of 33.4 (MPH) means that, over the course of that day, the wind traveled a cumulative distance of 33.4 miles at that location.
+#This parameter is useful for understanding wind energy, evapotranspiration, and microclimate conditions in agricultural and environmental monitoring contexts
+
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+  
+        geom_line(aes(y = DayWindRun.Value), colour = "blue") +
+
+        ylim(-10,500) +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        scale_y_continuous(breaks=seq(0,500,100), 
+                            sec.axis = sec_axis(~./1.609,
+                                                 breaks= seq(-10, 500, 100),
+                                                 name= "(miles)"))  +
+        labs(y = "day-wind-run (km)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.title.y.right = element_text(angle = 90)) 
+  
+print(gg)
+
+fileName <- "f.w.wind.run.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.wind.run.png", subdir="png.output", gg=gg)
+
+
+# ==================================================================================
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+  
+        geom_line(aes(y = DayRelHumAvg.Value), colour = "blue") +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        # scale_y_continuous(breaks=seq(0, 1.0, 0.1) )  +
+  
+        labs(y = "relative humidity (%)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.text.y = element_text())            # Ensure labels are visible
+  
+print(gg)
+
+fileName <- "f.w.humidity.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.humidity.png", subdir="png.output", gg=gg)
+
+
+
+# ==================================================================================
+
+gg <- ggplot(data = w.tibl, aes(x=Julian)) + 
+  
+        geom_line(aes(y = DayPrecip.Value), colour = "blue") +
+  
+        geom_vline(xintercept=156) +   # june 6 
+        geom_vline(xintercept=236) +   # august 24
+  
+        # scale_y_continuous(breaks=seq(0, 1.0, 0.1) )  +
+  
+        labs(y = "precipitation (mm)", x = "julian",
+             caption = paste("sampling: June 6 - August 24\n", 
+                             "(julian days 156 - 236)", sep="") ) +
+  
+        theme_bw() +
+  
+        theme(axis.text.y = element_text())            # Ensure labels are visible
+  
+print(gg)
+
+fileName <- "f.w.precipitation.png"
+fullPath <- paste(output.path, "/", fileName, sep="")
+if (file.exists(fullPath)) { file.remove(fullPath) }
+
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename="f.w.precipitation.png", subdir="png.output", gg=gg)
+
+
+```
+
+
+
+```{r}
+# read CIMIS data via the public API and plot results
+## 
+## http://et.water.ca.gov/Rest/Index
+  
+# stuff you need
+#
+#   1) a CIMIS API key (see http://et.water.ca.gov/Home/Faq)
+#   2) write the key to disk in json format:
+#        {
+#        "CIMIS-API-KEY": "b7aaaaff-zzzz-yyyy-xxxx-4ab4bbbb1b8"
+#        }
+#   3) adjust the startDate, endDate, and station per your requirements
+  
+library(jsonlite)
+
+cimisKey <- fromJSON("./PRIVATE-CIMIS-API-KEY.json")
+baseURL <- "http://et.water.ca.gov/api/data?appKey="
+key <- cimisKey[["CIMIS-API-KEY"]]
+station <- "&targets=231"
+start <- "&startDate=2018-01-01"
+end <- paste("&endDate=", Sys.Date(), sep="")
+units <- "&unitOfMeasure=M"
+# units <- "&unitOfMeasure=E"   # default = english units
+apiString <- paste(baseURL, key, station, start, end, units, sep="")
+data <- fromJSON(apiString)
+data.df <- as.data.frame(data)
+df2.df <- as.data.frame(data.df$Data.Providers.Records)
+  
+
+#
+# CIMIS data items : http://et.water.ca.gov/Rest/Index
+# 
+
+# convert df values to numeric
+# 
+
+DayAirTmpAvg.list <- df2.df$DayAirTmpAvg$Value       # save the values
+df2.df$DayAirTmpAvg <- NULL                          # delete the column (currently a df)
+df2.df$DayAirTmpAvg <- as.numeric(DayAirTmpAvg.list) # re-create the column as numeric
+
+DayAirTmpMin.list <- df2.df$DayAirTmpMin$Value       
+df2.df$DayAirTmpMin <- NULL                        
+df2.df$DayAirTmpMin <- as.numeric(DayAirTmpMin.list)
+  
+DayAirTmpMax.list <- df2.df$DayAirTmpMax$Value       
+df2.df$DayAirTmpMax <- NULL                        
+df2.df$DayAirTmpMax <- as.numeric(DayAirTmpMax.list)
+
+DaySoilTmpAvg.list <- df2.df$DaySoilTmpAvg$Value       
+df2.df$DaySoilTmpAvg <- NULL                        
+df2.df$DaySoilTmpAvg <- as.numeric(DaySoilTmpAvg.list)
+
+DayRelHumAvg.list <- df2.df$DayRelHumAvg$Value       
+df2.df$DayRelHumAvg <- NULL                        
+df2.df$DayRelHumAvg <- as.numeric(DayRelHumAvg.list)
+  
+Julian.list <- df2.df$Julian       
+df2.df$Julian <- NULL                        
+df2.df$Julian <- as.numeric(Julian.list)
+  
+# convert more vars as necessary
+  
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(data = df2.df, aes(x=Julian)) + 
+  geom_line(aes(y = DayAirTmpMax), colour = "red") +
+  geom_line(aes(y = DayAirTmpAvg), colour = "green") +
+  geom_line(aes(y = DayAirTmpMin), colour = "blue") +
+  ylim(-10,40) +
+  scale_y_continuous(breaks=seq(-10,40,10), 
+                       sec.axis = sec_axis(~.*(9/5) + 32,
+                                           breaks= seq(0, 110, 10),
+                                           name= "air temp (F)"))  +
+  labs(y = "air temp (C)") +
+  theme(axis.title.y.right = element_text(angle = 90))
+  
+ggplot(data = df2.df, aes(x=Julian, y=DayRelHumAvg)) + 
+  # geom_line(aes(y = DayRelHumAvg), colour = "blue") +
+  geom_point(shape=21) + 
+  geom_smooth(method="lm", level=0.95) +  
+  geom_vline(xintercept=175) +
+  # ylim(-10,40) +
+  scale_y_continuous(breaks=seq(0,100,10))  +
+  labs(y = "average relative humidity (%)") +
+  labs(title= paste("Average Relative Humidity", sep=""), 
+         subtitle = paste("CIMIS station #231", sep=""))
+
+ggplot(data = df2.df, aes(x=Julian, y=DaySoilTmpAvg)) + 
+  geom_point(shape=21) + 
+  geom_smooth(method="lm", level=0.95) +  
+  geom_vline(xintercept=175) +
+  ylim(0,40, 10) +
+  # scale_y_continuous(breaks=seq(0,40,10),
+  scale_y_continuous(
+    sec.axis = sec_axis(~.*(9/5) + 32,
+                        breaks= seq(0, 110, 10),
+                        name= "temp (F)")) +
+  labs(y = "temp (C)") +
+  labs(title= paste("Average Soil Temperature", sep=""), 
+         subtitle = paste("CIMIS station #231", sep="")) +
+  theme(axis.title.y.right = element_text(angle = 90))
+
+```

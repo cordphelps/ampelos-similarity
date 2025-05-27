@@ -32,14 +32,19 @@ library(dplyr)
 
 source('/Users/rcphelps/code/groq/overhead.R') # for spiderArea()
 
+# get a list of dataframes for the individual bug types
 returnList <- scanBugPercentages(bugs_all.df)
 
 returnList <- createFamilyPercentages(returnList)
+
 
 gg <- plotBugPercentages(returnList, spidersOnly=FALSE)
 
 print(gg)
 
+gg <- plotBugPercentages(returnList, spidersOnly=TRUE)
+
+print(gg)
 
 ```
 

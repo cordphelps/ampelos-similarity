@@ -1,7 +1,25 @@
 
 plotBugPercentages <- function(list, spidersOnly) {
   # from bug-library.R
+  #
+  # dfAraneae <- dplyr::union(dfCrab, dfOther)  
+  # one row for each spider; columns are percent for each week
   dfAraneae <- list[[1]]
+  #
+  #    otherPct spiderPct sumPct week  family
+  #1     19.19      2.37  21.56   23 Araneae
+  #2     27.71      0.11  27.82   24 Araneae
+  #3     14.70      0.68  15.38   25 Araneae
+  #4      9.92      4.37  14.29   26 Araneae
+  #5      8.66      4.33  12.99   27 Araneae
+  #6     13.10      3.02  16.12   28 Araneae
+  #7     10.07      9.37  19.44   29 Araneae
+  #8     11.41      5.37  16.78   30 Araneae
+  #9      9.12      7.43  16.55   31 Araneae
+  #10     8.61      8.20  16.81   32 Araneae
+  #11     1.78      3.91   5.69   34 Araneae
+  
+  
   dfDiptera <- list[[2]]
   dfHymenoptera <- list[[3]]
   dfHemiptera <- list[[4]]
@@ -12,40 +30,37 @@ plotBugPercentages <- function(list, spidersOnly) {
     
     gg <- ggplot(dfAraneae) + 
       
-      geom_point(aes(x=week, y=spiderPct, fill = "spiderPct"), shape=21, size=5, show.legend=TRUE) +
-      geom_point(aes(x=week, y=otherPct, fill = 'otherPct'), shape=21, size=5, show.legend=TRUE) +
+      geom_point(aes(x=week, y=spiderPct, fill = "spiderPct"), shape=21, size=3, show.legend=TRUE) +
+      geom_point(aes(x=week, y=otherPct, fill = 'otherPct'), shape=21, size=3, show.legend=TRUE) +
       
-      scale_fill_manual(name = "", values = c("spiderPct" = "purple", "otherPct" = "violet"), labels = c("crab spider", "spider (other)")) +
+      scale_fill_manual(name = "", values = c("spiderPct" = "green", "otherPct" = "white")) +
       
       ylim(c(0, 30)) + 
       expand_limits(y=c(0,30)) + 
-      #coord_fixed(ratio=1/4) +     # control the aspect ratio of the output; "ratio" refers to the 
-      # ratio of the axis limits themselves
       
       scale_y_continuous(breaks = seq(min(0), max(30), by = 5)) +
       scale_x_continuous(breaks=seq(22,40,2)) + 
       
-      
-      #labs(title=paste("spider abundance", sep=""),
-      #subtitle=paste("percent of total insects by week", sep=""), 
-      labs(y="spider percentage", 
-           x="week", 
-           caption = paste("spider abundance\n", "percent of total insects by week", sep="") ) +
+      labs(y="sampled population (percent)", 
+           x="week",
+           caption = paste("Araneae-Thomisidae (green), Araneae-other (white)", sep="") ) +
       
       theme_bw() +
       
       theme(legend.title = element_blank(),
             legend.spacing.y = unit(0, "mm"), 
-            legend.position="bottom",
+            legend.position="none",
             legend.justification=c(1,0),
             panel.border = element_rect(colour = "black", fill=NA),
             aspect.ratio = 1, axis.text = element_text(colour = 1, size = 12),
             legend.background = element_blank(),
             legend.box.background = element_rect(colour = "black")) 
     
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename="f.pop.araneae.png", subdir="png.output", gg=gg)
+    
   } else {
     
-    colours = c("oakMargin" = "#405E00", "control" = "#9BCC94")
     
     gg <- ggplot() + 
       

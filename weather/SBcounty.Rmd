@@ -1,0 +1,295 @@
+---
+title: "ampelos"
+output: github_document
+---
+
+```{r, echo=F, message=F, warning=F}
+setwd("/Users/rcphelps/code/thesis/ampelos/code")
+```
+
+
+```{r, echo=F, message=F, warning=F}
+                                    # , out.height = '100%'}
+# county map
+
+# get the coordinates of a place
+# https://support.google.com/maps/answer/18539?co=GENIE.Platform%3DDesktop&hl=en
+
+
+# http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html
+# install.packages(c("ggplot2", "devtools", "dplyr", "stringr"))
+# install.packages(c("maps", "mapdata"))
+# devtools::install_github("dkahle/ggmap")
+
+library(ggplot2)
+library(ggmap)
+library(maps)
+library(mapdata)
+library(gridExtra)
+#library(png)
+
+#library(cowplot)    # height adjustment in tables with plot_grid()
+#library(patchwork)  # alternative to cowplot
+#library(egg)        # alternative to cowplot
+
+
+states <- map_data("state")
+west_coast <- subset(states, region %in% c("california", "oregon", "washington"))
+
+#> west_coast
+#long      lat group order     region
+#667   -120.0060 42.00927     4   667 california
+#668   -120.0060 41.20139     4   668 california
+#669   -120.0060 39.70024     4   669 california
+
+westCoast <- ggplot(data = west_coast) + 
+  geom_polygon(aes(x = long, y = lat, group = group), fill = "palegreen", color = "black") +
+  coord_fixed(1.3) +
+  theme_bw()
+
+ca_df <- subset(states, region == "california")
+counties <- map_data("county")
+ca_county <- subset(counties, region == "california")
+sbCounty <- subset(counties, subregion == "santa barbara")
+
+vC <- subset(counties, subregion == "ventura")
+sloC <- subset(counties, subregion == "san luis obispo")
+bC <- subset(counties, subregion == "san benito")
+# cC <- subset(counties, subregion == "santa cruz")  # data looks wrong
+mC <- subset(counties, subregion == "monterey")
+centralCoast <- dplyr::bind_rows(vC, sloC, bC, mC)
+
+
+
+california <- ggplot(data = ca_df, mapping = aes(x = long, y = lat, group = group)) + 
+  
+  geom_polygon(color = "black", fill = "#F4D292") + 
+  #geom_polygon(data = ca_county, fill = "paleblue", color = "black") +
+  geom_polygon(data = centralCoast, fill = "#E79798", color = "black") +
+  geom_polygon(color = "black", fill = NA) +  # get the state border back on top
+  geom_polygon(data = sbCounty, 
+               aes(x = long, y = lat, group = group), 
+               fill = 'palegreen', color = "black") +   # "palegreen"
+
+  coord_fixed(1.3) +  # aspect ratio for lon/lat
+  expand_limits(y = c(33, 42), x = c(-125,-114)) +
+  
+  labs(
+          x="longitude", 
+          y="latitude" )  +
+  
+  #theme_nothing() +
+  theme_bw()  + # default font size = 12pt
+                # https://stackoverflow.com/questions/24874594/font-size-confusion-in-ggplot2
+
+  theme(plot.subtitle=element_text(size=9))  # must follow theme_bw() to override default
+
+  #theme(plot.background = element_rect(fill = "green")) # works with plot_grid(), not patchwork
+  #theme(panel.background = element_rect(fill = "red"))
+
+print(california)
+
+```
+
+
+
+
+```{r, echo=F, message=F, warning=F}
+
+
+library(jsonlite)
+library(ggmap)
+gmapKey <- fromJSON("../PRIVATE-GMAPS-API-KEY.json")
+register_google(key = gmapKey) 
+
+sbbox <- make_bbox(lon = sbCounty$long, lat = sbCounty$lat, f = .3)
+sq_map <- get_map(location = sbbox, maptype = "satellite", source = "google")
+
+# CIMIS #231 google map-able coordinates : 34.672222, -120.51306
+# Ampelos 34.625133, -120.280478
+bbPoints.df <-dplyr::tribble(~name, ~lon, ~lat, 
+                           "corner1", -121, 34.3,
+                           "corner2", -119, 35.3)
+
+placePoints.df <-dplyr::tribble(~name, ~lon, ~lat, 
+                           "CIMIS-231", -120.51306, 34.672222, 
+                           "Ampelos", -120.280478, 34.625133)
+
+ampelos <- c(-120.280478, 34.625133)
+
+ampelosPoint.df <-dplyr::tribble(~name, ~lon, ~lat, 
+                           "Ampelos", -120.280478, 34.625133)
+
+center <- sapply(bbPoints.df[2:3], mean)
+
+sbbox <- make_bbox(lon = bbPoints.df$lon, lat = bbPoints.df$lat, f = 1)
+    # f = number specifying the fraction by which the range should be extended
+# maptype =  "terrain"
+  
+sq_map <- get_map(location = center, maptype = "satellite", source = "google", zoom=9)
+
+
+```
+
+
+```{r CIMISampelos, echo=F, message=F, warning=F}
+
+
+ampelosOnly <- ggmap(sq_map) + 
+  geom_point(data = ampelosPoint.df, mapping = aes(x = lon, y = lat), 
+             color = "green", shape=13, size = 6, stroke=1) +
+  geom_label(data = ampelosPoint.df, aes(label = paste(as.character(name), sep="")), 
+            angle = 0, hjust = 0, nudge_x = 0.06, nudge_y = 0.08) +
+  
+  coord_fixed(1.3) +  # aspect ratio for lon/lat
+  expand_limits(y=c(34.3,35.3)) +
+  scale_y_continuous(breaks=seq(34.3,35.3,.5)) +
+  expand_limits(x=c(-121, -119)) +
+  scale_x_continuous(breaks=seq(-121, -119, 1)) +
+  
+  labs(
+          x="longitude", 
+          y="latitude") +
+  
+  theme_bw() +  # default font size = 12pt
+                # https://stackoverflow.com/questions/24874594/font-size-confusion-in-ggplot2
+  #theme(axis.text=element_text(size=10),axis.title=element_text(size=10))
+  
+  theme(plot.subtitle=element_text(size=9))  # must follow theme_bw() to override default
+
+
+
+CIMISampelos <- ggmap(sq_map) + 
+  geom_point(data = placePoints.df, mapping = aes(x = lon, y = lat), 
+             color = "green", shape=13, size = 6, stroke=1) +
+  geom_label(data = placePoints.df, aes(label = paste(as.character(name), sep="")), 
+            angle = 0, hjust = 0, nudge_x = 0.06, nudge_y = 0.08) +
+  
+  coord_fixed(1.3) +  # aspect ratio for lon/lat
+  expand_limits(y=c(34.3,35.3)) +
+  scale_y_continuous(breaks=seq(34.3,35.3,.5)) +
+  expand_limits(x=c(-121, -119)) +
+  scale_x_continuous(breaks=seq(-121, -119, 1)) +
+  
+  labs( x="longitude", 
+          y="latitude" ) +
+  
+  # "\nhttps://www.fcc.gov/media/radio/dms-decimal",
+  
+  theme_bw() +  # default font size = 12pt
+                # https://stackoverflow.com/questions/24874594/font-size-confusion-in-ggplot2
+  #theme(axis.text=element_text(size=10),axis.title=element_text(size=10))
+  
+  theme(plot.subtitle=element_text(size=9))  # must follow theme_bw() to override default
+
+  print(CIMISampelos)
+  
+  print(ampelosOnly)
+
+
+```
+
+
+```{r ampelosZoom, echo=F, message=F, warning=F}
+
+sbbox <- make_bbox(lon = bbPoints.df$lon, lat = bbPoints.df$lat, f = 1)
+    # f = number specifying the fraction by which the range should be extended
+# maptype =  "terrain"
+
+sq_map <- get_map(location = ampelos, 
+                  maptype = "satellite", source = "google", zoom=15)
+
+ampelosZoom <- ggmap(sq_map) + 
+  geom_point(data = ampelosPoint.df, mapping = aes(x = lon, y = lat), 
+             color = "green", shape=13, size = 6, stroke=1) +
+  geom_label(data = ampelosPoint.df, aes(label = paste(as.character(name), sep="")), 
+            angle = 0, hjust = 0, nudge_x = 0.06, nudge_y = 0.08) +
+  
+  coord_fixed(1.3) +  # aspect ratio for lon/lat
+  # more detail: https://stackoverflow.com/questions/27915118/ggmap-changing-size-of-map
+  
+  #expand_limits(y=c(34.3,35.3)) +
+  #scale_y_continuous(breaks=seq(34.3,35.3,.5)) +
+  #expand_limits(x=c(-121, -119)) +
+  #scale_x_continuous(breaks=seq(-121, -119, 1)) +
+  
+  labs(x="longitude", 
+          y="latitude" ) +
+  
+  theme_bw() +  # default font size = 12pt
+                # https://stackoverflow.com/questions/24874594/font-size-confusion-in-ggplot2
+  #theme(axis.text=element_text(size=10),axis.title=element_text(size=10))
+  
+  theme(plot.subtitle=element_text(size=9))  # must follow theme_bw() to override default
+
+print(ampelosZoom)
+
+
+```
+
+
+```{r ampelos17, echo=F, message=F, warning=F}
+
+sq_map <- get_map(location = ampelos, 
+                  maptype = "satellite", source = "google", zoom=17)
+
+ampelos17 <- ggmap(sq_map) + 
+  geom_point(data = ampelosPoint.df, mapping = aes(x = lon, y = lat), 
+             color = "green", shape=13, size = 6, stroke=1) +
+  geom_label(data = ampelosPoint.df, aes(label = paste(as.character(name), sep="")), 
+            angle = 0, hjust = 0, nudge_x = 0.06, nudge_y = 0.08) +
+  
+  coord_fixed(1.3) +  # aspect ratio for lon/lat
+  #expand_limits(y=c(34.3,35.3)) +
+  #scale_y_continuous(breaks=seq(34.3,35.3,.5)) +
+  #expand_limits(x=c(-121, -119)) +
+  #scale_x_continuous(breaks=seq(-121, -119, 1)) +
+  
+  labs(x="longitude", 
+          y="latitude" 
+           ) +
+  
+  theme_bw() +  # default font size = 12pt
+                # https://stackoverflow.com/questions/24874594/font-size-confusion-in-ggplot2
+  #theme(axis.text=element_text(size=10),axis.title=element_text(size=10))
+  
+  theme(plot.subtitle=element_text(size=9))  # must follow theme_bw() to override default
+
+print(ampelos17)
+
+```
+
+
+
+
+![landscape](../images/transectAerial.png)
+
+
+```{r grobList, echo=F, message=F, warning=F}
+
+# https://stackoverflow.com/questions/22107126/reading-in-multiple-png-files-in-order-to-create-a-new-plot-with-grid-arrange
+
+
+  
+  # Hide tick marks and labels to match .png size
+  ampelos17 <- ampelos17 + theme(
+      axis.title.x=element_blank(),
+      axis.text.x=element_blank(),
+      axis.ticks.x=element_blank(),
+      axis.title.y=element_blank(),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank()  ) +
+    
+      labs(title="")   # remove the title
+  
+  t.png.raster = lapply(sprintf("../images/transectAerial.png", 1:4), png::readPNG)
+  t.grobList = lapply(t.png.raster, grid::rasterGrob)
+  
+  print(ampelos17)
+  print(t.grobList[[1]])
+  
+
+
+
+```
+
