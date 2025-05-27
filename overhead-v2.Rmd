@@ -27,10 +27,20 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r bug-percentages, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
 library(ggplot2)
-library(gridExtra)
+#library(gridExtra)
 library(dplyr)
 
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') # for spiderArea()
 source('/Users/rcphelps/code/groq/overhead.R') # for spiderArea()
+
+if (TRUE) {
+  source.url <- c("https://raw.githubusercontent.com/cordphelps/ampelos/master/data/bugs.csv")
+  bugs_all.df <- read.csv(source.url, header=TRUE, row.names=NULL)
+  bugs.tibl <- bugs_all.df
+}
+
+
 
 # get a list of dataframes for the individual bug types
 returnList <- scanBugPercentages(bugs_all.df)
@@ -50,19 +60,53 @@ print(gg)
 
 
 
-```{r overhead, echo=FALSE, include=F, results='asis', message=F, warning=F}
+```{r overhead, echo=FALSE, include=T, results='asis', message=F, warning=F}
 
 # from ampelos-overhead.Rmd
+# source('/Users/rcphelps/code/groq/bug-library.R') # for spiderArea()
 
-weeks.vector <- getWeeks(bugs.df)
+weeks.vector <- getWeeks(bugs_all.df)
 
 for (i in 1:length(weeks.vector)) {
-  reducedData.df <- selectDataAcrossTransects(data=bugs.df, week=quo(weeks.vector[[i]]), species=quo(Thomisidae..crab.spider.))
-
-  g24 <- plotBugDistribution(data=reducedData.df, 
-                          cap=paste("crab spider occurrences", " week ", weeks.vector[[i]], sep=""))
   
-  print(g24)
+  reducedData.df <- selectDataAcrossTransects(data=bugs_all.df, week=quo(weeks.vector[[i]]), species=quo(Thomisidae..crab.spider.))
+  
+  # # A tibble: 60 × 3
+  ## Groups:   positionX [10]
+  #   positionX   row totalSpiders
+  #       <int> <int>        <int>
+  # 1         4    48            1
+  # 2         4    50            0
+   #3         4    52            0
+   #4         4    79            0
+  # 5         4    81            2
+  # 6         4    83            0
+  # 7        16    48            3
+  # 8        16    50            0
+  # 9        16    52            2
+  #10        16    79            3
+  ## ℹ 50 more rows
+  ## ℹ Use `print(n = ...)` to see more rows
+
+  g24 <- plotBDV9(data=reducedData.df, cap=paste("week: ", weeks.vector[[i]], sep=""))
+  
+  # save .png for weeks 25 and 30 as examples for the arXiv
+  
+  if (i == 3) {
+    week = "25"
+    print(g24)
+    file <- paste("f.spatial.", week, ".png", sep="")
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename=file, subdir="png.output", gg=g24)
+  }
+  
+   if (i == 8) {
+      week = "30"
+      print(g24)
+      file <- paste("f.spatial.", week, ".png", sep="")
+      setwd("/Users/rcphelps/code/groq/")
+      saveGGpng(filename=file, subdir="png.output", gg=g24)
+   }
   
 }
 
@@ -73,51 +117,57 @@ for (i in 1:length(weeks.vector)) {
 ```{r}
 
 
-plotBugDistribution <- function (data, cap) {
-# from bug-library.R
-
-  # http://t-redactyl.io/blog/2016/02/creating-plots-in-r-using-ggplot2-part-6-weighted-scatterplots.html
-  gg <- ggplot(data, aes(positionX, row, size=totalSpiders)) +
-    geom_point(shape=21, colour = "purple", fill = "plum", alpha=0.6) +           # 
-    #scale_size_area(max_size = 20) +
-    # geom_count() probably more appropriate http://ggplot2.tidyverse.org/reference/scale_size.html
-    scale_size(range = c(1, 10)) +
-    scale_fill_continuous(low = "plum1", high = "purple4") +
-    scale_y_reverse(breaks = seq(40, 100, 5),
-                    sec.axis = sec_axis(~. * 2.4384 - 103.622,         #### 8*.3048=2.4384  40*8*.3084=103.622
-                                           breaks= seq(0, 350, 50),
-                                           name= "distance (m)")    ) +
-    expand_limits(y=c(30,100)) + 
-    scale_x_continuous(position='top', breaks=seq(-12,200,16), 
-                       sec.axis = sec_axis(~.*.3048,
-                                           breaks= seq(0, 80, 10),
-                                           name= "trap distance from field margin (m)"))  +
-    # ggtitle(title) +
-
-    labs( x = "trap distance from field margin (ft)", 
-          y = "row",
-          caption = cap) +
-
-    annotate("rect", xmin=4, xmax=210, ymin=42.5,ymax=54.5, alpha=0.2, fill="blue") +
-    annotate("rect", xmin=-12, xmax=5, ymin=42.5,ymax=54.5, alpha=0.2, fill="red") +
-
-    annotate("rect", xmin=4, xmax=210, ymin=78,ymax=90, alpha=0.2, fill="blue") +
-    annotate("rect", xmin=-12, xmax=5, ymin=78,ymax=90, alpha=0.2, fill="red") +
-
-    annotate("text", x = 95, y = 76, label = "SNH transect", colour="black") +
-    annotate("text", x = 95, y = 40, label = "control transect", colour="black") + # fill="white", 
-    theme_bw() +
-    #theme() + 
-    # theme(legend.position = "bottom", legend.direction = "horizontal") +
-    theme(legend.position = "none", legend.direction = "horizontal") +
-    theme(legend.box = "horizontal", legend.key.size = unit(1, "cm")) +
-    # coord_fixed(ratio=4)
-    coord_fixed(ratio=2)
+  color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
   
-  return(grid.arrange(gg, ncol=1, nrow=1))
+
+plotBDV9 <- function (data, cap) {
+
+  gg.pair <- ggplot(data, aes(positionX, row, size=totalSpiders)) +
+    
+    geom_point(shape=21, colour = "black", fill = "plum", alpha=0.8) +          
+    
+    scale_size(range = c(1, 10)) +
+    #scale_fill_continuous(low = "plum1", high = "purple4") +
+    
+    #scale_y_reverse(breaks = seq(40, 100, 5)) +
+    scale_y_continuous(breaks=seq(40, 100, 5)) +
+                      
+                    #sec.axis = sec_axis(~. * 2.4384 - 103.622,         #### 8*.3048=2.4384  40*8*.3084=103.622
+                     #                      breaks= seq(0, 350, 50),
+                     #                      name= "distance (m)")    ) +
+    
+    #expand_limits(y=c(30,100)) + 
+      
+    scale_x_continuous(position='bottom', breaks=seq(-12,230,16)) +
+                       
+                       #sec.axis = sec_axis(~.*.3048,
+                        #                   breaks= seq(0, 80, 10),
+                        #                   name= "trap distance from field margin (m)"))  +
+ 
+    labs( x = "trap distance from field margin (ft)", y = "vineyard row ID (10' spacing)", caption = cap) +
+
+    annotate("rect", xmin=4, xmax=210, ymin=44,ymax=54, alpha=0.5, fill="darkorange3") +
+    annotate("rect", xmin=-12, xmax=5, ymin=44 ,ymax=54, alpha=0.2, fill="red") +
+
+    annotate("rect", xmin=4, xmax=210, ymin=79,ymax=89, alpha=0.5, fill="royalblue4") +
+    annotate("rect", xmin=-12, xmax=5, ymin=79,ymax=89, alpha=0.2, fill="red") +
+
+    annotate("text", x = 220, y = 84, label = "SNH ", colour="black") +
+    annotate("text", x = 220, y = 49, label = "control", colour="black") + # fill="white", 
+    
+    theme_bw() +
+    
+    theme(legend.position="none") +
+    
+    coord_flip()
+  
+  return(gg.pair)
 }
 
+```
 
+
+```{r}
 
 squashFlip <- function(df, weekList, columnList) {
 # from bug-library.R
@@ -197,9 +247,21 @@ selectDataAcrossTransects <- function(data, week, species) {
 
 ```
 
-```{r}
+```{r, cumulative, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
 
-  
+  library(ggplot2)
+  library(dplyr)
+
+  source('/Users/rcphelps/code/groq/bug-library.R')
+
+  color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+
+if (TRUE) {
+  source.url <- c("https://raw.githubusercontent.com/cordphelps/ampelos/master/data/bugs.csv")
+  bugs_all.df <- read.csv(source.url, header=TRUE, row.names=NULL)
+  bugs.tibl <- bugs_all.df
+}
+
   positions.group <- list()
   positions.group[[1]] <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
   
@@ -207,15 +269,6 @@ selectDataAcrossTransects <- function(data, week, species) {
   transects[[1]] <- "oakMargin"
   transects[[2]] <- "control"
 
-  whichData <- data 
-  whichTime <- time
-  
-  # testing
-  if (FALSE) {
-   whichData <- bugs.tibl 
-    whichTime <- "pm"   
-    k <- 1
-  }
   
   output.tibl <- tibble(crabSpiders = numeric(), 
                         transect = character(), 
@@ -227,8 +280,8 @@ selectDataAcrossTransects <- function(data, week, species) {
   
   ####################################################################
   
-  week.tibl <- whichData %>%
-        dplyr::filter(time==whichTime) %>%
+  week.tibl <- bugs.tibl %>%
+        dplyr::filter(time=='pm') %>%
         dplyr::select(-date, -time, -julian) %>%
         dplyr::rename(crabSpiders = Thomisidae..crab.spider.) %>%
         dplyr::mutate(transect = str_replace(transect, "oakMargin", "SNH")) %>%
@@ -240,13 +293,24 @@ selectDataAcrossTransects <- function(data, week, species) {
   # get a list of week IDs ('integers')
   weekID.list <- dissectWeeks(w=weeks)
   
-
   captionText <- paste("crab spiders by week", 
-                       "\ndaytime : ", whichTime, sep="")
+                       "\ndaytime: ", "pm", sep="")
+  
+  week.control.tibl <- week.tibl %>% dplyr::filter(transect=='control')
+  week.snh.tibl <- week.tibl %>% dplyr::filter(transect=='SNH')
+  
+  transect = c("control" = "darkorange3", "SNH" = "royalblue3")
   
   ggWeek <- ggplot() + 
 
-      geom_bar(data=week.tibl, aes(y=crabSpiders, x = factor(week), fill = transect, colour = transect), stat="identity", alpha=.3, position = "dodge") +
+      #geom_bar(data=week.tibl, aes(y=crabSpiders, x = factor(week), fill = transect, colour = transect),
+    #           stat="identity", alpha=.3, position = "dodge") +
+    
+          geom_bar(data=week.control.tibl, x = factor(week), aes(y=crabSpiders, fill = transect, colour = transect),
+                   position = position_dodge(width = 0.7)) +
+    
+          geom_bar(data=week.snh.tibl, x = factor(week), aes(y=crabSpiders, fill = transect, colour = transect),
+                   position = position_dodge(width = 0.7)) +
 	
       scale_y_continuous(breaks = seq(min(0), max(100), by = 10)) +
 	  
@@ -263,11 +327,12 @@ selectDataAcrossTransects <- function(data, week, species) {
           legend.title = element_blank()
           ) 
   
-
+  print(ggWeek)
+  
   ####################################################################
    
-  julian.tibl <- whichData %>%
-        dplyr::filter(time==whichTime) %>%
+  julian.tibl <- bugs.tibl %>%
+        dplyr::filter(time=="pm") %>%
         dplyr::select(-date, -time) %>%
         dplyr::rename(crabSpiders = Thomisidae..crab.spider.) %>%
         dplyr::mutate(transect = str_replace(transect, "oakMargin", "SNH")) %>%
@@ -278,7 +343,7 @@ selectDataAcrossTransects <- function(data, week, species) {
  
 
   captionText <- paste("crab spiders by julian day", 
-                       "\ndaytime : ", whichTime, sep="")
+                       "\ndaytime : ", "XXXXXXX", sep="")
   
   ggJulian <- ggplot() + 
 
@@ -299,10 +364,11 @@ selectDataAcrossTransects <- function(data, week, species) {
           legend.title = element_blank()
           ) 
   
+  print(ggJulian)
   ####################################################################
 
   captionText <- paste("cumulative crab spiders", 
-                       "\ndaytime : ", whichTime, sep="")
+                       "\ndaytime : ", "XXXXXXXX", sep="")
      
   ggCumulative <- ggplot() + 
 
@@ -323,10 +389,11 @@ selectDataAcrossTransects <- function(data, week, species) {
           legend.title = element_blank()
           ) 
   
+  print(ggCumulative)
   
     ####################################################################
    
-  bothTimes.tibl <- whichData %>%
+  bothTimes.tibl <- bugs.tibl %>%
         dplyr::select(-date, -time) %>%
         dplyr::rename(crabSpiders = Thomisidae..crab.spider.) %>%
         dplyr::mutate(transect = str_replace(transect, "oakMargin", "SNH")) %>%
@@ -359,15 +426,18 @@ selectDataAcrossTransects <- function(data, week, species) {
           legend.title = element_blank()
           ) 
   
+  print(ggBoth)
+  
   
     ####################################################################
-  if (FALSE) {
+  
+  if (TRUE) {
     
     # max flexibility mode for ggplot
       
-    week.tibl <- whichData %>%
-        dplyr::filter(transect==transects[[k]])  %>%
-        dplyr::filter(time==whichTime) %>%
+    week.tibl <- bugs.tibl %>%
+        dplyr::filter(transect=="control")  %>%
+        dplyr::filter(time=="pm") %>%
         dplyr::select(-date, -time, -julian) %>%
         dplyr::rename(crabSpiders = Thomisidae..crab.spider.) %>%
         dplyr::group_by(transect, position, week) %>%
@@ -390,7 +460,7 @@ selectDataAcrossTransects <- function(data, week, species) {
       weekID.list <- dissectWeeks(w=weeks)
         captionText <- "stuff"
   
-	gg <- ggplot() + 
+	gg.dork <- ggplot() + 
 
   	      geom_line(data=p1.tibl, aes(y = crabSpiders, x = factor(weeks), group=1), linewidth=1) +
 	  
@@ -429,9 +499,12 @@ selectDataAcrossTransects <- function(data, week, species) {
           legend.position="bottom",
           legend.title = element_blank()
           ) 
+	
+	  print(gg.dork)
+	  
   }
   
-  
 
+  
 ```
 
