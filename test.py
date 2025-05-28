@@ -42,8 +42,13 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+######################################################################
+#   transect    row    time    week    julian    thomisidae crab spider   position
+#
+######################################################################
+
 import os
-filename = './data/bugs.csv'
+filename = './data/bugs.by.position.csv'
 if os.path.exists(filename):
     os.remove(filename)
 week_records_df.to_csv(filename, header=True, index=False, mode='w')

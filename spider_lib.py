@@ -2246,7 +2246,7 @@ def kmeans_clusters(df):
                 # 0    transect row time week julian Thomisidae (crab spider) position
                 
 
-                #print(filtered_df.to_string()) 
+                #print(filtered_df.to_string() + "\n\n") 
 
                 #print(filtered_df['position'].describe())
                 #print(filtered_df['Thomisidae (crab spider)'].dtype)
@@ -2339,73 +2339,104 @@ def kmeans_clusters(df):
     # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
 
 
+
     for transect in unique_transect:
 
         for time in unique_time:
 
-                df = pd.DataFrame()
+            df = pd.DataFrame()
 
-                #  !!!!!!!  'f' is curly brace support !!!!!!!
-                df = output_df.query( f" transect == '{transect}' and time == '{time}' ")
+            #  !!!!!!!  'f' is curly brace support !!!!!!!
+            df = output_df.query( f" transect == '{transect}' and time == '{time}' ")
 
-                # look for kmeans clusters
-                #
-                #  ========== K-means groups rows into clusters based on their feature values (columns). =====
-                #
-                # pass in a df of the form
-                #
-                #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
-                # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
-                # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
-                # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
-                # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
-                # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
-                # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
-                # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
-                #
-                #
-                # ============ which needs to be inverted so that clusters are assigned to 'positions' not 'weeks'
-                #
-                 # invert
-                df = df.copy()
-                df.drop(['transect', 'time'], axis=1, inplace=True)
-                # make week = columns
-                # Transpose the DataFrame
-                df_t = df.transpose()
-                # Set new columns using the values from row 0
-                df_t.columns = df_t.iloc[0]
-                #df_t = df_t.drop(index=1)
-                df_t = df_t.iloc[1:].reset_index(drop=True)
 
-                print(df_t.to_string())
+            # look for kmeans clusters
+            #
+            #  ========== K-means groups rows into clusters based on their feature values (columns). =====
+            #
+            # pass in a df of the form
+            #
+            #      transect time week  trap1  trap2  trap3  trap4  trap5  trap6  trap7  trap8  trap9  trap10
+            # 0   oakMargin   pm   23      1      3      2      3      5      0      3      3      4       3
+            # 1   oakMargin   pm   24     10      9      6      2      7      5      7      9     14       6
+            # 2   oakMargin   pm   25      0      5      3      4      3      2      0      1      1       1
+            # 3   oakMargin   pm   26      1      1      0      2      2      0      1      1      3       1
+            # 4   oakMargin   pm   27      0      0      1      1      0      0      0      2      1       2
+            # 5   oakMargin   pm   28      1      1      2      2      3      3      1      3      2       0
+            # 6   oakMargin   pm   29      0      2      1      2      1      1      3      3      3       0
+            #
+            #
+            # ============ which needs to be inverted so that clusters are assigned to 'positions' not 'weeks'
+            #
+             # invert
+            df = df.copy()
+            df.drop(['transect', 'time'], axis=1, inplace=True)
+            # make week = columns
+            # Transpose the DataFrame
+            df_t = df.transpose()
+            # Set new columns using the values from row 0
+            df_t.columns = df_t.iloc[0]
+            #df_t = df_t.drop(index=1)
+            df_t = df_t.iloc[1:].reset_index(drop=True)
 
-                # week    23  24  25  26  27  28  29  30  31  32  34
-                # trap1    1   8   1   1   1   2   0   0   0   0   0
-                # trap2    3   6   3   0   0   3   0   0   0   0   1
-                # trap3    4  10   1   0   0   4   1   1   0   1   0
-                # trap4    5   3   0   4   0   0   0   1   0   0   0
-                # trap5    1  10   7   2   0   1   1   1   2   0   0
-                # trap6    5   7   5   1   1   1   2   2   1   0   0
-                # trap7    6  10   4   3   1   0   0   1   0   0   0
-                # trap8    5   5   4   4   1   4   2   3   1   3   0
-                # trap9    1  14   2   2   0   0   0   2   0   0   1
-                # trap10   4  15   3   1   0   2   4   0   0   2   1
+            
 
-                # removes the index and replace it with the default integer index
-                df_t = df_t.reset_index(drop=True)
+            # week    23  24  25  26  27  28  29  30  31  32  34
+            # trap1    1   8   1   1   1   2   0   0   0   0   0
+            # trap2    3   6   3   0   0   3   0   0   0   0   1
+            # trap3    4  10   1   0   0   4   1   1   0   1   0
+            # trap4    5   3   0   4   0   0   0   1   0   0   0
+            # trap5    1  10   7   2   0   1   1   1   2   0   0
+            # trap6    5   7   5   1   1   1   2   2   1   0   0
+            # trap7    6  10   4   3   1   0   0   1   0   0   0
+            # trap8    5   5   4   4   1   4   2   3   1   3   0
+            # trap9    1  14   2   2   0   0   0   2   0   0   1
+            # trap10   4  15   3   1   0   2   4   0   0   2   1
 
-                # get the clusters
-                clusters_df = km(df=df_t)
+            # removes the index and replace it with the default integer index
+            df_t = df_t.reset_index(drop=True)
 
-                # this helps when the plots are made
-                if transect == 'oakMargin':
-                    transect = 'SNH'
 
-                filename = './metrics/kmeans.' + transect + '.' + time + '.csv'
-                import os
-                if os.path.exists(filename):
-                    os.remove(filename)
-                clusters_df.to_csv(filename, header=True, index=False, mode='w')
+            if transect == 'oakMargin':
+                tr = 'SNH'
+            else:
+                tr = "control"
+
+            filename = './metrics/counts.position.' + tr + '.' + time + '.csv'
+            import os
+            if os.path.exists(filename):
+                os.remove(filename)
+            df_t.to_csv(filename, header=True, index=False, mode='w')
+
+
+
+            # get the clusters
+            clusters_df = km(df=df_t)
+
+            # print(clusters_df.to_string())
+            #    23   29   86   87   88
+            #0  min  max  min  min  max
+            #1  mid  min  min  min  max
+            #2  mid  max  min  min  max
+            #3  max  max  min  min  max
+            #4  min  max  mid  max  max
+            #5  max  min  min  min  max
+            #6  max  mid  min  min  max
+            #7  max  min  max  min  max
+            #8  min  min  min  min  max
+            #9  mid  mid  min  min  max
+
+            # this helps when the plots are made
+            if transect == 'oakMargin':
+                tr = 'SNH'   
+            else:
+                tr = "control"
+
+            filename = './metrics/kmeans.' + tr + '.' + time + '.csv'
+            import os
+            if os.path.exists(filename):
+                os.remove(filename)
+            clusters_df.to_csv(filename, header=True, index=False, mode='w')
 
 
     return(output_df)

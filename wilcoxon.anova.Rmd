@@ -1,0 +1,287 @@
+---
+title: "overhead"
+output: html_document
+date: "2023-02-20"
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+# this code will use the stats::kmeans() algorithm to identify clusters appearing in 
+# weekly crab spider counts.
+
+```
+
+
+```{r bytheway}
+
+# what is the rank of insect occurrence?
+  
+  skimr::skim(bugs.tibl)
+
+
+```
+
+
+```{r bug-wilcoxon, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+library(ggplot2)
+library(dplyr)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/anova.R') 
+
+# Mann-Whitney U Test (Wilcoxon Rank Sum Test)
+#Purpose: Compares two independent groups to assess whether their distributions (usually medians) differ.
+#Typical Use Case: Comparing values between two unrelated samples, such as test scores between two different classes, or measurements from two different transects
+#R function: `wilcox.test(x, y, paired = FALSE)`
+
+#Mann-Whitney U is for independent samples.
+#	•	Wilcoxon Signed Rank is for paired/dependent samples.
+#In summary:
+#	•	Use the Mann-Whitney U test when comparing two independent groups.
+#	•	Use the Wilcoxon Signed Rank test when comparing two related (paired) groups.
+#Both tests are non-parametric and do not require the assumption of normality, but choosing the correct one depends on whether your samples are independent or paired
+
+
+wilcoxon.output.tibl <- tibble(
+  week = character(),
+  am.W = numeric(), 
+  am.p = numeric(), 
+  pm.W = numeric(), 
+  pm.p = numeric()
+)
+
+    wilcoxon.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.am.csv', header=TRUE, row.names=NULL))
+    wilcoxon.1.tibl <- wilcoxon.1.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "am") 
+    
+    wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
+    wilcoxon.2.tibl <- wilcoxon.2.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "am")     
+    
+    wilcoxon.3.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
+    wilcoxon.3.tibl <- wilcoxon.3.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "pm") 
+    
+    wilcoxon.4.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
+    wilcoxon.4.tibl <- wilcoxon.4.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "pm")     
+    
+    
+     #     X23   X24   X25   X26   X27   X28   X29   X30
+     #   <int> <int> <int> <int> <int> <int> <int> <int>
+     # 1    1     5     0     0     0     4     0     2
+     #2     3     4     2     1     1     1     0     0
+     #3     0     3     1     0     1     1     0     0
+     #4     0     4     2     2     0     1     1     0
+     #5     0     4     4     2     0     1     1     0
+     #6     0     4     0     1     1     0     0     1
+     #7     4    12     5     1     0     4     1     2
+     #8     0     6     2     1     0     2     1     0
+     #9     0     1     2     1     1     5     0     1
+     #0     1     4     4     2     1     0     2     1
+     ## ℹ 3 more variables: X31 <int>, X32 <int>, X34 <int>
+    
+    am.tibl <- bind_rows(wilcoxon.1.tibl, wilcoxon.2.tibl)
+    pm.tibl <- bind_rows(wilcoxon.3.tibl, wilcoxon.4.tibl)
+  
+      
+  for (i in c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")) {
+  #for (i in c("X24")) {
+    
+    #result <- wilcox.test(weight ~ company, data = dat, conf.int = TRUE)
+    #result$p.value
+    #result$statistic    # "W"
+    #result$conf.int   
+    
+    #model.am <- wilcox.test(X23 ~ transect, data = am.tibl)
+    formula_string <- paste(i, "~", "transect")
+    results.am <- wilcox.test(as.formula(formula_string), data = am.tibl, conf.int = TRUE)
+    results.pm <- wilcox.test(as.formula(formula_string), data = pm.tibl, conf.int = TRUE)
+    
+    s.stat.am <- round(results.am$statistic, 2)
+    s.p_val.am  <- round(results.am$p.value, 2)
+    s.stat.pm <- round(results.am$statistic, 2)
+    s.p_val.pm  <- round(results.pm$p.value, 2)
+    
+    wilcoxon.output.tibl <-  wilcoxon.output.tibl %>%
+        add_row(week = sub("^X", "", i),         # regular expression to remove leading 'X'
+                am.W = s.stat.am,
+                am.p = s.p_val.am,
+                pm.W = s.stat.pm,
+                pm.p = s.p_val.pm
+                )
+    
+    #print(paste("F: ", s.f_stat.am, "  p: ", s.p_val.am, sep=""))
+    
+  }
+    
+  print(wilcoxon.output.tibl)
+  # > print(anova.output.tibl)
+# A tibble: 11 × 5
+#   week   am.W  am.p  pm.W  pm.p
+#   <chr> <dbl> <dbl> <dbl> <dbl>
+# 1 23     60.5  0.42  60.5  0.25
+# 2 24     36.5  0.32  36.5  0.4 
+# 3 25     35.5  0.27  35.5  0.3 
+# 4 26     36.5  0.29  36.5  0.41
+# 5 27     42.5  0.54  42.5  0.47
+# 6 28     38.5  0.39  38.5  0.79
+# 7 29     64.5  0.26  64.5  0.22
+# 8 30     55    0.71  55    0.18
+# 9 31     67.5  0.16  67.5  0.43
+#10 32     60    0.37  60    0.47
+#11 34     55    0.37  55    0.3 
+#> 
+
+
+print(wilcoxon.output.tibl)
+
+  setwd("/Users/rcphelps/code/groq/")
+  write_csv(wilcoxon.output.tibl, "./metrics/wilcoxon.output.csv")
+    
+  
+  #========================================================================
+  
+  #Wilcoxon Signed Rank Test
+#	•	Purpose: Compares two related (paired or matched) samples to assess whether their median difference is zero.
+#	•	Typical Use Case: Pre-test vs. post-test measurements on the same subjects, or before-and-after measurements on the same plots.
+#  R function: `wilcox.test(x, y, paired = TRUE)`.
+  
+  
+  
+   
+```
+
+
+
+
+
+
+```{r bug-anova, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
+
+library(ggplot2)
+library(dplyr)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/anova.R') 
+
+anova.output.tibl <- tibble(
+  week = character(),
+  am.f = numeric(), 
+  am.p = numeric(), 
+  pm.f = numeric(), 
+  pm.p = numeric()
+)
+
+    anova.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.am.csv', header=TRUE, row.names=NULL))
+    anova.1.tibl <- anova.1.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "am") 
+    
+    anova.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
+    anova.2.tibl <- anova.2.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "am")     
+    
+    anova.3.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
+    anova.3.tibl <- anova.3.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "pm") 
+    
+    anova.4.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
+    anova.4.tibl <- anova.4.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "pm")     
+    
+    
+     #     X23   X24   X25   X26   X27   X28   X29   X30
+     #   <int> <int> <int> <int> <int> <int> <int> <int>
+     # 1    1     5     0     0     0     4     0     2
+     #2     3     4     2     1     1     1     0     0
+     #3     0     3     1     0     1     1     0     0
+     #4     0     4     2     2     0     1     1     0
+     #5     0     4     4     2     0     1     1     0
+     #6     0     4     0     1     1     0     0     1
+     #7     4    12     5     1     0     4     1     2
+     #8     0     6     2     1     0     2     1     0
+     #9     0     1     2     1     1     5     0     1
+     #0     1     4     4     2     1     0     2     1
+     ## ℹ 3 more variables: X31 <int>, X32 <int>, X34 <int>
+    
+    am.tibl <- bind_rows(anova.1.tibl, anova.2.tibl)
+    pm.tibl <- bind_rows(anova.3.tibl, anova.4.tibl)
+  
+      
+  for (i in c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")) {
+  #for (i in c("X24")) {
+    
+    #model.am <- aov(X23 ~ transect, data = am.tibl)
+    formula_string <- paste(i, "~", "transect")
+    model.am <- aov(as.formula(formula_string), data = am.tibl)
+    model.pm <- aov(as.formula(formula_string), data = pm.tibl)
+  
+      #summary(model.pm)
+      #            Df Sum Sq Mean Sq F value Pr(>F)
+      #transect     1    3.2    3.20    1.14    0.3
+      #Residuals   18   50.6    2.81               
+      #> summary(model.am)
+      #            Df Sum Sq Mean Sq F value Pr(>F)
+      #transect     1   0.05    0.05    0.03   0.86
+      #Residuals   18  26.90    1.49 
+  
+    results.am <- summary(model.am)
+    results.pm <- summary(model.pm)
+    
+    s.f_stat.am <- round(results.am[[1]][["F value"]][1], 2)
+    s.p_val.am  <- round(results.am[[1]][["Pr(>F)"]][1], 2)
+    s.f_stat.pm <- round(results.pm[[1]][["F value"]][1], 2)
+    s.p_val.pm  <- round(results.pm[[1]][["Pr(>F)"]][1], 2)
+    
+    anova.output.tibl <-  anova.output.tibl %>%
+        add_row(week = sub("^X", "", i),         # regular expression to remove leading 'X'
+                am.f = s.f_stat.am,
+                am.p = s.p_val.am,
+                pm.f = s.f_stat.pm,
+                pm.p = s.p_val.pm
+                )
+    
+    #print(paste("F: ", s.f_stat.am, "  p: ", s.p_val.am, sep=""))
+    
+  }
+    
+  print(anova.output.tibl)
+  # > print(anova.output.tibl)
+# A tibble: 11 × 5
+#    week   am.f  am.p  pm.f  pm.p
+#    <chr> <dbl> <dbl> <dbl> <dbl>
+#  1 23     0.03  0.86  1.14  0.3 
+#  2 24     0.59  0.45  0.68  0.42
+#  3 25     1.8   0.2   1.36  0.26
+#  4 26     0.2   0.66  1.19  0.29
+#  5 27     0.13  0.72  0.95  0.34
+#  6 28     1.45  0.24  0.03  0.87
+#  7 29     1.69  0.21  1.14  0.3 
+#  8 30     0.4   0.53  1.17  0.29
+#  9 31     2.62  0.12  0.65  0.43
+# 10 32     0.9   0.36  0.38  0.55
+# 11 34     1     0.33  1.2   0.29
+# > 
+
+  setwd("/Users/rcphelps/code/groq/")
+  write_csv(anova.output.tibl, "./metrics/anova.output.csv")
+    
+    TukeyHSD(one.way)
+```
+
+
+
+
