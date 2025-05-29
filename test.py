@@ -65,6 +65,21 @@ week_records_df['position'] = week_records_df['position'].astype("string")
 week_records_df['week'] = week_records_df['week'].astype("string")
 
 
+
+######################################################################
+########################################################################
+#
+# get position counts by week 
+# 
+#
+
+spider_lib.week_compare_counts(df=week_records_df)
+
+exit(1)
+
+
+
+
 ######################################################################
 # find clusters
 # build

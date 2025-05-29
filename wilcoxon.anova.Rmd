@@ -155,7 +155,62 @@ print(wilcoxon.output.tibl)
 #	•	Typical Use Case: Pre-test vs. post-test measurements on the same subjects, or before-and-after measurements on the same plots.
 #  R function: `wilcox.test(x, y, paired = TRUE)`.
   
+  setwd("/Users/rcphelps/code/groq")
+  #  ( './metrics/counts_week.csv' created by spider_lb.py week_compare_counts(df)  )
+  wilcoxon.SRT.tibl <- dplyr::as_tibble(read.csv('./metrics/counts_week.csv', 
+                                                   header=TRUE, row.names=NULL))
   
+  # # A tibble: 10 × 133
+  #    oakMargin.pm.23.79 oakMargin.pm.23.81 oakMargin.pm.23.83
+  #                 <int>              <int>              <int>
+  #  1                  0                  1                  0
+  #  2                  0                  0                  3
+  #  3                  1                  0                  2
+  #  4                  1                  0                  1
+  #  5                  0                  3                  0
+  #  6                  2                  2                  1
+  #  7                  0                  0                  0
+  #  8                  3                  0                  0
+  #  9                  2                  1                  0
+  # 10                  2                  1                  1
+  # # ℹ 130 more variables: oakMargin.pm.24.80 <int>,
+  # #   oakMargin.pm.24.82 <int>, oakMargin.pm.24.84 <int>,
+  
+  
+  column_names <- names(wilcoxon.SRT.tibl)
+  
+  column_repo.tibl <- tibble(
+        filename = character(),
+        transect = character(),
+        week = character(),
+        row = character()
+        )
+  
+  for (i in 1:length(column_names)) {
+    
+    text <- column_names[[i]]
+    parts <- strsplit(text, "\\.")[[1]]
+    column_repo.tibl <- add_row(column_repo.tibl, filename = parts[[1]], transect = parts[[2]],
+                                 week = parts[[3]], row = parts[[4]])
+    
+  }
+  
+  
+  wilcoxon.SRT.output.tibl <- tibble(
+  week = character(),
+  am.W = numeric(), 
+  am.p = numeric(), 
+  pm.W = numeric(), 
+  pm.p = numeric()
+)
+
+  wilcoxon.1.tibl <- wilcoxon.SRT.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "am") 
+  
+  wilcoxon.2.tibl <- wilcoxon.SRT.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "am") 
   
    
 ```

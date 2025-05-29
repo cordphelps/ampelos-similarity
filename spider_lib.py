@@ -795,6 +795,185 @@ def TWT_row_similarity(records_list, transect, week, time):
 
 
     # ------------------------------------------------------------------------------
+def week_compare_counts(df):
+
+    ########################################################################
+    #
+    # get position counts by week 
+    # 
+    #
+    # Mann-Whitney U is for independent samples.
+    # Wilcoxon Signed Rank is for paired/dependent samples.
+    #In summary:
+    #   •   Use the Mann-Whitney U test when comparing two independent groups.
+    #   •   Use the Wilcoxon Signed Rank test when comparing two related (paired) groups.
+    #Both tests are non-parametric and do not require the assumption of normality, but 
+    #choosing the correct one depends on whether your samples are independent or paired
+    # 
+    # save file for computation in R
+    #
+    #       
+    # regarding the data, each julian sample comes from 3 parallel rows.
+    # the R code with use Wilcoxon Signed Rank to assess similarity intra-row
+    #
+    # so this function should build
+    #
+    #   transect time week julian p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 
+    #                             -------- integer counts ------
+    #
+    #
+    ########################################################################
+
+    import pandas as pd
+    import sys
+
+    outbound_df = pd.DataFrame()
+
+    sim_df = pd.DataFrame(columns=['transect', 'julian', 'time', 'week', \
+        'row_a_text', 'row_b_text', 'row_c_text', 'row1_row2', 'row1_row3', 'row2_row3'])
+
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+  
+
+    incoming_df = df
+
+    position_count_df = pd.DataFrame(columns=['transect', 'time', 'week', 'p1','p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10']) 
+
+
+    for transect in unique_transect:
+
+        for time in unique_time:
+
+            for week in unique_week:
+
+                #print("%%%%%%%%%%%%%\n", "julian: ", julian, " transect: ", transect, " time: ", time, "\n%%%%%%%%%")
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
+
+                unique_rows = filtered_df['row'].unique()
+
+                if  unique_rows.size == 0:
+                    break
+
+                #print(filtered_df.to_string())
+                # 0     transect row time week julian  Thomisidae (crab spider) position
+                # 1    oakMargin  79   pm   23    156                         0        1
+                # 2    oakMargin  79   pm   23    156                         0        2
+                # 3    oakMargin  79   pm   23    156                         0        3
+                # 4    oakMargin  79   pm   23    156                         0        4
+                # 5    oakMargin  79   pm   23    156                         0        5
+                # 6    oakMargin  79   pm   23    156                         0        6
+                # 7    oakMargin  79   pm   23    156                         1        7
+                # 8    oakMargin  79   pm   23    156                         0        8
+                # 9    oakMargin  79   pm   23    156                         1        9
+                # 10   oakMargin  79   pm   23    156                         0       10
+                # 11   oakMargin  81   pm   23    156                         0        1
+                # 12   oakMargin  81   pm   23    156                         0        2
+                # 13   oakMargin  81   pm   23    156                         0        3
+                # 14   oakMargin  81   pm   23    156                         0        4
+                # 15   oakMargin  81   pm   23    156                         1        5
+                # 16   oakMargin  81   pm   23    156                         0        6
+                # 17   oakMargin  81   pm   23    156                         0        7
+                # 18   oakMargin  81   pm   23    156                         1        8
+                # 19   oakMargin  81   pm   23    156                         0        9
+                # 20   oakMargin  81   pm   23    156                         0       10
+
+
+                # Delete multiple columns
+                filtered_df = filtered_df.drop(['transect', 'time', 'week', 'julian'], axis=1)
+
+                unique_positions = filtered_df['position'].unique()
+                unique_rows = filtered_df['row'].unique()
+
+                for row in unique_rows:
+
+                    temp_df = filtered_df.query( f" row == '{row}' ")
+
+                    #print(temp_df.to_string())
+                    #     row  Thomisidae (crab spider) position
+                    # 1    79                         0        1
+                    # 2    79                         0        2
+                    # 3    79                         0        3
+                    # .....
+                    # 8    79                         0        8
+                    # 9    79                         1        9
+                    # 10   79                         0       10
+                    # 121  79                         0        1
+                    # 122  79                         0        2
+                    #    ......                  1        7
+                    # 128  79                         0        8
+                    # 129  79                         0        9
+                    # 130  79                         0       10
+                    # ......
+                    # 218  79                         2        8
+                    # 219  79                         1        9
+                    # 220  79                         0       10
+
+                    # Sum counts by position
+                    sum_by_position_df = temp_df.groupby('position', as_index=False)['Thomisidae (crab spider)'].sum()
+
+                    #print(sum_by_position_df.to_string())
+                    #exit(1)
+                    #   position  Thomisidae (crab spider)
+                    # 0        1                         0
+                    # 1       10                         0
+                    # 2        2                         1
+                    # 3        3                         1
+                    # 4        4                         0
+                    # 5        5                         2
+                    # 6        6                         0
+                    # 7        7                         3
+                    # 8        8                         2
+                    # 9        9                         2
+
+                    # for each week, save each column of counts for each row sampled
+                    # (one .csv per week)
+                    #
+
+                    col_name = transect + "." + time + "." + week + "." + row
+                    outbound_df[col_name] = sum_by_position_df['Thomisidae (crab spider)']
+
+
+
+    filename = './metrics/counts_week.csv'
+    # mode='w' indicates 'overwrite'
+    outbound_df.to_csv(filename, header=True, index=False, mode='w')
+    exit(1)
+
+    filtered_df = filtered_df.drop(['position'], axis=1)
+
+    filtered_transposed_df = pd.DataFrame()
+    
+
+    # transpose
+    filtered_transposed_df = filtered_df.transpose()
+
+    filtered_transposed_df.columns = 'p' + unique_positions
+
+    print(filtered_transposed_df.to_string())
+
+
+
+
+
+    exit(1)
+
+
+
+    filename = './metrics/counts_week.csv'
+    # mode='w' indicates 'overwrite'
+    binomial_df.to_csv(filename, header=True, index=False, mode='a')
+
+    return()
+
 
 
 def julian_row_compare_alternate(df):
