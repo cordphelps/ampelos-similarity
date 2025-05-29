@@ -24,14 +24,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r bug-wilcoxon, echo=FALSE, include=TRUE, results='asis', message=F, warning=F}
-
+```{r bug-wilcoxon, echo=FALSE, include=F, results='asis', message=F, warning=F}
 library(ggplot2)
 library(dplyr)
 
 setwd("/Users/rcphelps/code/groq")
 source('/Users/rcphelps/code/groq/bug-library.R') 
-source('/Users/rcphelps/code/groq/anova.R') 
+source('/Users/rcphelps/code/groq/wilcoxon-anova.R') 
 
 # Mann-Whitney U Test (Wilcoxon Rank Sum Test)
 #Purpose: Compares two independent groups to assess whether their distributions (usually medians) differ.
@@ -59,6 +58,22 @@ wilcoxon.output.tibl <- tibble(
         mutate(transect = "SNH") %>%
         mutate(time = "am") 
     
+    # # A tibble: 10 × 13
+    #      X23   X24   X25   X26   X27   X28   X29   X30   X31   X32
+    #    <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>
+    #  1     1     5     0     0     0     4     0     2     0     1
+    #  2     3     4     2     1     1     1     0     0     1     0
+    #  3     0     3     1     0     1     1     0     0     0     0
+    #  4     0     4     2     2     0     1     1     0     0     0
+    #  5     0     4     4     2     0     1     1     0     0     0
+    #  6     0     4     0     1     1     0     0     1     0     0
+    #  7     4    12     5     1     0     4     1     2     1     0
+    #  8     0     6     2     1     0     2     1     0     0     0
+    #  9     0     1     2     1     1     5     0     1     0     1
+    # 10     1     4     4     2     1     0     2     1     2     0
+    # # ℹ 3 more variables: X34 <int>, transect <chr>, time <chr>
+
+    
     wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
     wilcoxon.2.tibl <- wilcoxon.2.tibl %>%
         mutate(transect = "control") %>%
@@ -73,7 +88,6 @@ wilcoxon.output.tibl <- tibble(
     wilcoxon.4.tibl <- wilcoxon.4.tibl %>%
         mutate(transect = "control") %>%
         mutate(time = "pm")     
-    
     
      #     X23   X24   X25   X26   X27   X28   X29   X30
      #   <int> <int> <int> <int> <int> <int> <int> <int>
@@ -123,7 +137,7 @@ wilcoxon.output.tibl <- tibble(
     
   }
     
-  print(wilcoxon.output.tibl)
+  #print(wilcoxon.output.tibl)
   # > print(anova.output.tibl)
 # A tibble: 11 × 5
 #   week   am.W  am.p  pm.W  pm.p
@@ -141,24 +155,42 @@ wilcoxon.output.tibl <- tibble(
 #11 34     55    0.37  55    0.3 
 #> 
 
-
-print(wilcoxon.output.tibl)
-
   setwd("/Users/rcphelps/code/groq/")
-  write_csv(wilcoxon.output.tibl, "./metrics/wilcoxon.output.csv")
+  write_csv(wilcoxon.output.tibl, "./metrics/wilcox.mwu.output.csv", append=FALSE)
     
-  
+  #======================= end Mann-Whitney U =============================
   #========================================================================
+  #========================================================================
+```
+
+
+```{r bug-wilcoxonSRT, echo=F, include=TRUE, results='asis', message=F, warning=F}
+#======================= begin Wilcoxon Signed Rank Test ================
+#========================================================================
+#========================================================================
   
-  #Wilcoxon Signed Rank Test
-#	•	Purpose: Compares two related (paired or matched) samples to assess whether their median difference is zero.
-#	•	Typical Use Case: Pre-test vs. post-test measurements on the same subjects, or before-and-after measurements on the same plots.
-#  R function: `wilcox.test(x, y, paired = TRUE)`.
+#	Purpose: Compares two related (paired or matched) samples to assess whether 
+# their median difference is zero.
+#	Typical Use Case: Pre-test vs. post-test measurements on the same subjects, 
+# or before-and-after measurements on the same plots.
+# R function: `wilcox.test(x, y, paired = TRUE)`.
+
+library(ggplot2)
+library(dplyr)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/wilcoxon-anova.R') 
   
-  setwd("/Users/rcphelps/code/groq")
+
   #  ( './metrics/counts_week.csv' created by spider_lb.py week_compare_counts(df)  )
   wilcoxon.SRT.tibl <- dplyr::as_tibble(read.csv('./metrics/counts_week.csv', 
                                                    header=TRUE, row.names=NULL))
+  
+  wilcoxon.SRT.output.tibl <- tibble( transect = character(),
+                                      time = character(), 
+                                      week = character(), 
+                                      p.value = numeric() )
   
   # # A tibble: 10 × 133
   #    oakMargin.pm.23.79 oakMargin.pm.23.81 oakMargin.pm.23.83
@@ -176,47 +208,120 @@ print(wilcoxon.output.tibl)
   # # ℹ 130 more variables: oakMargin.pm.24.80 <int>,
   # #   oakMargin.pm.24.82 <int>, oakMargin.pm.24.84 <int>,
   
+  # ==============================================================================
+  # get a list of column names from './metrics/counts_week.csv' (wilcoxon.SRT.tibl)
+  # and build a temporary tibl that is used to filter to data for ggplot
   
   column_names <- names(wilcoxon.SRT.tibl)
   
   column_repo.tibl <- tibble(
-        filename = character(),
+        column.name = character(),
         transect = character(),
+        time = character(),
         week = character(),
-        row = character()
-        )
+        row = character() )
   
   for (i in 1:length(column_names)) {
-    
     text <- column_names[[i]]
     parts <- strsplit(text, "\\.")[[1]]
-    column_repo.tibl <- add_row(column_repo.tibl, filename = parts[[1]], transect = parts[[2]],
-                                 week = parts[[3]], row = parts[[4]])
+    column_repo.tibl <- add_row(column_repo.tibl, column.name = column_names[[i]], transect = parts[[1]],
+                                 time = parts[[2]], week = parts[[3]], row = parts[[4]])
+  }
+  # # A tibble: 133 × 5
+  #    column.name        transect  time  week  row  
+  #    <chr>              <chr>     <chr> <chr> <chr>
+  #  1 oakMargin.pm.23.79 oakMargin pm    23    79   
+  #  2 oakMargin.pm.23.81 oakMargin pm    23    81   
+  #  3 oakMargin.pm.23.83 oakMargin pm    23    83   
+  #  4 oakMargin.pm.24.80 oakMargin pm    24    80   
+  #  5 oakMargin.pm.24.82 oakMargin pm    24    82   
+  #  6 oakMargin.pm.24.84 oakMargin pm    24    84   
+  #  7 oakMargin.pm.25.81 oakMargin pm    25    81   
+  #  8 oakMargin.pm.25.83 oakMargin pm    25    83   
+  #  9 oakMargin.pm.25.85 oakMargin pm    25    85   
+  # 10 oakMargin.pm.26.83 oakMargin pm    26    83   
+  # # ℹ 123 more rows
+  
+  # ==============================================================================
+  
+  # find rows from the same transect / time / week for comparison
+  
+  for (tr in c("oakMargin", "control")) {
     
+    for (daytime in c("am", "pm")) {
+      
+      for (wk in c("23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "34")) {
+      #for (wk in c("24")) {
+        
+        same_week_columns.tibl <- column_repo.tibl %>%
+          filter(transect == tr) %>%
+          filter(time == daytime) %>%
+          filter(week == wk) 
+        
+        # # A tibble: 3 × 5
+        #   column.name        transect  time  week  row  
+        #   <chr>              <chr>     <chr> <chr> <chr>
+        # 1 oakMargin.am.24.80 oakMargin am    24    80   
+        # 2 oakMargin.am.24.82 oakMargin am    24    82   
+        # 3 oakMargin.am.24.84 oakMargin am    24    84   
+        # > 
+        
+        # there should be no more than 3 columns (in wilcoxon.SRT.tibl)
+        # which means we are looking for 3 rows (the column labels)
+        # in column_repo.tibl
+        # 
+        
+        if (nrow(same_week_columns.tibl) == 3) {
+          
+          # This gets the column as a vector, then takes the first element.
+          column_name_1 <- same_week_columns.tibl$column.name[1]
+          column_name_2 <- same_week_columns.tibl$column.name[2]
+          column_name_3 <- same_week_columns.tibl$column.name[3]
+    
+          # now run wilcoxon SRT on the data from each column
+          # returns an object of class `"htest"`
+          
+          results.1 <- wilcox.test(wilcoxon.SRT.tibl[[column_name_1]], 
+                                    wilcoxon.SRT.tibl[[column_name_2]], paired = TRUE)
+          results.2 <- wilcox.test(wilcoxon.SRT.tibl[[column_name_1]], 
+                                    wilcoxon.SRT.tibl[[column_name_3]], paired = TRUE)
+          results.3 <- wilcox.test(wilcoxon.SRT.tibl[[column_name_2]], 
+                                    wilcoxon.SRT.tibl[[column_name_3]], paired = TRUE)
+          
+          wilcoxon.SRT.output.tibl <-  wilcoxon.SRT.output.tibl %>%
+                add_row(transect = tr, time = daytime, week = wk, p.value = round(results.1$p.value, 2) )
+          wilcoxon.SRT.output.tibl <-  wilcoxon.SRT.output.tibl %>%
+                add_row(transect = tr, time = daytime, week = wk, p.value = round(results.2$p.value, 2) )
+          wilcoxon.SRT.output.tibl <-  wilcoxon.SRT.output.tibl %>%
+                add_row(transect = tr, time = daytime, week = wk, p.value = round(results.3$p.value, 2) )
+          
+        }
+        
+        if (nrow(same_week_columns.tibl) == 2) {
+          
+          column_name_1 <- same_week_columns.tibl[[1, column.name]]
+          column_name_2 <- same_week_columns.tibl[[2, column.name]]
+          
+          # now run wilcoxon SRT on the data from each column
+          # returns an object of class `"htest"`
+          
+          results.1 <- wilcox.test(wilcoxon.SRT.tibl[[column_name_1]], 
+                                    wilcoxon.SRT.tibl[[column_name_2]], paired = TRUE)
+          
+          wilcoxon.SRT.output.tibl <-  wilcoxon.SRT.output.tibl %>%
+                add_row(transect = tr, time = daytime, week = wk, p.value = round(results.1$p.value, 2) )
+          
+        }
+        
+        
+      }
+    }
   }
   
-  
-  wilcoxon.SRT.output.tibl <- tibble(
-  week = character(),
-  am.W = numeric(), 
-  am.p = numeric(), 
-  pm.W = numeric(), 
-  pm.p = numeric()
-)
-
-  wilcoxon.1.tibl <- wilcoxon.SRT.tibl %>%
-        mutate(transect = "SNH") %>%
-        mutate(time = "am") 
-  
-  wilcoxon.2.tibl <- wilcoxon.SRT.tibl %>%
-        mutate(transect = "control") %>%
-        mutate(time = "am") 
-  
-   
+  setwd("/Users/rcphelps/code/groq/")
+  write_csv(wilcoxon.SRT.output.tibl, "./metrics/wilcox.srt.output.csv", append=FALSE)
+    
 ```
-
-
-
 
 
 
