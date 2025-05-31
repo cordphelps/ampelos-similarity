@@ -11,6 +11,15 @@ knitr::opts_chunk$set(echo = TRUE)
 # this code will use the stats::kmeans() algorithm to identify clusters appearing in 
 # weekly crab spider counts.
 
+# https://yihui.org/knitr/options/
+
+# echo: (TRUE; logical or numeric) Whether to display the source code
+# results: ('markup'; character) Controls how to display the text results.
+# warning: (TRUE; logical) Whether to preserve warnings
+# error: (TRUE; logical) Whether to preserve errors
+# include: (TRUE; logical) Whether to include the chunk output in the output document.
+# 
+
 ```
 
 
@@ -320,8 +329,83 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
   
   setwd("/Users/rcphelps/code/groq/")
   write_csv(wilcoxon.SRT.output.tibl, "./metrics/wilcox.srt.output.csv", append=FALSE)
+  
+  
     
 ```
+
+
+
+```{r wilcox-gg-SRT, echo=TRUE, include=TRUE, results='asis', message=F, warning=F}
+
+  library(ggplot2)
+  library(dplyr)
+  library(tidyr)
+  
+  setwd("/Users/rcphelps/code/groq")
+  
+  
+  input_filename = "./metrics/wilcox.srt.output.csv"
+  wilcoxon.SRT.gg.input.tibl <- dplyr::as_tibble(read.csv(input_filename, header=TRUE, row.names=NULL))
+  
+  # # A tibble: 129 × 4
+  #    transect  time  week  p.value
+  #    <chr>     <chr> <chr>   <dbl>
+  #  1 oakMargin am    23       0.34
+  #  2 oakMargin am    23       0.18
+  #  3 oakMargin am    23       0.15
+  #  4 oakMargin am    24       0.71
+  #  5 oakMargin am    24       0.26
+  #  6 oakMargin am    24       0.17
+  #  7 oakMargin am    25       0.33
+  #  8 oakMargin am    25       0.17
+  #  9 oakMargin am    25       0.46
+  # 10 oakMargin am    26       0.48
+  # ℹ 119 more rows
+  # ℹ Use `print(n = ...)` to see more rows
+  
+    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+    # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+  
+    for (tr in c("oakMargin", "control")) {
+      
+      if (tr == "oakMargin") {
+        tr.label = "SNH"
+        fill.color = "royalblue3"
+      } else {
+        tr.label = "control"
+        fill.color = "darkorange3"
+      }
+      
+      for (daytime in c("am", "pm")) {
+        
+          gg.tibl <- wilcoxon.SRT.gg.input.tibl %>%
+                dplyr::filter(transect == tr) %>%
+                dplyr::filter(time == daytime) 
+          gg.tibl <- tidyr::drop_na(gg.tibl)
+            
+          gg.box <- ggplot() +
+          
+              geom_boxplot(data = gg.tibl, aes(x = as.factor(week), y = p.value, fill=fill.color)) +
+              
+              scale_y_continuous(limits=c(0, 1.1), breaks=seq(0, 1.1, 0.1) ) +
+              
+              theme_bw() +
+              
+              labs(y = "row pair p-values", x = paste("week"),
+                   caption = paste("daily row counts compared\n", "transect: ", tr.label, " daytime: ", daytime, sep="" ))
+              
+          print(gg.box)     
+      }
+    }
+    
+            
+  setwd("/Users/rcphelps/code/groq/")
+  #saveGGpng(filename = paste("row_triplet_box_", tr, ".", daytime, ".png", sep=""), subdir = "png.output", gg = gg.box)
+  
+```
+
+    
 
 
 
@@ -420,26 +504,26 @@ anova.output.tibl <- tibble(
     
   print(anova.output.tibl)
   # > print(anova.output.tibl)
-# A tibble: 11 × 5
-#    week   am.f  am.p  pm.f  pm.p
-#    <chr> <dbl> <dbl> <dbl> <dbl>
-#  1 23     0.03  0.86  1.14  0.3 
-#  2 24     0.59  0.45  0.68  0.42
-#  3 25     1.8   0.2   1.36  0.26
-#  4 26     0.2   0.66  1.19  0.29
-#  5 27     0.13  0.72  0.95  0.34
-#  6 28     1.45  0.24  0.03  0.87
-#  7 29     1.69  0.21  1.14  0.3 
-#  8 30     0.4   0.53  1.17  0.29
-#  9 31     2.62  0.12  0.65  0.43
-# 10 32     0.9   0.36  0.38  0.55
-# 11 34     1     0.33  1.2   0.29
-# > 
+  # # A tibble: 11 × 5
+  # #    week   am.f  am.p  pm.f  pm.p
+  # #    <chr> <dbl> <dbl> <dbl> <dbl>
+  # #  1 23     0.03  0.86  1.14  0.3 
+  # #  2 24     0.59  0.45  0.68  0.42
+  # #  3 25     1.8   0.2   1.36  0.26
+  # #  4 26     0.2   0.66  1.19  0.29
+  # #  5 27     0.13  0.72  0.95  0.34
+  # #  6 28     1.45  0.24  0.03  0.87
+  # #  7 29     1.69  0.21  1.14  0.3 
+  # #  8 30     0.4   0.53  1.17  0.29
+  # #  9 31     2.62  0.12  0.65  0.43
+  # # 10 32     0.9   0.36  0.38  0.55
+  # # 11 34     1     0.33  1.2   0.29
+  # # > 
 
   setwd("/Users/rcphelps/code/groq/")
   write_csv(anova.output.tibl, "./metrics/anova.output.csv")
     
-    TukeyHSD(one.way)
+  #     TukeyHSD(one.way)
 ```
 
 

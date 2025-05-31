@@ -268,3 +268,209 @@ scanBugPercentages <- function(df) {
   return(returnList)
   
 }
+
+
+densityNoFacets <- function(tibble, periodString) {
+  
+  color = c("SNH" = "royalblue2", "control" = "darkorange2")
+  
+  gg <- ggplot(data = tibble, aes(x = transect, y = Thomisidae..crab.spider.)) +  
+    
+    geom_jitter(aes(fill=transect), shape = 21, size=3) +
+    
+    #title = paste("thomisidae observations seasonal ", periodString, sep=""), 
+    
+    labs(x = periodString, 
+         y = "count per trap") +
+    
+    theme_bw() +
+    
+    scale_y_continuous(breaks = seq(0, 4, 1)) +
+    
+    scale_fill_manual(values = color, breaks = c("SNH", "control"), labels = c("SNH", "control")) +
+    
+    theme(legend.position="none") 
+  
+  return(gg)
+}
+
+
+densityFacets <- function(tibble, periodString) {
+  
+  color = c("SNH" = "royalblue2", "control" = "darkorange2")
+  
+  gg <- ggplot(data = tibble, aes(x = positionX, y = Thomisidae..crab.spider.)) + 
+  #gg <- ggplot(data = tibble, aes(x = positionX / 3.281, y = Thomisidae..crab.spider.)) +
+    
+    geom_jitter(aes(fill=transect), shape = 21, size=3) +
+    
+    facet_grid(~transect) +
+    #scale_x_continuous(breaks = seq(0, 200, 1)) +
+    
+    labs(title = paste("thomisidae observations seasonal ",
+                       periodString, sep=""),
+         x = "trap distance from field edge (ft)", 
+         y = "count per trap") +
+    
+    theme_bw() +
+    
+    scale_y_continuous(breaks = seq(0, 4, 1)) +
+    
+    scale_fill_manual(values = color, breaks = c("SNH", "control"), labels = c("SNH", "control")) +
+    
+    theme(legend.position="none") 
+  
+  return(gg)
+  
+}
+
+
+plotRawWeeklyV2 <- function(day, night, tr) {
+  
+  
+  
+  # plot daily spider counts, by week, differentiate by time
+  
+  # input 2 dataframes :
+  #  week, transect, time{am, pm}, totalSpiders
+  #
+  
+  # > head(total.df, 10)
+  #   week  transect time totalSpiders
+  #1    23 oakMargin   am             2
+  #2    23 oakMargin   am             6
+  #3    23 oakMargin   am             2
+  #4    23 oakMargin   am             4
+  #5    23 oakMargin   am             2
+  #6    23 oakMargin   am             3
+  #7    23 oakMargin   pm             1
+  #8    23 oakMargin   pm             7
+  #9    23 oakMargin   pm            14
+  #10   23 oakMargin   pm             5
+  
+  color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+  
+  if (tr == "control") {
+    time = c("pm" = "darkorange4", "am" = "darkorange2")
+  } else {
+    time = c("pm" = "royalblue4", "am" = "royalblue2")
+  }
+  
+  gg <- ggplot() + 
+    
+    geom_jitter(data=day, aes(x=week, y=totalSpiders, fill=time), 
+                size=5, shape=21, alpha=.7, show.legend=TRUE, width=.2, height=.2) +
+    
+    geom_jitter(data=night, aes(x=week, y=totalSpiders, fill=time), 
+                size=5, shape=21, alpha=.7, show.legend=TRUE, width=.2, height=.2) +
+    
+    geom_vline(xintercept=25.5) + # seasonal timeframe seperators
+    geom_vline(xintercept=31.5) + #
+    
+    ylim(c(0, 31)) + 
+    expand_limits(y=c(0,31)) + 
+    coord_fixed(ratio=1/4) +     # control the aspect ratio of the output; "ratio" refers to the 
+    # ratio of the axis limits themselves
+    
+    scale_y_continuous(breaks = seq(min(0), max(65), by = 5)) +
+    scale_x_continuous(breaks=seq(22,40,2)) + 
+    
+    # labs(title=paste("total spiders trapped by week", sep=""),
+    labs(
+      y="counts", 
+      x="week", 
+      caption = paste(where, " transect population activity\nby collection time in three\nobserved seasonal periods", 
+                      sep="") ) +
+    
+    theme_bw() +
+    
+    #scale_fill_manual(values = colours, 
+    #                  breaks = c("am", "pm"),
+    #                  labels = c("overnight", "daytime")) +
+    
+    theme(legend.title = element_blank(),
+          legend.spacing.y = unit(0, "mm"), 
+          legend.position="none",
+          legend.justification=c(1,0),
+          panel.border = element_rect(colour = "black", fill=NA),
+          aspect.ratio = 1, axis.text = element_text(colour = 1, size = 12),
+          legend.background = element_blank(),
+          legend.box.background = element_rect(colour = "black")) 
+  
+  
+  
+  return(gg)
+  
+}
+
+plotCountsWeeklyV3 <- function(day, night, tr) {
+  
+  # derived from plotRawWeeklyV2
+  
+  # plot daily spider counts, by week, differentiate by time
+  
+  # input 2 dataframes :
+  #  week, transect, time{am, pm}, totalSpiders
+  #
+  
+  # > head(total.df, 10)
+  #   week  transect time   crabSpiders
+  #1    23 oakMargin   am             2
+  #2    23 oakMargin   am             6
+  #3    23 oakMargin   am             2
+  #4    23 oakMargin   am             4
+  #5    23 oakMargin   am             2
+  #6    23 oakMargin   am             3
+  #7    23 oakMargin   pm             1
+  #8    23 oakMargin   pm             7
+  #9    23 oakMargin   pm            14
+  #10   23 oakMargin   pm             5
+  
+  color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
+  
+  if (tr == "control") {
+    time_colors = c("pm" = "darkorange4", "am" = "darkorange2")
+  } else {
+    time_colors = c("pm" = "royalblue4", "am" = "royalblue2")
+  }
+  
+  gg <- ggplot() + 
+    
+    geom_jitter(data=day, aes(x=week, y=crabSpiders, fill=time),
+                size=5, shape=21, alpha=.7, show.legend=TRUE, width=.2, height=.2) +
+    
+    geom_jitter(data=night, aes(x=week, y=crabSpiders, fill=time), 
+                size=5, shape=21, alpha= 1 , show.legend=TRUE, width=.2, height=.2) +
+    
+    scale_fill_manual(values = time_colors) +
+    
+    geom_vline(xintercept=25.5) + # seasonal timeframe seperators
+    geom_vline(xintercept=31.5) + #
+    
+    ylim(c(0, 31)) + 
+    expand_limits(y=c(0,31)) + 
+    
+    scale_y_continuous(breaks = seq(min(0), max(85), by = 10)) +
+    scale_x_continuous(breaks=seq(22,40,2)) + 
+    
+    labs(
+      y="counts", 
+      x="week", 
+      caption = paste(" transect: ",  tr, sep="") ) +
+    
+    theme_bw() +
+    
+    theme(legend.title = element_blank(),
+          legend.spacing.y = unit(0, "mm"), 
+          legend.position="none",
+          legend.justification=c(1,0),
+          panel.border = element_rect(colour = "black", fill=NA),
+          aspect.ratio = 1, axis.text = element_text(colour = 1, size = 12),
+          legend.background = element_blank(),
+          legend.box.background = element_rect(colour = "black")) 
+  
+  
+  
+  return(gg)
+  
+}

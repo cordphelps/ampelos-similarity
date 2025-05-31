@@ -293,7 +293,7 @@ if (TRUE) {
   # get a list of week IDs ('integers')
   weekID.list <- dissectWeeks(w=weeks)
   
-  captionText <- paste("daytime: ", "pm", sep="")
+    captionText <- paste("control: orange, SNH: blue\ndaytime: 'pm' ",  sep="")
   
   week.control.tibl <- week.tibl %>% dplyr::filter(transect=='control')
   week.snh.tibl <- week.tibl %>% dplyr::filter(transect=='SNH')
@@ -381,13 +381,11 @@ if (TRUE) {
         dplyr::mutate(cum_spiders = cumsum(crabSpiders))
  
 
-  captionText <- paste("daytime: 'am' + 'pm' ", sep="")
+  captionText <- paste("control: orange, SNH: blue\ndaytime: 'am' + 'pm' ",  sep="")
   
   transect = c("control" = "darkorange3", "SNH" = "royalblue3")
      
   ggBoth <- ggplot() + 
-
-      # geom_bar(data=julian.tibl, aes(y=crabSpiders, x = factor(julian), fill = transect, colour = transect), stat="identity", alpha=.3, position = "dodge") +
      
       geom_line(data=julian.tibl, aes(y=cum_spiders, x = factor(julian), colour = transect, group=transect)) +
     
@@ -395,7 +393,7 @@ if (TRUE) {
 	
       scale_y_continuous(breaks = seq(min(0), max(250), by = 50)) +
 
-      labs(x="julian", y="Thomisidae count", caption = captionText ) +
+      labs(x="julian day", y="Thomisidae count", caption = captionText ) +
     
       scale_x_discrete(
                         labels = function(x) {
@@ -405,6 +403,7 @@ if (TRUE) {
                           lbls
                         }
                       ) +
+    
     
   	  theme_bw() +
 	  
