@@ -1163,51 +1163,5 @@ bugs.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
     
 
 ```
-```{r bray-curtis, echo=FALSE, include=TRUE, results="hide", message=F, warning=T }
 
-# count data from 10 spatial positions in a vineyard row; there are multiple sets of count 
-# data for these rows. how to determine clusters of spatial positions based on counts 
-
-# Simulate count data for 10 positions in 2 paired rows
-#set.seed(123)
-positions <- 1:10  # Positions along the row
-
-# Create synthetic data (e.g., pest counts)
-count_data <- data.frame(
-  Position = rep(positions, 3),  # 10 positions x 2 rows
-  Row = rep(c("Row_A", "Row_B", "Row_C"), each = 10),
-  Pest_A = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5)),  # Higher in Row_B
-  Pest_C = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5)),   # Higher in Row_A
-  Pest_B = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5))   # Higher in Row_A
-)
-
-library(vegan)
-# Reshape data into a matrix (rows = positions, columns = pests)
-count_matrix <- count_data[, c("Pest_A", "Pest_B", "Pest_C")]
-
-# Compute Bray-Curtis dissimilarity
-bc_dist <- vegdist(count_matrix, method = "bray")
-
-# Perform hierarchical clustering
-hc <- hclust(bc_dist, method = "average")
-
-# Cut tree into 2 clusters
-clusters <- cutree(hc, k = 3)
-
-# Attach cluster labels to original data
-count_data$Cluster <- clusters
-
-# Plot dendrogram
-plot(hc, labels = paste("Pos", count_data$Position, "-", count_data$Row))
-rect.hclust(hc, k = 2, border = "red")
-
-# Spatial plot of positions colored by cluster
-library(ggplot2)
-ggplot(count_data, aes(x = Position, y = Row, fill = factor(Cluster))) +
-  geom_tile(color = "white") +
-  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
-  labs(title = "Cluster Assignments by Vineyard Position")
-
-
-```
 

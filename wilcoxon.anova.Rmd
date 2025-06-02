@@ -33,6 +33,224 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+
+
+```{r bray-curtis-experimental, echo=FALSE, include=TRUE, results="hide", message=F, warning=T }
+
+
+# count data from 10 spatial positions in a vineyard row; there are multiple sets of count 
+# data for these rows. how to determine clusters of spatial positions based on counts 
+
+# Simulate count data for 10 positions in 2 paired rows
+#set.seed(123)
+positions <- 1:10  # Positions along the row
+
+# Create synthetic data (e.g., pest counts)
+
+# rows of positions ; coulumns of weeks
+
+
+library(ggplot2)
+library(dplyr)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/wilcoxon-anova.R') 
+
+# Mann-Whitney U Test (Wilcoxon Rank Sum Test)
+#Purpose: Compares two independent groups to assess whether their distributions (usually medians) differ.
+#Typical Use Case: Comparing values between two unrelated samples, such as test scores between two different classes, or measurements from two different transects
+#R function: `wilcox.test(x, y, paired = FALSE)`
+
+#Mann-Whitney U is for independent samples.
+#	•	Wilcoxon Signed Rank is for paired/dependent samples.
+#In summary:
+#	•	Use the Mann-Whitney U test when comparing two independent groups.
+#	•	Use the Wilcoxon Signed Rank test when comparing two related (paired) groups.
+#Both tests are non-parametric and do not require the assumption of normality, but choosing the correct one depends on whether your samples are independent or paired
+
+
+wilcoxon.output.tibl <- tibble(
+  week = character(),
+  am.W = numeric(), 
+  am.p = numeric(), 
+  pm.W = numeric(), 
+  pm.p = numeric()
+)
+
+    wilcoxon.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
+    wilcoxon.1.tibl <- wilcoxon.1.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "am") %>%
+        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )  
+    
+    # # A tibble: 10 × 13
+    #      X23   X24   X25   X26   X27   X28   X29   X30   X31   X32
+    #    <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>
+    #  1     1     5     0     0     0     4     0     2     0     1
+    #  2     3     4     2     1     1     1     0     0     1     0
+    #  3     0     3     1     0     1     1     0     0     0     0
+    #  4     0     4     2     2     0     1     1     0     0     0
+    #  5     0     4     4     2     0     1     1     0     0     0
+    #  6     0     4     0     1     1     0     0     1     0     0
+    #  7     4    12     5     1     0     4     1     2     1     0
+    #  8     0     6     2     1     0     2     1     0     0     0
+    #  9     0     1     2     1     1     5     0     1     0     1
+    # 10     1     4     4     2     1     0     2     1     2     0
+    # # ℹ 3 more variables: X34 <int>, transect <chr>, time <chr>
+
+    
+    wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
+    wilcoxon.2.tibl <- wilcoxon.2.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "am") %>%
+        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )      
+    
+    wilcoxon.3.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
+    wilcoxon.3.tibl <- wilcoxon.3.tibl %>%
+        mutate(transect = "SNH") %>%
+        mutate(time = "pm") %>%
+        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )
+    
+    wilcoxon.4.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
+    wilcoxon.4.tibl <- wilcoxon.4.tibl %>%
+        mutate(transect = "control") %>%
+        mutate(time = "pm")  %>%
+        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )   
+    
+     #     X23   X24   X25   X26   X27   X28   X29   X30
+     #   <int> <int> <int> <int> <int> <int> <int> <int>
+     # 1    1     5     0     0     0     4     0     2
+     #2     3     4     2     1     1     1     0     0
+     #3     0     3     1     0     1     1     0     0
+     #4     0     4     2     2     0     1     1     0
+     #5     0     4     4     2     0     1     1     0
+     #6     0     4     0     1     1     0     0     1
+     #7     4    12     5     1     0     4     1     2
+     #8     0     6     2     1     0     2     1     0
+     #9     0     1     2     1     1     5     0     1
+     #0     1     4     4     2     1     0     2     1
+     ## ℹ 3 more variables: X31 <int>, X32 <int>, X34 <int>
+    
+    am.tibl <- bind_rows(wilcoxon.1.tibl, wilcoxon.2.tibl)
+    pm.tibl <- bind_rows(wilcoxon.3.tibl, wilcoxon.4.tibl)
+  
+   
+
+library(vegan)
+# Reshape data into a matrix (rows = positions, columns = weeks)
+count_matrix <- am.tibl[, c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")]
+
+# Compute Bray-Curtis dissimilarity
+bc_dist <- vegdist(count_matrix, method = "bray")
+
+# Perform hierarchical clustering
+hc <- hclust(bc_dist, method = "average")
+
+# Cut tree into 3 clusters
+clusters <- cutree(hc, k = 3)
+
+# Attach cluster labels to original data
+am.tibl$Cluster <- clusters
+
+# Plot dendrogram
+plot(hc)
+rect.hclust(hc, k = 3, border = "red")
+
+# Spatial plot of positions colored by cluster
+library(ggplot2)
+ggplot(data=am.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
+  labs(title = "am cluster Assignments by Vineyard Position")
+
+
+
+library(vegan)
+# Reshape data into a matrix (rows = positions, columns = weeks)
+count_matrix <- pm.tibl[, c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")]
+
+# Compute Bray-Curtis dissimilarity
+bc_dist <- vegdist(count_matrix, method = "bray")
+
+# Perform hierarchical clustering
+hc <- hclust(bc_dist, method = "average")
+
+# Cut tree into 3 clusters
+clusters <- cutree(hc, k = 3)
+
+# Attach cluster labels to original data
+pm.tibl$Cluster <- clusters
+
+# Plot dendrogram
+plot(hc)
+rect.hclust(hc, k = 3, border = "red")
+
+# Spatial plot of positions colored by cluster
+library(ggplot2)
+ggplot(data=pm.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
+  labs(title = "pm cluster Assignments by Vineyard Position")
+
+```
+
+
+
+
+```{r bray-curtis-original, echo=FALSE, include=TRUE, results="hide", message=F, warning=T }
+
+# count data from 10 spatial positions in a vineyard row; there are multiple sets of count 
+# data for these rows. how to determine clusters of spatial positions based on counts 
+
+# Simulate count data for 10 positions in 2 paired rows
+#set.seed(123)
+positions <- 1:10  # Positions along the row
+
+# Create synthetic data (e.g., pest counts)
+count_data <- data.frame(
+  Position = rep(positions, 3),  # 10 positions x 2 rows
+  Row = rep(c("Row_A", "Row_B", "Row_C"), each = 10),
+  Pest_A = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5)),  # Higher in Row_B
+  Pest_C = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5)),   # Higher in Row_A
+  Pest_B = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5))   # Higher in Row_A
+)
+
+library(vegan)
+# Reshape data into a matrix (rows = positions, columns = pests)
+count_matrix <- count_data[, c("Pest_A", "Pest_B", "Pest_C")]
+
+# Compute Bray-Curtis dissimilarity
+bc_dist <- vegdist(count_matrix, method = "bray")
+
+# Perform hierarchical clustering
+hc <- hclust(bc_dist, method = "average")
+
+# Cut tree into 2 clusters
+clusters <- cutree(hc, k = 3)
+
+# Attach cluster labels to original data
+count_data$Cluster <- clusters
+
+# Plot dendrogram
+plot(hc, labels = paste("Pos", count_data$Position, "-", count_data$Row))
+rect.hclust(hc, k = 2, border = "red")
+
+# Spatial plot of positions colored by cluster
+library(ggplot2)
+ggplot(count_data, aes(x = Position, y = Row, fill = factor(Cluster))) +
+  geom_tile(color = "white") +
+  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
+  labs(title = "Cluster Assignments by Vineyard Position")
+
+
+```
+
+
+
+
+
+
 ```{r bug-wilcoxon, echo=FALSE, include=F, results='asis', message=F, warning=F}
 library(ggplot2)
 library(dplyr)

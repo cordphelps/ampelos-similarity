@@ -941,38 +941,19 @@ def week_compare_counts(df):
                     col_name = transect + "." + time + "." + week + "." + row
                     outbound_df[col_name] = sum_by_position_df['Thomisidae (crab spider)']
 
+                    # that is columns for each transect/time/week/row and rows of summed position
+                    #
+                    
 
 
     filename = './metrics/counts_week.csv'
     # mode='w' indicates 'overwrite'
     outbound_df.to_csv(filename, header=True, index=False, mode='w')
-    exit(1)
-
-    filtered_df = filtered_df.drop(['position'], axis=1)
-
-    filtered_transposed_df = pd.DataFrame()
-    
-
-    # transpose
-    filtered_transposed_df = filtered_df.transpose()
-
-    filtered_transposed_df.columns = 'p' + unique_positions
-
-    print(filtered_transposed_df.to_string())
 
 
 
 
-
-    exit(1)
-
-
-
-    filename = './metrics/counts_week.csv'
-    # mode='w' indicates 'overwrite'
-    binomial_df.to_csv(filename, header=True, index=False, mode='a')
-
-    return()
+    return(outbound_df)
 
 
 
@@ -2587,6 +2568,8 @@ def kmeans_clusters(df):
                 os.remove(filename)
             df_t.to_csv(filename, header=True, index=False, mode='w')
 
+            print(df_t.to_string())
+
 
 
             # get the clusters
@@ -2616,6 +2599,10 @@ def kmeans_clusters(df):
             if os.path.exists(filename):
                 os.remove(filename)
             clusters_df.to_csv(filename, header=True, index=False, mode='w')
+
+            # ==============================================================
+            # read by kmeans_groq.Rmd
+            # ==============================================================
 
 
     return(output_df)

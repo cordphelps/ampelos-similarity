@@ -65,6 +65,24 @@ week_records_df['position'] = week_records_df['position'].astype("string")
 week_records_df['week'] = week_records_df['week'].astype("string")
 
 
+#print(week_records_df.to_string())
+
+#   warnings.warn(
+#   0      transect row time week julian  Thomisidae (crab spider) position
+#   1     oakMargin  79   pm   23    156                         0        1
+#   2     oakMargin  79   pm   23    156                         0        2
+#   3     oakMargin  79   pm   23    156                         0        3
+#   4     oakMargin  79   pm   23    156                         0        4
+#   5     oakMargin  79   pm   23    156                         0        5
+#   6     oakMargin  79   pm   23    156                         0        6
+#   7     oakMargin  79   pm   23    156                         1        7
+#   8     oakMargin  79   pm   23    156                         0        8
+#   9     oakMargin  79   pm   23    156                         1        9
+#   10    oakMargin  79   pm   23    156                         0       10
+
+
+
+
 
 ######################################################################
 ########################################################################
@@ -73,7 +91,10 @@ week_records_df['week'] = week_records_df['week'].astype("string")
 # 
 #
 
-spider_lib.week_compare_counts(df=week_records_df)
+wc_df = spider_lib.week_compare_counts(df=week_records_df)
+
+print("\n back up top \n\n")
+print(wc_df.iloc[:, 0].to_string())
 
 exit(1)
 
