@@ -70,6 +70,66 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
 #Both tests are non-parametric and do not require the assumption of normality, but choosing the correct one depends on whether your samples are independent or paired
 
 
+ plotHclust <- function(df, tr, time) { 
+   
+    # Rename all columns at once (order matters)
+      df <- set_names(df, c("23", "24", "25", "26", "27",
+                            "28", "29", "30", "31", "32", "34",
+                            "transect", "time", "position", "cluster"))
+      # pivot the df to 'long' configuarion
+      #
+      df_long <- pivot_longer(
+        df,
+        cols = c(-transect, -time, -position, -cluster),   # All columns except 'position'
+        names_to = "week",           # New column for week names
+        values_to = "count"          # New column for values
+      )
+      
+      df_long <- df_long %>% mutate(week = as.integer(week) )
+      
+      group_colors <- c(
+        "1" = "black",  # Coral
+        "2" = "grey",  # Teal
+        "3" = "white",   # Sky blue
+        "4" = "red"
+      )
+      
+     gg <- ggplot() +
+
+        geom_point(data = df_long, aes(x= week, y=position, 
+                  fill=factor(cluster)), shape = 21, size=5) +
+
+        expand_limits(y=c(1,10)) +
+        scale_y_continuous(breaks = seq(min(1), max(10), by = 1)) +
+        
+        expand_limits(x=c(22,34)) +    # enlarge the range of the axis
+        scale_x_continuous(breaks=seq(22,34,2)) +         # log, squart-root, reverse....
+    
+        scale_fill_manual(values = group_colors) +
+        
+        geom_hline(yintercept=4.5) +
+        geom_hline(yintercept=7.5) +
+        
+        coord_fixed(ratio=1) + # control the aspect ratio
+        
+        labs(x="week number", 
+             y="trap position", 
+             caption = paste("transect: ",  tr, ", daytime: ", time, sep="") ) +
+    
+        theme_bw() +
+        
+        # turn off legend
+        guides(color = "none", fill = "none") +
+        theme(legend.position="none") 
+ 
+
+   	return(gg)
+
+
+}
+ 
+
+
 wilcoxon.output.tibl <- tibble(
   week = character(),
   am.W = numeric(), 
@@ -80,7 +140,7 @@ wilcoxon.output.tibl <- tibble(
 
     wilcoxon.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
     wilcoxon.1.tibl <- wilcoxon.1.tibl %>%
-        mutate(transect = "SNH") %>%
+        mutate(transect = "control") %>%
         mutate(time = "am") %>%
         mutate(position = c(1,2,3,4,5,6,7,8,9,10) )  
     
@@ -100,9 +160,9 @@ wilcoxon.output.tibl <- tibble(
     # # ℹ 3 more variables: X34 <int>, transect <chr>, time <chr>
 
     
-    wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
+    wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.am.csv', header=TRUE, row.names=NULL))
     wilcoxon.2.tibl <- wilcoxon.2.tibl %>%
-        mutate(transect = "control") %>%
+        mutate(transect = "SNH") %>%
         mutate(time = "am") %>%
         mutate(position = c(1,2,3,4,5,6,7,8,9,10) )      
     
@@ -148,20 +208,20 @@ bc_dist <- vegdist(count_matrix, method = "bray")
 hc <- hclust(bc_dist, method = "average")
 
 # Cut tree into 3 clusters
-clusters <- cutree(hc, k = 3)
+clusters <- cutree(hc, k = 4)
 
 # Attach cluster labels to original data
 am.tibl$Cluster <- clusters
 
 # Plot dendrogram
 plot(hc)
-rect.hclust(hc, k = 3, border = "red")
+rect.hclust(hc, k = 4, border = "red")
 
 # Spatial plot of positions colored by cluster
 library(ggplot2)
 ggplot(data=am.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
   geom_tile(color = "white") +
-  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
+  scale_fill_manual(values = c("royalblue", "darkorange", "green", "red")) +
   labs(title = "am cluster Assignments by Vineyard Position")
 
 
@@ -177,21 +237,58 @@ bc_dist <- vegdist(count_matrix, method = "bray")
 hc <- hclust(bc_dist, method = "average")
 
 # Cut tree into 3 clusters
-clusters <- cutree(hc, k = 3)
+clusters <- cutree(hc, k = 4)
 
 # Attach cluster labels to original data
 pm.tibl$Cluster <- clusters
 
 # Plot dendrogram
 plot(hc)
-rect.hclust(hc, k = 3, border = "red")
+rect.hclust(hc, k = 4, border = "red")
 
 # Spatial plot of positions colored by cluster
 library(ggplot2)
 ggplot(data=pm.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
   geom_tile(color = "white") +
-  scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
-  labs(title = "pm cluster Assignments by Vineyard Position")
+  scale_fill_manual(values = c("royalblue", "darkorange", "green", "red")) +
+  labs(title = "am cluster Assignments by Vineyard Position")
+
+
+# ================== now each transect, split by week
+
+THIS IS NOT WORKING BECAUE WE ARE NOT COMPARING ON THING TO ANOTHER THING.
+ABOVE, WE COMPARE TTRANSECTS BY Position
+
+THERE WILL BE GYMNASTICE TO COMPARE PAIRS OF POSITIONS IN ONE weeK
+
+
+
+df <- am.tibl %>% filter(transect == "SNH")
+
+gg.hclust <- plotHclust(df=df, tr="SNH", time='am')
+
+print(gg.hclust)
+
+df <- pm.tibl %>% filter(transect == "SNH")
+
+gg.hclust <- plotHclust(df, tr="SNH", time='pm')
+
+print(gg.hclust)
+
+
+df <- am.tibl %>% filter(transect == "control")
+
+gg.hclust <- plotHclust(df=df, tr="control", time='am')
+
+print(gg.hclust)
+
+df <- pm.tibl %>% filter(transect == "control")
+
+gg.hclust <- plotHclust(df=df, tr="control", time='pm')
+
+print(gg.hclust)
+
+
 
 ```
 
@@ -234,7 +331,7 @@ count_data$Cluster <- clusters
 
 # Plot dendrogram
 plot(hc, labels = paste("Pos", count_data$Position, "-", count_data$Row))
-rect.hclust(hc, k = 2, border = "red")
+rect.hclust(hc, k = 3, border = "red")
 
 # Spatial plot of positions colored by cluster
 library(ggplot2)
@@ -247,6 +344,33 @@ ggplot(count_data, aes(x = Position, y = Row, fill = factor(Cluster))) +
 ```
 
 
+```{r bray-curtis-orig_2, echo=FALSE, include=TRUE, results="hide", message=F, warning=T }
+
+data <- data.frame(
+  Position = LETTERS[1:10],
+  Week1 = c(15, 0, 8, 20, 5, 12, 3, 7, 10, 2),
+  Week2 = c(20, 5, 12, 18, 8, 15, 6, 9, 14, 4)
+)
+
+# Preprocess
+count_matrix <- as.matrix(data[, -1])
+
+
+# Distance and clustering
+d <- vegdist(count_matrix, method = "bray")
+clust <- hclust(d, method = "average")
+plot(clust)
+
+clusters <- cutree(clust, k = 3)
+
+# Attach cluster labels to original data
+data$Cluster <- clusters
+
+THE POINT IS THAT WE ARE COPARING ONE THING (W1) TO ANOTHER THING (W2)
+BY COMPUTING A DISTANCE AND THEN ASSIGNING A 'CLUSTER'
+
+
+```
 
 
 

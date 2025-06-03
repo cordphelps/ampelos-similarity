@@ -24,7 +24,7 @@ library(dplyr)
 # ========================================================
 
 source("/Users/rcphelps/code/groq/bug-library.R")
-source("/Users/rcphelps/code/groq/k-means.R")
+source("/Users/rcphelps/code/groq/k-means_groq.R")
 
 library(tidyr)
 
