@@ -32,6 +32,178 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```
 
+```{r bray-curtis-contiguous, echo=FALSE, include=TRUE, results="hide", message=F, warning=T }
+
+library(ggplot2)
+library(dplyr)
+library(vegan)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
+
+
+# To assign clusters to contiguous positions (e.g., adjacent geographic locations or ordered time points) in R, use constrained hierarchical clustering, which ensures clusters are formed only from connected/adjacent positions. The `constr.hclust` function from the `adespatial` package is designed for this purpose.
+
+# Key Features of `constr.hclust`
+#	•	Contiguity enforcement: Clusters merge only if they are connected by edges in your neighbor list.
+#	•	Spatial/temporal constraints: Ideal for geographic regions, time series, or linear sequences.
+#	•	Flexible linkage methods: Supports `average`, `single`, `complete`, etc.
+
+# When to Use This Approach
+#	•	Clustering geographic regions (e.g., counties, plots).
+#	•	Analyzing time series with chronological constraints.
+#	•	Grouping administrative units or transect data.
+
+
+# Step 1: Install and Load Required Packages
+library(adespatial)
+
+spatialClusters <- function(df) {
+    
+    # Step 2: Define Contiguity (Adjacency) Between Positions
+    # Create a neighbor list or edge list specifying which positions are adjacent. For example, if positions 1–10 are arranged in a line:
+    # Edge list for linear contiguity (1-2, 2-3, ..., 9-10)
+    edges <- matrix(c(1,2, 2,3, 3,4, 4,5, 5,6, 6,7, 7,8, 8,9, 9,10), ncol = 2, byrow = TRUE)
+    
+    # Step 3: Perform Constrained Clustering
+    # Example data: counts for 10 positions (rows) across 12 weeks (columns)
+    #counts <- matrix(sample(0:7, 120, replace = TRUE), nrow = 10)
+    
+    counts <- df[, c("X23", "X24", "X25", "X26", "X27",
+                            "X28", "X29", "X30", "X31", "X32", "X34")]
+    
+    # Compute dissimilarity matrix (e.g., Bray-Curtis)
+    library(vegan)
+    d <- vegdist(counts, method = "bray")
+    
+    # Constrained hierarchical clustering
+    hc_constrained <- constr.hclust(d, links = edges, method = "average")
+    
+    # Plot dendrogram with contiguity constraint
+    plot(hc_constrained, main = "Contiguous Clustering Dendrogram")
+    
+    #Step 4: Cut the Tree into Contiguous Clusters
+    # Cut into 3 contiguous clusters
+    clusters <- cutree(hc_constrained, k = 3)
+    
+    # Result: Each cluster contains only adjacent positions
+    df <- data.frame(Position = 1:10, Cluster = clusters)
+    
+# You are correct: the hierarchical clustering example you saw does not compute clusters for each week separately. Instead, it clusters positions based on their entire pattern across all 12 weeks—that is, each position is represented as a 12-dimensional vector (its counts over the 12 weeks), and clustering is performed in this 12-dimensional space. The result is a single cluster assignment per position, not per week.
+#Why isn’t the result 12 columns of clusters?
+#	•	Because the clustering is performed on the positions as rows (observations), with weeks #as columns (variables/features).
+#	•	Each position gets one cluster assignment that summarizes its pattern across all weeks.
+#	•	You do not get a cluster assignment for each position in each week; you get one cluster per position.
+#Does the example only compute the clusters for the first week?
+#	•	No, unless you specifically subset your data to just one week (i.e., a single column), the clustering uses all weeks.
+#	•	If you want to cluster positions for a single week, you must extract that week’s data (a vector of 10 counts) and cluster that vector separately.
+    
+    return(df)
+    
+}
+
+    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2") 
+    
+ counts.position.SNH.pm.tibl <- dplyr::as_tibble(read.csv(
+   './metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
+
+  clusters.SNH.pm.tibl <- as_tibble(spatialClusters(df=counts.position.SNH.pm.tibl))
+  
+  
+  tr="SNH"
+  time<-"pm"
+
+  rects <- data.frame(
+                  xmin = c(22, 22, 22),
+                  xmax = c(34, 34, 34),
+                  ymin = c(1, 3.5, 4.5),
+                  ymax = c(3.5, 4.5, 10),
+                fill = c("royalblue4", "royalblue3", "royalblue2")
+              )
+
+  gg.SNH <- ggplot() +
+       
+       geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, fill = fill), alpha = 0.7) +
+
+        expand_limits(y=c(1,10)) +
+        scale_y_continuous(breaks = seq(min(1), max(10), by = 1)) +
+        
+        expand_limits(x=c(22,34)) +    # enlarge the range of the axis
+        scale_x_continuous(breaks=seq(22,34,2)) +         # log, squart-root, reverse....
+    
+scale_fill_manual(values = rects$fill) +
+        
+        geom_hline(yintercept=3.5) +
+        geom_hline(yintercept=4.5) +
+        
+        labs(x="week number", 
+             y="trap position", 
+             caption = paste("transect: ",  tr, ", daytime: ", time, sep="") ) +
+    
+        theme_bw() +
+        
+        # turn off legend
+        guides(color = "none", fill = "none") +
+        theme(legend.position="none") 
+ 
+    print(gg.SNH)
+    setwd("/Users/rcphelps/code/groq")
+    saveGGpng(filename = paste("f.clusters.SNH.", time, ".png", sep=""), 
+                    subdir = "png.output", gg = gg.SNH)
+    
+# ==============================================================================   
+# ==============================================================================
+    
+counts.position.control.pm.tibl <- dplyr::as_tibble(read.csv(
+   './metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
+
+  clusters.control.pm.tibl <- as_tibble(spatialClusters(df=counts.position.control.pm.tibl))
+
+  tr="control"
+  time<-"pm"
+
+  rects <- data.frame(
+                  xmin = c(22, 22, 22),
+                  xmax = c(34, 34, 34),
+                  ymin = c(1, 2.5, 6.5),
+                  ymax = c(2.5, 6.5, 10),
+                  fill = c("darkorange4", "darkorange3", "darkorange2")
+                )
+
+  gg.control <- ggplot() +
+       
+       geom_rect(data = rects, aes(xmin = xmin, xmax = xmax, 
+                                   ymin = ymin, ymax = ymax, 
+                                   fill = fill), alpha = 0.7) +
+
+        expand_limits(y=c(1,10)) +
+        scale_y_continuous(breaks = seq(min(1), max(10), by = 1)) +
+        
+        expand_limits(x=c(22,34)) +    # enlarge the range of the axis
+        scale_x_continuous(breaks=seq(22,34,2)) +         # log, squart-root, reverse....
+    
+        scale_fill_manual(values = rects$fill) +
+        
+        geom_hline(yintercept=2.5) +
+        geom_hline(yintercept=6.5) +
+        
+        labs(x="week number", 
+             y="trap position", 
+             caption = paste("transect: ",  tr, ", daytime: ", time, sep="") ) +
+    
+        theme_bw() +
+        
+        # turn off legend
+        guides(color = "none", fill = "none") +
+        theme(legend.position="none") 
+ 
+    print(gg.control)
+    setwd("/Users/rcphelps/code/groq")
+    saveGGpng(filename = paste("f.clusters.control.", time, ".png", sep=""), 
+                    subdir = "png.output", gg = gg.control)
+
+```
 
 
 
@@ -52,6 +224,7 @@ positions <- 1:10  # Positions along the row
 
 library(ggplot2)
 library(dplyr)
+library(vegan)
 
 setwd("/Users/rcphelps/code/groq")
 source('/Users/rcphelps/code/groq/bug-library.R') 
@@ -72,21 +245,66 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
 
  plotHclust <- function(df, tr, time) { 
    
+   # convert the tibbl into a matrix of counts per week
+   # count_matrix <- count_data[, c("Pest_A", "Pest_B", "Pest_C")]
+   #
+   
+   df.matrix <- df[, c("X23", "X24", "X25", "X26", "X27",
+                            "X28", "X29", "X30", "X31", "X32", "X34")]
+   
+    # Compute Bray-Curtis dissimilarity
+    bc_dist <- vegdist(df.matrix, method = "bray")
+    
+    # Perform hierarchical clustering
+    hc <- hclust(bc_dist, method = "average")
+    
+    # Cut tree into 3 clusters
+    clusters <- cutree(hc, k = 3)
+    # `cutree()` assigns each row to a cluster based on all variables in your data.
+	  # •	To get cluster assignments for individual variables (columns), you would need 
+    # to cluster each variable separately (but this is rarely meaningful—clustering is
+    # typically done on observations, not variables).
+   
+    # Plot dendrogram
+    plot(hc)
+    rect.hclust(hc, k = 3, border = "red")
+    
+    # Attach cluster labels to original data
+    df$cluster <- clusters
+    
+    df <- df %>% mutate(position = c(1,2,3,4,5,6,7,8,9,10) ) 
+
     # Rename all columns at once (order matters)
-      df <- set_names(df, c("23", "24", "25", "26", "27",
+    df <- set_names(df, c("23", "24", "25", "26", "27",
                             "28", "29", "30", "31", "32", "34",
-                            "transect", "time", "position", "cluster"))
-      # pivot the df to 'long' configuarion
+                            "cluster", "position"))
+      
+
+      # pivot the df to 'long' configuration
       #
-      df_long <- pivot_longer(
-        df,
-        cols = c(-transect, -time, -position, -cluster),   # All columns except 'position'
+      
+      print(df) 
+      
+      df_long <- pivot_longer(df,
+        cols = c(-position, -cluster),   # All columns except 'position'
         names_to = "week",           # New column for week names
-        values_to = "count"          # New column for values
+        values_to = "counts"          # New column for values
       )
       
       df_long <- df_long %>% mutate(week = as.integer(week) )
       
+      print(df_long)
+      
+      W23 <- ggplot(df_long, aes(x = position, y = week, fill = factor(cluster))) +
+          
+            geom_tile() +
+            
+            scale_fill_manual(values = c("royalblue", "darkorange", "green")) +
+            labs(title = "Cluster Assignments by Vineyard Position")
+          
+      print(W23)
+      
+        
       group_colors <- c(
         "1" = "black",  # Coral
         "2" = "grey",  # Teal
@@ -129,162 +347,15 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
 }
  
 
+# ==============================================================================
+# The key is that each row is an observation to be clustered (here, a position), 
+# and columns are the features (here, the 12 weekly counts)
+# ==============================================================================
 
-wilcoxon.output.tibl <- tibble(
-  week = character(),
-  am.W = numeric(), 
-  am.p = numeric(), 
-  pm.W = numeric(), 
-  pm.p = numeric()
-)
-
-    wilcoxon.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.am.csv', header=TRUE, row.names=NULL))
-    wilcoxon.1.tibl <- wilcoxon.1.tibl %>%
-        mutate(transect = "control") %>%
-        mutate(time = "am") %>%
-        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )  
-    
-    # # A tibble: 10 × 13
-    #      X23   X24   X25   X26   X27   X28   X29   X30   X31   X32
-    #    <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>
-    #  1     1     5     0     0     0     4     0     2     0     1
-    #  2     3     4     2     1     1     1     0     0     1     0
-    #  3     0     3     1     0     1     1     0     0     0     0
-    #  4     0     4     2     2     0     1     1     0     0     0
-    #  5     0     4     4     2     0     1     1     0     0     0
-    #  6     0     4     0     1     1     0     0     1     0     0
-    #  7     4    12     5     1     0     4     1     2     1     0
-    #  8     0     6     2     1     0     2     1     0     0     0
-    #  9     0     1     2     1     1     5     0     1     0     1
-    # 10     1     4     4     2     1     0     2     1     2     0
-    # # ℹ 3 more variables: X34 <int>, transect <chr>, time <chr>
-
-    
-    wilcoxon.2.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.am.csv', header=TRUE, row.names=NULL))
-    wilcoxon.2.tibl <- wilcoxon.2.tibl %>%
-        mutate(transect = "SNH") %>%
-        mutate(time = "am") %>%
-        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )      
-    
-    wilcoxon.3.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
-    wilcoxon.3.tibl <- wilcoxon.3.tibl %>%
-        mutate(transect = "SNH") %>%
-        mutate(time = "pm") %>%
-        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )
-    
-    wilcoxon.4.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
-    wilcoxon.4.tibl <- wilcoxon.4.tibl %>%
-        mutate(transect = "control") %>%
-        mutate(time = "pm")  %>%
-        mutate(position = c(1,2,3,4,5,6,7,8,9,10) )   
-    
-     #     X23   X24   X25   X26   X27   X28   X29   X30
-     #   <int> <int> <int> <int> <int> <int> <int> <int>
-     # 1    1     5     0     0     0     4     0     2
-     #2     3     4     2     1     1     1     0     0
-     #3     0     3     1     0     1     1     0     0
-     #4     0     4     2     2     0     1     1     0
-     #5     0     4     4     2     0     1     1     0
-     #6     0     4     0     1     1     0     0     1
-     #7     4    12     5     1     0     4     1     2
-     #8     0     6     2     1     0     2     1     0
-     #9     0     1     2     1     1     5     0     1
-     #0     1     4     4     2     1     0     2     1
-     ## ℹ 3 more variables: X31 <int>, X32 <int>, X34 <int>
-    
-    am.tibl <- bind_rows(wilcoxon.1.tibl, wilcoxon.2.tibl)
-    pm.tibl <- bind_rows(wilcoxon.3.tibl, wilcoxon.4.tibl)
-  
-   
-
-library(vegan)
-# Reshape data into a matrix (rows = positions, columns = weeks)
-count_matrix <- am.tibl[, c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")]
-
-# Compute Bray-Curtis dissimilarity
-bc_dist <- vegdist(count_matrix, method = "bray")
-
-# Perform hierarchical clustering
-hc <- hclust(bc_dist, method = "average")
-
-# Cut tree into 3 clusters
-clusters <- cutree(hc, k = 4)
-
-# Attach cluster labels to original data
-am.tibl$Cluster <- clusters
-
-# Plot dendrogram
-plot(hc)
-rect.hclust(hc, k = 4, border = "red")
-
-# Spatial plot of positions colored by cluster
-library(ggplot2)
-ggplot(data=am.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
-  geom_tile(color = "white") +
-  scale_fill_manual(values = c("royalblue", "darkorange", "green", "red")) +
-  labs(title = "am cluster Assignments by Vineyard Position")
+    wilcoxon.1.tibl <- dplyr::as_tibble(read.csv('./metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
 
 
-
-library(vegan)
-# Reshape data into a matrix (rows = positions, columns = weeks)
-count_matrix <- pm.tibl[, c("X23", "X24", "X25", "X26", "X27", "X28", "X29", "X30", "X31", "X32", "X34")]
-
-# Compute Bray-Curtis dissimilarity
-bc_dist <- vegdist(count_matrix, method = "bray")
-
-# Perform hierarchical clustering
-hc <- hclust(bc_dist, method = "average")
-
-# Cut tree into 3 clusters
-clusters <- cutree(hc, k = 4)
-
-# Attach cluster labels to original data
-pm.tibl$Cluster <- clusters
-
-# Plot dendrogram
-plot(hc)
-rect.hclust(hc, k = 4, border = "red")
-
-# Spatial plot of positions colored by cluster
-library(ggplot2)
-ggplot(data=pm.tibl, aes(x = position, y = transect, fill = factor(Cluster))) +
-  geom_tile(color = "white") +
-  scale_fill_manual(values = c("royalblue", "darkorange", "green", "red")) +
-  labs(title = "am cluster Assignments by Vineyard Position")
-
-
-# ================== now each transect, split by week
-
-THIS IS NOT WORKING BECAUE WE ARE NOT COMPARING ON THING TO ANOTHER THING.
-ABOVE, WE COMPARE TTRANSECTS BY Position
-
-THERE WILL BE GYMNASTICE TO COMPARE PAIRS OF POSITIONS IN ONE weeK
-
-
-
-df <- am.tibl %>% filter(transect == "SNH")
-
-gg.hclust <- plotHclust(df=df, tr="SNH", time='am')
-
-print(gg.hclust)
-
-df <- pm.tibl %>% filter(transect == "SNH")
-
-gg.hclust <- plotHclust(df, tr="SNH", time='pm')
-
-print(gg.hclust)
-
-
-df <- am.tibl %>% filter(transect == "control")
-
-gg.hclust <- plotHclust(df=df, tr="control", time='am')
-
-print(gg.hclust)
-
-df <- pm.tibl %>% filter(transect == "control")
-
-gg.hclust <- plotHclust(df=df, tr="control", time='pm')
+gg.hclust <- plotHclust(df=wilcoxon.1.tibl, tr="control", time='pm')
 
 print(gg.hclust)
 
@@ -313,15 +384,37 @@ count_data <- data.frame(
   Pest_B = c(rpois(10, lambda = 5), rpois(10, lambda = 5), rpois(10, lambda = 5))   # Higher in Row_A
 )
 
+# =======================================================
+# the input to dist() is a matrix or df where
+#
+# Rows represent observations (cases, samples, objects, etc.).
+# Columns represent variables (features, measurements, etc.).
+#
+# `dist()` computes pairwise distances between the rows of the input matrix 
+# or data frame, using the specified distance metric (e.g., Euclidean, Manhattan, etc.)
+# =======================================================
+
 library(vegan)
 # Reshape data into a matrix (rows = positions, columns = pests)
 count_matrix <- count_data[, c("Pest_A", "Pest_B", "Pest_C")]
 
+# =======================================================
+# create a disssimilarity matrix
+# =======================================================
+
 # Compute Bray-Curtis dissimilarity
 bc_dist <- vegdist(count_matrix, method = "bray")
 
+# =======================================================
+# specify how the cluster differences are calculated
+# =======================================================
+
 # Perform hierarchical clustering
 hc <- hclust(bc_dist, method = "average")
+
+# =======================================================
+# extrack cluster memberships
+# =======================================================
 
 # Cut tree into 2 clusters
 clusters <- cutree(hc, k = 3)
