@@ -285,7 +285,7 @@ densityNoFacets <- function(tibble, periodString) {
     
     theme_bw() +
     
-    scale_y_continuous(breaks = seq(0, 4, 1)) +
+    scale_y_continuous(limits= c(0,4), breaks = seq(0, 4, 1)) +
     
     scale_fill_manual(values = color, breaks = c("SNH", "control"), labels = c("SNH", "control")) +
     
@@ -451,7 +451,6 @@ plotCountsWeeklyV3 <- function(day, night, tr) {
     expand_limits(y=c(0,31)) + 
     
     scale_y_continuous(breaks = seq(min(0), max(85), by = 10)) +
-    scale_x_continuous(breaks=seq(22,40,2)) + 
     
     labs(
       y="counts", 

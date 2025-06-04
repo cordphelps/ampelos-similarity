@@ -1075,6 +1075,8 @@ combo.period3.tibl <- bugs.tibl %>%
   dplyr::filter(time != 'am') %>%
   dplyr::filter(week > 31)
 
+daytime <- 'pm'
+
 input.tibl <- combo.period1.tibl %>% mutate(transect=replace(as.character(transect), transect=='oakMargin', 'SNH')) %>% as_tibble()
 
 gg.no.facets <- densityNoFacets(tibble=input.tibl, periodString="weeks 23-25")
