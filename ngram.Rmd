@@ -407,9 +407,6 @@ color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "dar
 library(coda)
 source('/Users/rcphelps/code/groq/bug-library.R') 
 
-source.url <- c("./metrics/binomial-posterior-.csv")
-# written by the python function binomial_credible_interval(df, graphics, csv_ID)
-
 #    library(bayestestR)
 # Example posterior draws from a normal distribution
 #    posterior <- rnorm(1000, mean = 5, sd = 3)
@@ -435,6 +432,14 @@ source.url <- c("./metrics/binomial-posterior-.csv")
 # Overlap > 0.35: Substantial similarity
 # overlap_score <- overlap(posterior_A, posterior_B)
 
+# ===============================================================
+# data created by spider_lib.py function binomial_credible_interval()
+# these are columns of posterior distributions with column
+# names the indicate transect / time / week-cluster
+#
+source.url <- c("./metrics/binomial-posterior-.csv")
+#
+# ===============================================================
 
 posterior.tibl <- dplyr::as_tibble(read.csv(source.url, header=TRUE, row.names=NULL))
 

@@ -716,7 +716,7 @@ wilcoxon.output.tibl <- tibble(
     
     s.stat.am <- round(results.am$statistic, 2)
     s.p_val.am  <- round(results.am$p.value, 2)
-    s.stat.pm <- round(results.am$statistic, 2)
+    s.stat.pm <- round(results.pm$statistic, 2)
     s.p_val.pm  <- round(results.pm$p.value, 2)
     
     wilcoxon.output.tibl <-  wilcoxon.output.tibl %>%
@@ -750,7 +750,48 @@ wilcoxon.output.tibl <- tibble(
 #> 
 
   setwd("/Users/rcphelps/code/groq/")
-  write_csv(wilcoxon.output.tibl, "./metrics/wilcox.mwu.output.csv", append=FALSE)
+  write_csv(wilcoxon.output.tibl, "./metrics/wilcox.mwu.wk.output.csv", append=FALSE)
+  
+  
+  # -------------------- now for the week clusters ------------------------
+  
+  
+  wilcoxon.output.clusters.tibl <- tibble(
+  week = character(),
+  pm.W = numeric(), 
+  pm.p = numeric()
+)
+      
+  # sum columns and form a new column
+  pm.tibl <- pm.tibl %>%
+              mutate(cl1 = rowSums(across(c("X23", "X24", "X25")))) %>%
+              mutate(cl2 = rowSums(across(c("X26", "X27", "X28", "X29", "X30", "X31")))) %>%
+              mutate(cl3 = rowSums(across(c("X32", "X34")))) 
+                     
+  
+  for (i in c("cl1", "cl2", "cl3")) {
+    
+    formula_string <- paste(i, "~", "transect")
+    results.pm <- wilcox.test(as.formula(formula_string), data = pm.tibl, conf.int = TRUE)
+    
+    s.stat.pm <- round(results.pm$statistic, 2)
+    s.p_val.pm  <- round(results.pm$p.value, 2)
+    
+    wilcoxon.output.clusters.tibl <-  wilcoxon.output.clusters.tibl %>%
+        add_row(week = i,        
+                pm.W = s.stat.pm,
+                pm.p = s.p_val.pm )
+    
+  }
+    
+  #print(wilcoxon.output.tibl)
+  # > print(anova.output.tibl)
+
+  setwd("/Users/rcphelps/code/groq/")
+  write_csv(wilcoxon.output.clusters.tibl, "./metrics/wilcox.mwu.cluster.output.csv", append=FALSE)
+  
+  
+  
     
   #======================= end Mann-Whitney U =============================
   #========================================================================

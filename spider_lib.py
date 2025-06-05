@@ -943,7 +943,7 @@ def week_compare_counts(df):
 
                     # that is columns for each transect/time/week/row and rows of summed position
                     #
-                    
+
 
 
     filename = './metrics/counts_week.csv'
@@ -951,6 +951,9 @@ def week_compare_counts(df):
     outbound_df.to_csv(filename, header=True, index=False, mode='w')
 
 
+    # ==============================================================
+    # read by the chunk bug-wilcoxonSRT in wilcoxcon.anoca.Rmd
+    # ==============================================================
 
 
     return(outbound_df)
@@ -1659,6 +1662,10 @@ def binomial_credible_interval(df, graphics, csv_ID):
 
 
     # ************ output *******************
+    # ===============================================================
+    # these are columns of posterior distributions with column
+    # names the indicate transect / time / week-cluster
+    # used by ngram.Rmd chunk evaluaterPosterior 
     
 
 
