@@ -507,9 +507,9 @@ for (daytime in list("am", "pm")) {
     library(coda)
     library(bayestestR)
     
-      #print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
-      #print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
-      #print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
+      print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
+      print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
+      print( paste("overlap: ", bayestestR::overlap(dist3, dist6), sep="") )
     
     
     color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
@@ -546,8 +546,21 @@ for (daytime in list("am", "pm")) {
             subdir = "png.output", gg = gg.dist)
     
     
-    
     jitter_pos <- position_jitter(width=0, height = 0.2, seed = 89)
+    
+    
+    tb <- tibble(
+            tr = c(daytime, daytime, daytime),
+            week.cl = c('cl1', 'cl2', 'cl3'),
+            ci.min.ctl = c(dist4.stats[1], dist5.stats[1], dist6.stats[1]),
+            ci.max.ctl = c(dist4.stats[2], dist5.stats[2], dist6.stats[2]),
+            ci.min.snh = c(dist1.stats[1], dist2.stats[1], dist3.stats[1]),
+            ci.max.snh = c(dist1.stats[2], dist2.stats[2], dist3.stats[2]),
+            density.overlap = c(bayestestR::overlap(dist1, dist4),
+                                bayestestR::overlap(dist2, dist5),
+                                bayestestR::overlap(dist3, dist6) ))
+    
+    print(tb)
     
     gg.ci <- ggplot() +
     

@@ -43,98 +43,137 @@ setwd("/Users/rcphelps/code/groq")
 source('/Users/rcphelps/code/groq/bug-library.R') 
 source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
 
+longForm <- function(df, tr, time) {
+      
+       counts.test <- df %>% mutate(position = c(1,2,3,4,5,6,7,8,9,10) ) 
+       
+       df_long.test <- pivot_longer(counts.test,
+        cols = c(-position),   # All columns 
+        names_to = "week",           # New column for week names
+        values_to = "counts"          # New column for values
+      )
+      
+      df_long.test <- df_long.test %>%
+        mutate(week = as.integer(sub("^X", "", week)))
+       
+      # Aggregate
+      df_ave <- df_long.test %>%
+        group_by(position) %>%
+        summarise(count_ave = mean(counts), .groups = "drop")
+      
+       # Calculate proportion of non-zero counts for each position
+      df_prop <- df_long.test %>%
+        group_by(position) %>%
+        summarise(
+          n = n(),                     # Total observations per position (should be 10)
+          k = sum(counts > 0),         # Number of non-zero counts
+          p_hat = k / n                # Observed proportion of non-zero counts
+        )
+      
+      # Use the exact binomial test (Clopper-Pearson) to compute 95% CIs for each position.
+      # (robust for small sample sizes (like 10 observations per position).)
+      # For each position, compute CI using binom.test()
+      df_ci <- df_prop %>%
+        rowwise() %>%
+        mutate(
+          lower = binom.test(k, n, conf.level = 0.95)$conf.int[1],
+          upper = binom.test(k, n, conf.level = 0.95)$conf.int[2]
+        ) %>%
+        ungroup()
+      
+      # A tibble: 10 × 6
+      #   position     n     k p_hat lower upper
+      #      <dbl> <int> <int> <dbl> <dbl> <dbl>
+      # 1        1    11     6 0.545 0.234 0.833
+      # 2        2    11     6 0.545 0.234 0.833
+      # 3        3    11     7 0.636 0.308 0.891
+      # 4        4    11     9 0.818 0.482 0.977
+      # 5        5    11     8 0.727 0.390 0.940
+      # 6        6    11     6 0.545 0.234 0.833
+      # 7        7    11     8 0.727 0.390 0.940
+      # 8        8    11     8 0.727 0.390 0.940
+      # 9        9    11     8 0.727 0.390 0.940
+      #10       10    11     5 0.455 0.167 0.766
+      
+      # Interpretation: For a position with `p_hat = 0.545`, we are 95% confident the true probability of a non-zero count is between `0.234` and `0.833`
+      # probability of non-zero count not possible to add with 0s in the existing axis
+      # geom_errorbar(data = df_ci, aes(x = position, y = p_hat, ymin = lower, ymax = upper), width = 0.2) +
+
+
+
+# make a table for typst to record the probability of non-zero for each position
+print(df_ci)
+
+    
+    color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2") 
+    
+    j.color <- "royalblue3"
+    s.color <- "royalblue4"
+      
+    if (tr == 'control') {
+      j.color <- "darkorange3"
+      s.color <- "darkorange4"
+    }
+     
+    gg <- ggplot() + 
+      
+      geom_jitter(data = df_long.test, aes(x=position, y=counts),  
+                  fill = j.color, shape = 21, size=3, alpha=.4) +
+      
+      geom_smooth(data = df_ave, aes(x=position, y=count_ave), 
+                  method = "loess", se = FALSE, color = s.color, linewidth = 1.2) +
+      
+      # probability of non-zero count
+      #geom_errorbar(data = df_ci, aes(x = position, y = p_hat, 
+      #                                ymin = lower, ymax = upper), width = 0.2) +
+    
+      expand_limits(x=c(1,10)) +
+      scale_x_continuous(breaks = seq(min(1), max(10), by = 1)) +
+      
+      expand_limits(y=c(1,15)) +
+      scale_y_continuous(breaks = seq(min(0), max(15), by = 1)) +
+      
+      labs(x="trap ID", 
+          y="weekly counts", 
+          caption = paste("transect: ",  tr, ", daytime: ", time, sep="") ) +
+    
+      theme_bw() +
+      theme(legend.position="none") 
+     
+  return(gg)
+  
+}
+
 # a matrix:  rows=position, columns=weeks 
  counts.test <- dplyr::as_tibble(read.csv(
    './metrics/counts.position.SNH.pm.csv', header=TRUE, row.names=NULL))
  
- counts.test <- counts.test %>% mutate(position = c(1,2,3,4,5,6,7,8,9,10) ) 
+  time <- 'pm'
+  tr <- 'SNH'
+  gg <- longForm(df=counts.test, tr=tr, time=time)
  
- df_long.test <- pivot_longer(counts.test,
-  cols = c(-position),   # All columns 
-  names_to = "week",           # New column for week names
-  values_to = "counts"          # New column for values
-)
+  print(gg)
+  
+  setwd("/Users/rcphelps/code/groq")
+  saveGGpng(filename = paste("f.counts.by.pos.", tr, '.', time, ".png", sep=""), 
+            subdir = "png.output", gg = gg)
+  
+  # ==========================================================================
 
-df_long.test <- df_long.test %>%
-  mutate(week = as.integer(sub("^X", "", week)))
+# a matrix:  rows=position, columns=weeks 
+ counts.test <- dplyr::as_tibble(read.csv(
+   './metrics/counts.position.control.pm.csv', header=TRUE, row.names=NULL))
  
-# Aggregate
-df_ave <- df_long.test %>%
-  group_by(position) %>%
-  summarise(count_ave = mean(counts), .groups = "drop")
-
- # Calculate proportion of non-zero counts for each position
-df_prop <- df_long.test %>%
-  group_by(position) %>%
-  summarise(
-    n = n(),                     # Total observations per position (should be 10)
-    k = sum(counts > 0),         # Number of non-zero counts
-    p_hat = k / n                # Observed proportion of non-zero counts
-  )
-
-# Use the exact binomial test (Clopper-Pearson) to compute 95% CIs for each position.
-# (robust for small sample sizes (like 10 observations per position).)
-# For each position, compute CI using binom.test()
-df_ci <- df_prop %>%
-  rowwise() %>%
-  mutate(
-    lower = binom.test(k, n, conf.level = 0.95)$conf.int[1],
-    upper = binom.test(k, n, conf.level = 0.95)$conf.int[2]
-  ) %>%
-  ungroup()
-
-# A tibble: 10 × 6
-#   position     n     k p_hat lower upper
-#      <dbl> <int> <int> <dbl> <dbl> <dbl>
-# 1        1    11     6 0.545 0.234 0.833
-# 2        2    11     6 0.545 0.234 0.833
-# 3        3    11     7 0.636 0.308 0.891
-# 4        4    11     9 0.818 0.482 0.977
-# 5        5    11     8 0.727 0.390 0.940
-# 6        6    11     6 0.545 0.234 0.833
-# 7        7    11     8 0.727 0.390 0.940
-# 8        8    11     8 0.727 0.390 0.940
-# 9        9    11     8 0.727 0.390 0.940
-#10       10    11     5 0.455 0.167 0.766
-
-# Interpretation: For a position with `p_hat = 0.545`, we are 95% confident the true probability of a non-zero count is between `0.234` and `0.833`
-# probability of non-zero count not possible to add with 0s in the existing axis
-# geom_errorbar(data = df_ci, aes(x = position, y = p_hat, ymin = lower, ymax = upper), width = 0.2) +
-
-# make a table for typst to record the probability of non-zero for each position
-
-print(df_ci)
-
-
-color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2") 
+  time <- 'pm'
+  tr <- 'control'
+  gg <- longForm(df=counts.test, tr=tr, time=time)
  
-ggplot() + 
+  print(gg)
   
-  geom_jitter(data = df_long.test, aes(x=position, y=counts),  
-              fill="royalblue3", shape = 21, size=5, alpha=.2) +
+  setwd("/Users/rcphelps/code/groq")
+  saveGGpng(filename = paste("f.counts.by.pos.", tr, '.', time, ".png", sep=""), 
+            subdir = "png.output", gg = gg)
   
-  geom_smooth(data = df_ave, aes(x=position, y=count_ave), 
-              method = "loess", se = FALSE, color = "royalblue4", linewidth = 1.2) +
-  
-  # probability of non-zero count
-  geom_errorbar(data = df_ci, aes(x = position, y = p_hat, 
-                                  ymin = lower, ymax = upper), width = 0.2) +
-
-  expand_limits(x=c(1,10)) +
-  scale_x_continuous(breaks = seq(min(1), max(10), by = 1)) +
-    
-  scale_y_log10() +
-  expand_limits(y=c(1,15)) +
-  scale_y_continuous(breaks = seq(min(1), max(15), by = 1)) +
-
-  theme_bw() +
-  
-  theme(legend.position="none") 
- 
-  #print(gg.SNH)
-  #setwd("/Users/rcphelps/code/groq")
-  #saveGGpng(filename = paste("f.clusters.SNH.", time, ".png", sep=""), 
-     #             subdir = "png.output", gg = gg.SNH)
 
 ```
 
