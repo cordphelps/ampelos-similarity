@@ -509,8 +509,14 @@ for (daytime in list("am", "pm")) {
         
     }
     
+  if (daytime == 'pm') {   # inserted to avoid printing 'am' content
+    
     library(coda)
     library(bayestestR)
+    
+    overlap.cl1 <- round(bayestestR::overlap(dist1, dist4), digits=2)
+    overlap.cl2 <- round(bayestestR::overlap(dist2, dist5), digits=2)
+    overlap.cl3 <- round(bayestestR::overlap(dist3, dist6), digits=2)
     
       print( paste("overlap: ", bayestestR::overlap(dist1, dist4), sep="") )
       print( paste("overlap: ", bayestestR::overlap(dist2, dist5), sep="") )
@@ -526,23 +532,25 @@ for (daytime in list("am", "pm")) {
       
       geom_density(aes(x = dist2), fill = color_list[2], alpha = 0.6) +
       
-      geom_density(aes(x = dist3), fill = color_list[3], alpha = 0.6) +
+      #geom_density(aes(x = dist3), fill = color_list[3], alpha = 0.6) +
       
       geom_density(aes(x = dist4), fill = color_list[4], alpha = 0.6) +
       
       geom_density(aes(x = dist5), fill = color_list[5], alpha = 0.6) +
       
-      geom_density(aes(x = dist6), fill = color_list[6], alpha = 0.6) +
+      #geom_density(aes(x = dist6), fill = color_list[6], alpha = 0.6) +
       
       theme_bw() +
       
-      labs(x = "probability", 
-           y = "relative liklihood",
-           caption = paste("SNH / control pairs for 3 clusters of weeks\n",
-                           "cluster 1: weeks 23-25 (dark)\n",
-                           "cluster 2: weeks 26-31 (light)\n",
-                           "cluster 3: weeks 32-34 (lightest)\n",
-                           "daytime: ", daytime, sep="" ))
+      labs(x = "trap count per observation", 
+           y = "trap count relative liklihood",
+           caption = paste(
+                           "weeks 23-25 (dark), ",
+                           "overlap coefficient: ", overlap.cl1,
+                           "\nweeks 26-31 (light), ",
+                           "overlap coefficient: ", overlap.cl2,
+               # "cluster 3: weeks 32-34 (lightest)\n",
+                           "\ndaytime: ", daytime, sep="" ))
     
     print(gg.dist)
     
@@ -569,7 +577,7 @@ for (daytime in list("am", "pm")) {
     
     gg.ci <- ggplot() +
     
-      geom_pointrange(aes(y = factor('week cluster 1'),
+      geom_pointrange(aes(y = factor('week 23-25'),
                             # factor(column_list[9]), 
                           x = mean(dist1, na.rm = TRUE), 
                           xmin = dist1.stats[1], 
@@ -577,7 +585,7 @@ for (daytime in list("am", "pm")) {
                       position = jitter_pos, size = 1.2,
                       color = color_list[1]) +
     
-      geom_pointrange(aes(y = factor('week cluster 1'),
+      geom_pointrange(aes(y = factor('week 23-25'),
                                # factor(column_list[3]
                           x = mean(dist4, na.rm = TRUE),
                           xmin = dist4.stats[1], 
@@ -586,7 +594,7 @@ for (daytime in list("am", "pm")) {
                       color = color_list[4]
                       ) +
     
-      geom_pointrange(aes(y = factor('week cluster 2'),
+      geom_pointrange(aes(y = factor('week 26-31'),
                             # factor(column_list[9]), 
                           x = mean(dist2, na.rm = TRUE), 
                           xmin = dist2.stats[1], 
@@ -594,7 +602,7 @@ for (daytime in list("am", "pm")) {
                       position = jitter_pos, size = 1.2,
                       color = color_list[2]) +
     
-      geom_pointrange(aes(y = factor('week cluster 2'),
+      geom_pointrange(aes(y = factor('week 26-31'),
                                # factor(column_list[3]
                           x = mean(dist5, na.rm = TRUE),
                           xmin = dist5.stats[1], 
@@ -603,28 +611,28 @@ for (daytime in list("am", "pm")) {
                       color = color_list[5]
                       ) +
     
-      geom_pointrange(aes(y = factor('week cluster 3'),
-                            # factor(column_list[9]), 
-                          x = mean(dist3, na.rm = TRUE), 
-                          xmin = dist3.stats[1], 
-                          xmax = dist3.stats[2]), 
-                      position = jitter_pos, size = 1.2,
-                      color = color_list[3]) +
+#      geom_pointrange(aes(y = factor('week cluster 3'),
+#                            # factor(column_list[9]), 
+#                          x = mean(dist3, na.rm = TRUE), 
+#                          xmin = dist3.stats[1], 
+#                          xmax = dist3.stats[2]), 
+#                      position = jitter_pos, size = 1.2,
+#                      color = color_list[3]) +
     
-      geom_pointrange(aes(y = factor('week cluster 3'),
-                               # factor(column_list[3]
-                          x = mean(dist6, na.rm = TRUE),
-                          xmin = dist6.stats[1], 
-                          xmax = dist6.stats[2]),
-                      size = 1.2,
-                      color = color_list[6]
-                      ) +
+#      geom_pointrange(aes(y = factor('week cluster 3'),
+#                               # factor(column_list[3]
+#                          x = mean(dist6, na.rm = TRUE),
+#                          xmin = dist6.stats[1], 
+#                          xmax = dist6.stats[2]),
+#                      size = 1.2,
+ #                     color = color_list[6]
+#                      ) +
         
       theme_bw() +
     
       labs( 
             y="SNH / control pair", 
-            x="probability", 
+            x="trap count", 
             caption = paste("posterior median and\n 95% credible interval\n", 
                             "daytime: ", daytime, sep="" ) 
             ) 
@@ -633,9 +641,9 @@ for (daytime in list("am", "pm")) {
       print(gg.ci)
       
       setwd("/Users/rcphelps/code/groq/")
-      saveGGpng(filename = paste("f.posterior.credible.interval.", daytime, ".png", sep=""), 
+      saveGGpng(filename = paste("f.posterior.credible.interval.", daytime, ".png", sep=""),
             subdir = "png.output", gg = gg.ci)
-    
+  }
 }
 
 
@@ -719,9 +727,12 @@ plotVariance <- function(df1, df2, t) {
     # turn off legend
     # theme(legend.position="none") 
 
-    labs( caption = paste("binomial probability of spiders occurring in a sample",
-                        " by vine position and week cluster: daytime= ", 
-                        time, "\nchecking for overdispersion; the diagonal line describes mean=variance", "\ntransect SNH is dark purple, control is light purple", sep="")
+    #labs( caption = paste("binomial probability of spiders occurring in a sample",
+    #                    " by vine position and week cluster: daytime= ", 
+     #                   time, "\nchecking for overdispersion; the diagonal line describes #mean=variance", "\ntransect SNH is dark purple, control is light purple", sep="")
+   #       ) 
+  
+      labs( caption = paste("transect SNH is dark blue, control is light brown", sep="")
           ) 
   
     return(gg)
@@ -760,6 +771,11 @@ control.pm.tibl <- v.pm.tibl %>%
 gg1 <- plotVariance(oak.pm.tibl, control.pm.tibl, t='pm')
 
 print(gg1)
+
+      
+setwd("/Users/rcphelps/code/groq/")
+saveGGpng(filename = paste("f.binomial.variance.png", sep=""),
+      subdir = "png.output", gg = gg1)
 
 
 
