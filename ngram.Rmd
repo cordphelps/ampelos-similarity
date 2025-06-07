@@ -357,6 +357,9 @@ coeff <- round(cor(si.ngram.tibl$stacked_ngram, si.ngram.tibl$stacked_sim), digi
 
 color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "darkorange3", "darkorange2")
     # https://sape.inf.usi.ch/quick-reference/ggplot2/colour
+
+# Keep 5% of the rows (removes 95%)
+#si.ngram.tibl <- si.ngram.tibl %>% sample_frac(0.05)
     
     gg.correlation <- ggplot(si.ngram.tibl, aes(x = stacked_ngram, y = stacked_sim)) +
       
@@ -386,8 +389,8 @@ color_list <- list("royalblue4", "royalblue3", "royalblue2", "darkorange4", "dar
     
     print(gg.correlation)
     
-    #setwd("/Users/rcphelps/code/groq/")
-    #saveGGpng(filename="wilcox.pdf", subdir="png.output", gg=gg.wilcox)
+    setwd("/Users/rcphelps/code/groq/")
+    saveGGpng(filename="f.ngram.sorensen.png", subdir="png.output", gg=gg.correlation)
 
 
 ```

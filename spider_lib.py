@@ -2245,10 +2245,10 @@ def buildIndexComparitor():
     df = pd.DataFrame()
     sim_df = pd.DataFrame()
 
-    sp = 0.5
+    sp = 0.3
     ng = 4
 
-    for i in range(9999):
+    for i in range(10000):
 
         df = randomizedTriplet(label=i, success_probability=sp, ngram_width=ng)
 
@@ -2319,7 +2319,15 @@ def randomizedTriplet(label, success_probability, ngram_width):
     #print(binary_c_list, "   ", ngram_c_str, "\n")
 
     #print("\nnew_sim_df: \n", new_sim_df)
+    '''
+    import os
+    filename = './metrics/sorensen_rand.triplet.csv'
+    if os.path.exists(filename):
+        os.remove(filename)
+    new_sim_df.to_csv(filename, header=True, index=False, mode='w')
+    '''
 
+    # returning a single record of 3 sorensen indexes and 3 ngram indexes
 
     return(new_sim_df)
 

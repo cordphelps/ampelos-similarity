@@ -82,6 +82,11 @@ week_records_df['week'] = week_records_df['week'].astype("string")
 
 
 
+######################################################################
+# compare SI and NGRAM indecies
+
+spider_lib.buildIndexComparitor()
+exit(1)
 
 
 ######################################################################
@@ -143,11 +148,7 @@ spider_lib.kmeans_clusters(df=week_records_df)
 exit(1)
 
 
-######################################################################
-# compare SI and NGRAM indecies
 
-spider_lib.buildIndexComparitor()
-exit(1)
 
 ########################################################################
 #
