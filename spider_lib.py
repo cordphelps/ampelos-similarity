@@ -2137,13 +2137,32 @@ def sorensenIndex(df):
 
             print(species_SNH_list)
             print(species_control_list)
+
+            #  Counter objects: `c1` and `c2` count the occurrences of each species in the SNH and control lists, respectively.
+            #  Intersection: `sum(min(c1x, c2x) for x in c1 if x in c2)` computes the total number of shared individuals 
+            #  (or items), counting each species only up to the minimum number present in both lists. This handles abundance data correctly.
+            #  Total: `len(species_SNH_list) + len(species_control_list)` is the sum of all individuals in both samples.
             
-            from collections import Counter
-            c1 = Counter(species_SNH_list)
-            c2 = Counter(species_control_list)
-            intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
-            total = len(species_SNH_list) + len(species_control_list)
+            #from collections import Counter
+            #c1 = Counter(species_SNH_list)
+            #c2 = Counter(species_control_list)
+            #intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
+            #total = len(species_SNH_list) + len(species_control_list)
+            #index = 2 * intersection / total if total else 1.0
+
+            # this code, with a simple modification to use sets instead of Counters, will correctly compute the Sørensen index for 
+            # binary (presence/absence) data
+
+            #For binary (presence/absence) data, you should:
+            #•   Convert each list to a set, so each species (or feature) is counted only once per list.
+            #•   Compute the intersection and the sizes of the sets.
+
+            set1 = set(species_SNH_list)
+            set2 = set(species_control_list)
+            intersection = len(set1 & set2)
+            total = len(set1) + len(set2)
             index = 2 * intersection / total if total else 1.0
+
 
             print("\n" + time + " SI= ", index, " cluster: ", cluster_label + "\n")
 
@@ -2228,25 +2247,31 @@ def sorensenEval():
 
 def sorensenCompute(list1, list2):
 
-    from collections import Counter
-    c1 = Counter(list1)
-    c2 = Counter(list2)
-    intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
-    total = len(list1) + len(list2)
+    #from collections import Counter
+    #c1 = Counter(list1)
+    #c2 = Counter(list2)
+    #intersection = sum(min(c1[x], c2[x]) for x in c1 if x in c2)
+    #total = len(list1) + len(list2)
+    #index = 2 * intersection / total if total else 1.0
+
+    set1 = set(list1)
+    set2 = set(list2)
+    intersection = len(set1 & set2)
+    total = len(set1) + len(set2)
     index = 2 * intersection / total if total else 1.0
 
     return(index)
 
 
-def buildIndexComparitor():
+def buildIndexComparitor(sp, ng):
 
     import pandas as pd
 
     df = pd.DataFrame()
     sim_df = pd.DataFrame()
 
-    sp = 0.3
-    ng = 4
+    #sp = 0.5
+    #ng = 4
 
     for i in range(10000):
 

@@ -85,7 +85,14 @@ week_records_df['week'] = week_records_df['week'].astype("string")
 ######################################################################
 # compare SI and NGRAM indecies
 
-spider_lib.buildIndexComparitor()
+success_probability = 0.5   
+ngram_width = 4
+
+spider_lib.buildIndexComparitor(sp = success_probability, ng = ngram_width)
+
+# creates filename = './metrics/sorensen_combined.csv'
+# see chunk sorensen_correlation in ngram.Rmd
+
 exit(1)
 
 
