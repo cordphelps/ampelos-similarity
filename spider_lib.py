@@ -2143,6 +2143,8 @@ def sorensenIndex(df):
             #  (or items), counting each species only up to the minimum number present in both lists. This handles abundance data correctly.
             #  Total: `len(species_SNH_list) + len(species_control_list)` is the sum of all individuals in both samples.
             
+            # Sørensen-Czekanowski Index \ 
+            #
             #from collections import Counter
             #c1 = Counter(species_SNH_list)
             #c2 = Counter(species_control_list)
@@ -2157,6 +2159,8 @@ def sorensenIndex(df):
             #•   Convert each list to a set, so each species (or feature) is counted only once per list.
             #•   Compute the intersection and the sizes of the sets.
 
+            # Sørensen - Classic 
+            #
             set1 = set(species_SNH_list)
             set2 = set(species_control_list)
             intersection = len(set1 & set2)
@@ -2247,6 +2251,8 @@ def sorensenEval():
 
 def sorensenCompute(list1, list2):
 
+    # Sørensen-Czekanowski Index \ 
+
     #from collections import Counter
     #c1 = Counter(list1)
     #c2 = Counter(list2)
@@ -2254,6 +2260,8 @@ def sorensenCompute(list1, list2):
     #total = len(list1) + len(list2)
     #index = 2 * intersection / total if total else 1.0
 
+    # Sørensen Classic
+    #
     set1 = set(list1)
     set2 = set(list2)
     intersection = len(set1 & set2)
