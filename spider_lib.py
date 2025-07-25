@@ -935,7 +935,6 @@ def week_compare_counts(df):
                     # 9        9                         2
 
                     # for each week, save each column of counts for each row sampled
-                    # (one .csv per week)
                     #
 
                     col_name = transect + "." + time + "." + week + "." + row
@@ -943,7 +942,7 @@ def week_compare_counts(df):
 
                     # that is columns for each transect/time/week/row and rows of summed position
                     #
-
+                    # (very wide, hard to print() )
 
 
     filename = './metrics/counts_week.csv'
@@ -952,11 +951,117 @@ def week_compare_counts(df):
 
 
     # ==============================================================
-    # read by the chunk bug-wilcoxonSRT in wilcoxcon.anoca.Rmd
+    # read by the chunk bug-wilcoxonSRT in wilcoxcon.anova.Rmd
     # ==============================================================
 
 
     return(outbound_df)
+
+
+
+    # ------------------------------------------------------------------------------
+def cluster_compare_counts(df):
+
+    ########################################################################
+    #
+    # get position counts by 'cluster' 
+    # 
+    #
+    # Mann-Whitney U is for independent samples.
+    # Wilcoxon Signed Rank is for paired/dependent samples.
+    #In summary:
+    #   •   Use the Mann-Whitney U test when comparing two independent groups.
+    #   •   Use the Wilcoxon Signed Rank test when comparing two related (paired) groups.
+    #Both tests are non-parametric and do not require the assumption of normality, but 
+    #choosing the correct one depends on whether your samples are independent or paired
+    # 
+    # save file for computation in R
+    #
+    #       
+    # regarding the data, each julian sample comes from 3 parallel rows.
+    # the R code with use Wilcoxon Signed Rank to assess similarity intra-row
+    #
+    # so this function should build
+    #
+    #   transect time week  position_cluster_1_count position_cluster_2_count 
+    #   
+    #
+    #
+    ########################################################################
+
+    import pandas as pd
+    import sys
+
+    unique_julian = df['julian'].unique()
+    unique_time = df['time'].unique()
+    unique_transect = df['transect'].unique()
+    unique_week = df['week'].unique()
+  
+    incoming_df = df
+
+    position_count_df = pd.DataFrame(columns=['transect', 'row', 'time', 'week', 'Thomisidae (crab spider)', 'position'])
+
+    for transect in unique_transect:
+
+        for time in unique_time:
+
+            for week in unique_week:
+
+                #print("%%%%%%%%%%%%%\n", "julian: ", julian, " transect: ", transect, " time: ", time, "\n%%%%%%%%%")
+
+                filtered_df = pd.DataFrame()
+
+                #  !!!!!!!  'f' is curly brace support !!!!!!!
+                filtered_df = incoming_df.query( f" transect == '{transect}' and week == '{week}' and time == '{time}' ")
+                # 0    transect row time week julian Thomisidae (crab spider) position
+
+                unique_rows = filtered_df['row'].unique()
+
+                if  unique_rows.size == 0:
+                    break
+
+                #print(filtered_df.to_string())
+                # 0     transect row time week julian  Thomisidae (crab spider) position
+                # 1    oakMargin  79   pm   23    156                         0        1
+                # 2    oakMargin  79   pm   23    156                         0        2
+                # 3    oakMargin  79   pm   23    156                         0        3
+                # 4    oakMargin  79   pm   23    156                         0        4
+                # 5    oakMargin  79   pm   23    156                         0        5
+                # 6    oakMargin  79   pm   23    156                         0        6
+                # 7    oakMargin  79   pm   23    156                         1        7
+                # 8    oakMargin  79   pm   23    156                         0        8
+                # 9    oakMargin  79   pm   23    156                         1        9
+                # 10   oakMargin  79   pm   23    156                         0       10
+                # 11   oakMargin  81   pm   23    156                         0        1
+                # 12   oakMargin  81   pm   23    156                         0        2
+                # 13   oakMargin  81   pm   23    156                         0        3
+                # 14   oakMargin  81   pm   23    156                         0        4
+                # 15   oakMargin  81   pm   23    156                         1        5
+                # 16   oakMargin  81   pm   23    156                         0        6
+                # 17   oakMargin  81   pm   23    156                         0        7
+                # 18   oakMargin  81   pm   23    156                         1        8
+                # 19   oakMargin  81   pm   23    156                         0        9
+                # 20   oakMargin  81   pm   23    156                         0       10
+
+
+                # Delete multiple columns
+                filtered_df = filtered_df.drop(['julian'], axis=1)
+
+                # Append df2 to df1
+                position_count_df = pd.concat([position_count_df, filtered_df], ignore_index=True)
+
+
+    filename = './metrics/cluster_counts_week.csv'
+    # mode='w' indicates 'overwrite'
+    position_count_df.to_csv(filename, header=True, index=False, mode='w')
+
+
+    # ==============================================================
+    # read by the chunk cluster-wilcoxonSRT in wilcoxcon.anova.Rmd
+    # ==============================================================
+
+
+    return(position_count_df)
 
 
 

@@ -42,6 +42,45 @@ df = pd.DataFrame(bugs_list)
 
 week_records_df = spider_lib.rough_dataset_clean(df)
 
+
+######################################################################
+########################################################################
+#
+# get position counts by week 
+# 
+#
+
+wc_df = spider_lib.cluster_compare_counts(df=week_records_df)
+
+
+    # ==============================================================
+    # read by the chunk bug-wilcoxonSRT in wilcoxcon.anova.Rmd
+    # ==============================================================
+
+    # that is columns for each transect/time/week/row and rows of summed position
+    # filename = './metrics/counts_week.csv'
+
+    # print(wc_df.iloc[:, 0].to_string())
+
+     #    oakMargin.pm.23.79 oakMargin.pm.23.81 oakMargin.pm.23.83
+     #                 <int>              <int>              <int>
+     #  1                  0                  1                  0
+     #  2                  0                  0                  3
+     #  3                  1                  0                  2
+     #  4                  1                  0                  1
+     #  5                  0                  3                  0
+     #  6                  2                  2                  1
+     #  7                  0                  0                  0
+     #  8                  3                  0                  0
+     #  9                  2                  1                  0
+     # 10                  2                  1                  1
+
+
+
+exit(1)
+
+
+
 ######################################################################
 #   transect    row    time    week    julian    thomisidae crab spider   position
 #

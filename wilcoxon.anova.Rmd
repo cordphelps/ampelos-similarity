@@ -1036,6 +1036,87 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
 ```
 
     
+```{r cluster-wilcoxonSRT, echo=F, include=TRUE, results='asis', message=F, warning=F}
+#======================= begin Wilcoxon Signed Rank Test ================
+#========================================================================
+#========================================================================
+  
+#	Purpose: Compares two related (paired or matched) samples to assess whether 
+# their median difference is zero.
+#	Typical Use Case: Pre-test vs. post-test measurements on the same subjects, 
+# or before-and-after measurements on the same plots.
+# R function: `wilcox.test(x, y, paired = TRUE)`.
+
+library(dplyr)
+
+setwd("/Users/rcphelps/code/groq")
+source('/Users/rcphelps/code/groq/bug-library.R') 
+source('/Users/rcphelps/code/groq/wilcoxon-anova.R') 
+  
+
+  #  ( './metrics/counts_week.csv' created by spider_lb.py week_compare_counts(df)  )
+  wilcoxon.SRT.tibl <- dplyr::as_tibble(read.csv('./metrics/cluster_counts_week.csv', 
+                                                   header=TRUE, row.names=NULL))
+  
+# # A tibble: 3,720 × 6
+#   transect    row time   week Thomisidae..crab.spider. position
+#   <chr>     <int> <chr> <int>                    <int>    <int>
+# 1 oakMargin    79 pm       23                        0        1
+# 2 oakMargin    79 pm       23                        0        2
+# 3 oakMargin    79 pm       23                        0        3
+# 4 oakMargin    79 pm       23                        0        4
+# 5 oakMargin    79 pm       23                        0        5
+# 6 oakMargin    79 pm       23                        0        6
+# 7 oakMargin    79 pm       23                        1        7
+  
+  
+  cluster.output.tibl <- tibble( transect = character(),
+                                      time = character(), 
+                                      week = character(),
+                                      statistic = numeric(),
+                                      p.value = numeric() )
+  
+  cluster.a.tibl <- wilcoxon.SRT.tibl %>% 
+                      filter(position %in% c(1, 2, 3))
+  
+  cluster.c.tibl <- wilcoxon.SRT.tibl %>% 
+                      filter(position %in% c(8, 9, 10))
+  
+  for (tr in c("oakMargin", "control")) {
+    
+    for (daytime in c("pm")) {
+    # for (daytime in c("am", "pm")) {
+      
+      for (wk in c("23", "24", "25", "26", "27", "28", "29", "30", "31", "32", "34")) {
+      #for (wk in c("24")) {
+        
+        a.tibl <- cluster.a.tibl %>%
+                      filter(transect == tr) %>%
+                     filter(time == daytime) %>%
+                     filter(week == wk) 
+          
+         c.tibl <- cluster.c.tibl %>%
+                    filter(transect == tr) %>%
+                    filter(time == daytime) %>%
+                    filter(week == wk)  
+         
+        result <- wilcox.test(a.tibl$Thomisidae..crab.spider., c.tibl$Thomisidae..crab.spider., paired = TRUE)
+          
+        cluster.output.tibl <-  cluster.output.tibl %>%
+                add_row(transect = tr, time = daytime, week = wk, 
+                        statistic = round(result$statistic, 2),
+                        p.value = round(result$p.value, 2) )
+
+      }
+    }
+  }
+  
+  print(cluster.output.tibl)
+
+    
+```
+
+
 
 
 
