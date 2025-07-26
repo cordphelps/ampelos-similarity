@@ -28,22 +28,22 @@ plotBugPercentages <- function(list, spidersOnly) {
   
   if (spidersOnly==TRUE) {
     
-    gg <- ggplot(dfAraneae) + 
+    gg <- ggplot() + 
       
-      geom_point(aes(x=week, y=spiderPct, fill = "spiderPct"), shape=21, size=3, show.legend=TRUE) +
-      geom_point(aes(x=week, y=otherPct, fill = 'otherPct'), shape=21, size=3, show.legend=TRUE) +
+      geom_jitter(data=dfAraneae, aes(x=week, y=both, fill = "both"), shape=21, size=3, show.legend=TRUE) +
+      geom_jitter(data=dfDiptera, aes(x=week, y=dipteraPct, fill = 'dipteraPct'), shape=21, size=3, show.legend=TRUE) +
       
-      scale_fill_manual(name = "", values = c("spiderPct" = "green", "otherPct" = "white")) +
+      scale_fill_manual(name = "", values = c("both" = "green", "dipteraPct" = "royalblue")) +
       
       ylim(c(0, 30)) + 
-      expand_limits(y=c(0,30)) + 
+      expand_limits(y=c(0,40)) + 
       
-      scale_y_continuous(breaks = seq(min(0), max(30), by = 5)) +
+      scale_y_continuous(breaks = seq(min(0), max(40), by = 5)) +
       scale_x_continuous(breaks=seq(22,40,2)) + 
       
       labs(y="sampled population (percent)", 
            x="week",
-           caption = paste("Araneae-Thomisidae (green), Araneae-other (white)", sep="") ) +
+           caption = paste("Araneae (green), Diptera (blue)", sep="") ) +
       
       theme_bw() +
       
@@ -147,6 +147,7 @@ createFamilyPercentages <- function(list) {
   dfAraneae <- dplyr::union(dfCrab, dfOther)  # one row for each spider; columns are percent for each week
   dfAraneae <- squashFlip(df=dfAraneae, weekList=list[[3]], columnList=c('otherPct', 'spiderPct', 'week'))
   dfAraneae$family <- 'Araneae'
+  dfAraneae$both <- dfAraneae$otherPct + dfAraneae$spiderPct
   
   dfDiptera <- dfBase %>% dplyr::filter(bugNames == 'Diptera..Agromyzidae..leafminer..') 
   dfDiptera <- squashFlip(df=dfDiptera, weekList=list[[3]], columnList=c('dipteraPct', 'week'))
