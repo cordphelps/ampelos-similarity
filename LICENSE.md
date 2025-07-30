@@ -1,7 +1,7 @@
 
  
   // Cord Phelps
-  // Copyright 2018, MIT License
+  // Copyright 2025, MIT License
   // http://www.opensource.org/licenses/MIT
  
   // Software distributed under the License is distributed on an "AS IS" BASIS,
