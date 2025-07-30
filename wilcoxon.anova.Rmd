@@ -1112,7 +1112,9 @@ source('/Users/rcphelps/code/groq/wilcoxon-anova.R')
   }
   
   print(cluster.output.tibl)
-
+  
+setwd("/Users/rcphelps/code/groq/")
+write_csv(cluster.output.tibl, "./metrics/cluster.output.csv", append=FALSE)
     
 ```
 
